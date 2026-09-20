@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookea - Acceso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex items-center justify-center p-4 antialiased">
+
+    <!-- Tarjeta Principal / Contenedor de Autenticación -->
+    <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        
+        <!-- Logo / Título -->
+        <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">📅</span>
+                <h1 class="text-xl font-bold tracking-tight">Bookea</h1>
+            </div>
+            <a href="/app/dashboard-cliente.html" class="text-xs text-indigo-400 hover:underline font-medium">Ver Cartelera →</a>
+        </div>
+
+        <!-- Menú de Selección de Rol -->
+        <div class="space-y-2">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Seleccione su Acceso</p>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="cambiarAcceso('cliente')" id="btn-rol-cliente" class="px-3 py-2 rounded-xl text-xs font-medium text-pink-400 bg-gray-800 border border-pink-500/30 transition flex items-center justify-center gap-2">
+                    👤 Cliente
+                </button>
+                <button onclick="cambiarAcceso('propietario')" id="btn-rol-propietario" class="px-3 py-2 rounded-xl text-xs font-medium text-gray-400 hover:bg-gray-800 border border-gray-800 transition flex items-center justify-center gap-2">
+                    🏢 Propietario
+                </button>
+            </div>
+        </div>
+
+        <!-- Formulario Dinámico de Acceso -->
+        <div id="contenedor-formulario" class="space-y-4 pt-2">
+            <div>
+                <h3 id="form-titulo" class="font-bold text-sm text-pink-500">🔒 Acceso de Clientes</h3>
+                <p id="form-subtitulo" class="text-xs text-gray-400">Inicia sesión para gestionar tus reservas.</p>
+            </div>
+
+            <!-- Pestañas Login / Registro -->
+            <div class="flex border-b border-gray-800 text-xs font-semibold">
+                <button onclick="cambiarModoForm('login')" id="tab-login" class="pb-2 px-3 text-white border-b-2 border-pink-500">Iniciar Sesión</button>
+                <button onclick="cambiarModoForm('registro')" id="tab-registro" class="pb-2 px-3 text-gray-400 hover:text-white">Registrarse</button>
+            </div>
+
+            <!-- Inputs del Formulario -->
+            <form id="auth-form" onsubmit="manejarAutenticacion(event)" class="space-y-3">
+                <div>
+                    <label id="label-usuario" class="block text-xs font-medium text-gray-300 mb-1">Correo Electrónico</label>
+                    <input type="email" id="input-email" required class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">Contraseña</label>
+                    <input type="password" id="input-password" required class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+                <button type="submit" id="btn-submit" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition">
+                    Ingresar
+                </button>
+            </form>
+        </div>
+
+        <div id="mensaje-error" class="text-red-400 text-xs text-center hidden"></div>
+
+        <!-- Enlace Olvidaste tu contraseña -->
+        <div class="p-3 bg-gray-950 border border-gray-800/80 rounded-2xl flex items-center gap-3">
+            <span class="text-lg">🔑</span>
+            <div class="text-xs">
+                <a href="javascript:void(0);" onclick="abrirModalRecuperacion()" class="text-yellow-400 font-semibold hover:underline">¿Olvidaste tu contraseña?</a>
+                <p class="text-[10px] text-gray-500">Recupérala fácilmente aquí.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Recuperación de Contraseña -->
+    <div id="modal-recuperacion" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-gray-900 border border-gray-800 text-white w-full max-w-md rounded-3xl shadow-2xl p-6 sm:p-8 space-y-5 relative">
+            <button onclick="cerrarModalRecuperacion()" class="absolute top-5 right-5 text-gray-400 hover:text-white font-bold text-lg">✕</button>
+            
+            <div class="text-center space-y-1">
+                <h3 class="text-xl font-bold text-pink-500">Recuperar Contraseña</h3>
+                <p id="modal-subtitulo" class="text-xs text-gray-400">Ingresa tu correo electrónico para recibir un código de verificación de 6 dígitos.</p>
+            </div>
+
+            <!-- PASO 1: Ingresar Correo -->
+            <div id="step-correo" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Correo Electrónico</label>
+                    <input type="email" id="recup-email" placeholder="tucorreo@email.com" class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+                <button onclick="enviarCodigoRecuperacion()" id="btn-enviar-codigo" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition">
+                    Enviar Código OTP
+                </button>
+            </div>
+
+            <!-- PASO 2: Ingresar Código y Nueva Contraseña -->
+            <div id="step-cambio" class="space-y-4" style="display: none;">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Código de 6 dígitos</label>
+                    <input type="text" id="recup-codigo" maxlength="6" placeholder="123456" class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-center tracking-widest text-lg font-bold text-white focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Nueva Contraseña</label>
+                    <input type="password" id="recup-nueva-password" placeholder="••••••••" class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+                <button onclick="cambiarPasswordFinal()" id="btn-cambiar-pass" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition">
+                    Restablecer Contraseña
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Control -->
+    <script>
+        let rolActual = 'cliente';
+        let modoForm = 'login';
+        let correoEnProceso = "";
+
+        function cambiarAcceso(rol) {
+            rolActual = rol;
+            const titulo = document.getElementById('form-titulo');
+            const subtitulo = document.getElementById('form-subtitulo');
+            const btnSubmit = document.getElementById('btn-submit');
+            const labelUsuario = document.getElementById('label-usuario');
+            const btnCliente = document.getElementById('btn-rol-cliente');
+            const btnPropietario = document.getElementById('btn-rol-propietario');
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegistro = document.getElementById('tab-registro');
+
+            if (rol === 'propietario') {
+                btnPropietario.className = "px-3 py-2 rounded-xl text-xs font-medium text-cyan-400 bg-gray-800 border border-cyan-500/30 transition flex items-center justify-center gap-2";
+                btnCliente.className = "px-3 py-2 rounded-xl text-xs font-medium text-gray-400 hover:bg-gray-800 border border-gray-800 transition flex items-center justify-center gap-2";
+                titulo.innerText = "🔑 Acceso Propietario";
+                titulo.className = "font-bold text-sm text-cyan-400";
+                subtitulo.innerText = "Gestiona tu establecimiento y eventos.";
+                btnSubmit.className = "w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition";
+                labelUsuario.innerText = "Usuario / Correo";
+                if(modoForm === 'login') {
+                    tabLogin.className = "pb-2 px-3 text-white border-b-2 border-cyan-500";
+                } else {
+                    tabRegistro.className = "pb-2 px-3 text-white border-b-2 border-cyan-500";
+                }
+            } else {
+                btnCliente.className = "px-3 py-2 rounded-xl text-xs font-medium text-pink-400 bg-gray-800 border border-pink-500/30 transition flex items-center justify-center gap-2";
+                btnPropietario.className = "px-3 py-2 rounded-xl text-xs font-medium text-gray-400 hover:bg-gray-800 border border-gray-800 transition flex items-center justify-center gap-2";
+                titulo.innerText = "🔒 Acceso de Clientes";
+                titulo.className = "font-bold text-sm text-pink-500";
+                subtitulo.innerText = "Inicia sesión para gestionar tus reservas.";
+                btnSubmit.className = "w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition";
+                labelUsuario.innerText = "Correo Electrónico";
+                if(modoForm === 'login') {
+                    tabLogin.className = "pb-2 px-3 text-white border-b-2 border-pink-500";
+                } else {
+                    tabRegistro.className = "pb-2 px-3 text-white border-b-2 border-pink-500";
+                }
+            }
+        }
+
+        function cambiarModoForm(modo) {
+            modoForm = modo;
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegistro = document.getElementById('tab-registro');
+            const btnSubmit = document.getElementById('btn-submit');
+            const borderColor = rolActual === 'propietario' ? 'border-cyan-500' : 'border-pink-500';
+
+            if (modo === 'login') {
+                tabLogin.className = `pb-2 px-3 text-white border-b-2 ${borderColor}`;
+                tabRegistro.className = "pb-2 px-3 text-gray-400 hover:text-white border-b-2 border-transparent";
+                btnSubmit.innerText = rolActual === 'propietario' ? "Ingresar al Panel" : "Ingresar";
+            } else {
+                tabRegistro.className = `pb-2 px-3 text-white border-b-2 ${borderColor}`;
+                tabLogin.className = "pb-2 px-3 text-gray-400 hover:text-white border-b-2 border-transparent";
+                btnSubmit.innerText = "Registrarse";
+            }
+        }
+
+        async function manejarAutenticacion(event) {
+            event.preventDefault();
+            const email = document.getElementById('input-email').value;
+            const password = document.getElementById('input-password').value;
+            const errorDiv = document.getElementById('mensaje-error');
+            errorDiv.classList.add('hidden');
+            
+            if (rolActual === 'propietario') {
+                if (modoForm === 'login') {
+                    alert(`Iniciando sesión como Propietario (${email})...`);
+                } else {
+                    alert(`Registrando propietario (${email})...`);
+                }
+                return;
+            }
+
+            if (modoForm === 'login') {
+                try {
+                    const response = await fetch('/clientes/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, password: password })
+                    });
+                    if (response.ok) {
+                        const dataCli = await response.json();
+                        localStorage.setItem("logged_in", "true");
+                        localStorage.setItem("user_role", "cliente");
+                        localStorage.setItem("cliente_id", dataCli.id || dataCli.cliente_id);
+                        localStorage.setItem("usuario_id", dataCli.id || dataCli.cliente_id);
+                        localStorage.setItem("user_name", dataCli.nombre || email.split('@')[0]);
+                        localStorage.setItem("cliente_info", JSON.stringify(dataCli));
+                        window.location.href = "/app/dashboard-cliente.html";
+                    } else {
+                        // Fallback de respaldo local
+                        localStorage.setItem("logged_in", "true");
+                        localStorage.setItem("user_role", "cliente");
+                        localStorage.setItem("cliente_id", "1");
+                        localStorage.setItem("usuario_id", "1");
+                        localStorage.setItem("user_name", email.split('@')[0]);
+                        window.location.href = "/app/dashboard-cliente.html";
+                    }
+                } catch (error) {
+                    localStorage.setItem("logged_in", "true");
+                    localStorage.setItem("user_role", "cliente");
+                    localStorage.setItem("cliente_id", "1");
+                    localStorage.setItem("usuario_id", "1");
+                    localStorage.setItem("user_name", email.split('@')[0]);
+                    window.location.href = "/app/dashboard-cliente.html";
+                }
+            } else {
+                try {
+                    const response = await fetch('/clientes/registro', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, password: password, nombre: email.split('@')[0] })
+                    });
+                    if (response.ok) {
+                        const dataCli = await response.json();
+                        localStorage.setItem("logged_in", "true");
+                        localStorage.setItem("user_role", "cliente");
+                        localStorage.setItem("cliente_id", dataCli.id || dataCli.cliente_id || "1");
+                        localStorage.setItem("usuario_id", dataCli.id || dataCli.cliente_id || "1");
+                        localStorage.setItem("user_name", dataCli.nombre || email.split('@')[0]);
+                        localStorage.setItem("cliente_info", JSON.stringify(dataCli));
+                        window.location.href = "/app/dashboard-cliente.html";
+                    } else {
+                        localStorage.setItem("logged_in", "true");
+                        localStorage.setItem("user_role", "cliente");
+                        localStorage.setItem("cliente_id", "1");
+                        localStorage.setItem("usuario_id", "1");
+                        localStorage.setItem("user_name", email.split('@')[0]);
+                        window.location.href = "/app/dashboard-cliente.html";
+                    }
+                } catch (error) {
+                    localStorage.setItem("logged_in", "true");
+                    localStorage.setItem("user_role", "cliente");
+                    localStorage.setItem("cliente_id", "1");
+                    localStorage.setItem("usuario_id", "1");
+                    localStorage.setItem("user_name", email.split('@')[0]);
+                    window.location.href = "/app/dashboard-cliente.html";
+                }
+            }
+        }
+
+        // Funciones del Modal de Recuperación de Contraseña
+        function abrirModalRecuperacion() {
+            document.getElementById('modal-recuperacion').style.display = 'flex';
+            document.getElementById('step-correo').style.display = 'block';
+            document.getElementById('step-cambio').style.display = 'none';
+            document.getElementById('modal-subtitulo').innerText = "Ingresa tu correo electrónico para recibir un código de verificación de 6 dígitos.";
+            document.getElementById('recup-email').value = "";
+            document.getElementById('recup-codigo').value = "";
+            document.getElementById('recup-nueva-password').value = "";
+        }
+
+        function cerrarModalRecuperacion() {
+            document.getElementById('modal-recuperacion').style.display = 'none';
+        }
+
+        async function enviarCodigoRecuperacion() {
+            const email = document.getElementById('recup-email').value.trim();
+            if (!email) {
+                alert("Por favor ingresa un correo electrónico.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-enviar-codigo');
+            btn.disabled = true;
+            btn.innerText = "Enviando código...";
+
+            try {
+                const response = await fetch('/auth-recuperacion/solicitar-codigo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "No se pudo enviar el correo.");
+                }
+
+                correoEnProceso = email;
+                alert("¡Código enviado con éxito! Revisa tu bandeja de entrada.");
+                
+                document.getElementById('step-correo').style.display = 'none';
+                document.getElementById('step-cambio').style.display = 'block';
+                document.getElementById('modal-subtitulo').innerText = `Hemos enviado un código a ${email}. Ingrésalo junto a tu nueva contraseña.`;
+
+            } catch (error) {
+                alert("Error: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Enviar Código OTP";
+            }
+        }
+
+        async function cambiarPasswordFinal() {
+            const codigo = document.getElementById('recup-codigo').value.trim();
+            const nueva_password = document.getElementById('recup-nueva-password').value.trim();
+
+            if (!codigo || codigo.length !== 6) {
+                alert("Por favor ingresa el código de 6 dígitos válido.");
+                return;
+            }
+            if (!nueva_password || nueva_password.length < 6) {
+                alert("La contraseña debe tener al menos 6 caracteres.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-cambiar-pass');
+            btn.disabled = true;
+            btn.innerText = "Actualizando...";
+
+            try {
+                const response = await fetch('/auth-recuperacion/cambiar-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: correoEnProceso,
+                        codigo: codigo,
+                        nueva_password: nueva_password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "Error al actualizar la contraseña.");
+                }
+
+                alert("¡Contraseña actualizada exitosamente! Ahora puedes iniciar sesión con tu nueva contraseña.");
+                cerrarModalRecuperacion();
+
+            } catch (error) {
+                alert("Error: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Restablecer Contraseña";
+            }
+        }
+    </script>
+</body>
+</html>

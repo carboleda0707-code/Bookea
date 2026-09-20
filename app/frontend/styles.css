@@ -1,0 +1,76 @@
+.stApp, [data-testid="stMain"], [data-testid="stMainBlockContainer"] {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+.stMainBlockContainer {
+    max-width: 750px !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    padding-top: 2rem !important;
+}
+.titulo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 5px;
+}
+.estrella {
+    font-size: 38px;
+    line-height: 1;
+    filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.6));
+}
+.titulo-texto {
+    font-size: 40px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    margin: 0;
+}
+.titulo-texto span {
+    color: #ec4899;
+    text-shadow: 0 0 12px rgba(236, 72, 153, 0.4);
+}
+.subtitulo-texto {
+    color: #94a3b8;
+    font-size: 15px;
+    margin-bottom: 30px;
+    text-align: left;
+    font-weight: 400;
+}
+.subtitulo-texto span {
+    color: #ec4899;
+}
+.stTextInput > div > div > input {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-radius: 6px !important;
+    padding: 10px 14px !important;
+    border: none !important;
+}
+.stTextInput label, .stRadio label {
+    color: #f1f5f9 !important;
+}
+.stButton > button {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    padding: 10px 30px !important;
+    border: none !important;
+}
+.stButton > button:hover {
+    background-color: #cbd5e1 !important;
+    color: #000000 !important;
+}
+.stTabs [data-baseweb="tab-list"] {
+    gap: 25px;
+    border-bottom: 1px solid #1e293b;
+}
+.stTabs [data-baseweb="tab"] {
+    color: #94a3b8;
+    border-bottom-color: transparent !important;
+}
+.stTabs [aria-selected="true"] {
+    color: #ef4444 !important;
+    border-bottom-color: #ef4444 !important;
+}

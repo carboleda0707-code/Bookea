@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookea - Inicio</title>
+    <style>
+        :root {
+            --bg-color: #050612;
+            --card-bg: #0b0d1e;
+            --accent-pink: #ff3da9;
+            --text-main: #f7f7ff;
+            --text-muted: #a0aec0;
+            --border-color: rgba(255, 61, 169, 0.2);
+        }
+
+        html, body {
+            background-color: var(--bg-color) !important;
+            color: var(--text-main) !important;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Contenedores por defecto */
+        .desktop-view { display: block; }
+        .mobile-view { display: none; }
+
+        /* Estilos para la Vista WebPC (Bienvenida clásica mejorada) */
+        .welcome-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .welcome-title {
+            font-size: 38px;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        .welcome-title span {
+            color: var(--accent-pink);
+            text-shadow: 0 0 15px rgba(255, 61, 169, 0.5);
+        }
+        .welcome-subtitle {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        .roles-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .role-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: left;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        .role-card h3 {
+            color: #ffffff;
+            font-size: 22px;
+            margin-top: 0;
+        }
+        .role-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Estilos para la Vista Móvil (Catálogo / Feed) */
+        .feed-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        .events-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .event-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .event-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 180px;
+        }
+        .event-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .event-details {
+            padding: 15px;
+        }
+        .event-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 8px 0;
+        }
+
+        /* REGLA RESPONSIVA: Pantallas menores a 768px (Móviles) */
+        @media (max-width: 768px) {
+            .desktop-view { display: none; }
+            .mobile-view { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- VISTA WEBPC -->
+    <div class="desktop-view">
+        <div class="welcome-container">
+            <h1 class="welcome-title">⭐ ¡Bienvenido a <span>Bookea</span>!</h1>
+            <p class="welcome-subtitle">Tu plataforma definitiva para descubrir eventos y reservar las mejores mesas al instante.</p>
+            
+            <div class="roles-grid">
+                <div class="role-card">
+                    <h3>¿Eres Cliente o Comensal?</h3>
+                    <p>Crea tu cuenta gratis para explorar la cartelera general, ver los flyers y asegurar tu reserva de mesa en segundos.</p>
+                </div>
+                <div class="role-card">
+                    <h3>¿Eres Propietario de Local?</h3>
+                    <p>Registra tu negocio, administra tu cartelera de eventos, crea zonas y supervisa la ocupación de forma centralizada.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA MÓVIL (CATÁLOGO / FEED) -->
+    <div class="mobile-view">
+        <div class="feed-container">
+            <h2 style="text-align: center; font-size: 22px; color: #ffffff; margin-bottom: 15px;">Cartelera de <span>Eventos</span></h2>
+            
+            <div class="events-grid">
+                <!-- Tarjeta 1 -->
+                <div class="event-card">
+                    <div class="event-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1574391884720-bbc3540a1d95?auto=format&fit=crop&w=600&q=80" alt="Evento">
+                    </div>
+                    <div class="event-details">
+                        <div style="font-size: 11px; color: var(--accent-pink); text-transform: uppercase; font-weight: 700;">Sky Bar Guayaquil</div>
+                        <h3 class="event-name">Neon Night Festival</h3>
+                        <div style="font-size: 12px; color: var(--text-muted);">Viernes, 18 de Septiembre • 21:00</div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2 -->
+                <div class="event-card">
+                    <div class="event-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80" alt="Evento">
+                    </div>
+                    <div class="event-details">
+                        <div style="font-size: 11px; color: var(--accent-pink); text-transform: uppercase; font-weight: 700;">La Mansión Club</div>
+                        <h3 class="event-name">Perreo Sessions Vol. 4</h3>
+                        <div style="font-size: 12px; color: var(--text-muted);">Sábado, 19 de Septiembre • 22:00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

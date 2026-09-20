@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* Prevenir destellos blancos durante el renderizado */
+        html, body, [data-testid="stAppViewContainer"], .stApp {
+            background-color: #050612 !important;
+            color: #f7f7ff !important;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        }
+        
+        .block-container {
+            padding-top: 0rem !important;
+            padding-bottom: 0rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            max-width: 100% !important;
+            margin-top: -30px !important;
+        }
+
+        /* --- BOTÓN Y CONTROLES DE LA BARRA LATERAL (STREAMLIT HEADER) --- */
+        header[data-testid="stHeader"] {
+            background-color: transparent !important;
+            visibility: visible !important;
+        }
+        
+        [data-testid="collapsedControl"]::after {
+            content: " Menú";
+            font-size: 14px;
+            font-weight: 600;
+            color: #00cfff !important;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        
+        [data-testid="collapsedControl"], 
+        button[kind="header"], 
+        header button {
+            display: flex !important;
+            visibility: visible !important;
+            background-color: rgba(0, 191, 255, 0.25) !important;
+            border: 2px solid rgba(0, 191, 255, 0.8) !important;
+            border-radius: 8px !important;
+            color: #00cfff !important;
+            box-shadow: 0 0 12px rgba(0, 191, 255, 0.5) !important;
+            z-index: 999999 !important;
+            align-items: center !important;
+            padding-right: 10px !important;
+        }
+        
+        [data-testid="collapsedControl"]:hover, 
+        button[kind="header"]:hover, 
+        header button:hover {
+            background-color: rgba(0, 191, 255, 0.45) !important;
+            border-color: #00cfff !important;
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.8) !important;
+        }
+
+        /* --- CONTENEDOR GENERAL DEL HERO --- */
+        .hero-center-box {
+            flex: 2;
+            background-size: cover;
+            background-position: center;
+            padding: 5px 15px 0px 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        .hero-content-wrapper {
+            width: fit-content;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .hero-title {
+            font-size: 32px;
+            font-weight: 900;
+            margin: 0 0 4px 0;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+        .hero-title .yellow-star {
+            color: #ffd700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+            margin-right: 6px;
+        }
+        .hero-title span.brand-name {
+            color: #ff42b3;
+            text-shadow: 0 0 20px rgba(255, 66, 179, 0.35);
+        }
+        
+        .neon-line {
+            height: 2px;
+            width: 100%;
+            margin: 0 auto 6px auto;
+            background: linear-gradient(90deg, transparent, #ff239f, #a53cff, #00cfff, transparent);
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+        
+        .hero-subtitle {
+            font-size: 13px;
+            color: #d6d5df;
+            line-height: 1.4;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .hero-subtitle b { color: #ff42b3; }
+               
+        /* Estilos para ajustar los botones al texto */
+        div.stButton > button {
+            width: auto !important;
+            min-width: 160px !important;
+            display: block !important;
+            padding: 10px 22px !important;
+            border-radius: 10px !important;
+            font-weight: 800 !important;
+            transition: none !important;
+        }
+
+        div#btn-comensal-wrapper div.stButton > button {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+        }
+
+        div.stButton > button[kind="primary"] {
+            background-color: #ff239f !important;
+            color: #ffffff !important;
+            border: 2px solid #ff239f !important;
+            box-shadow: 0 0 15px rgba(255, 35, 159, 0.4) !important;
+        }
+        div.stButton > button[kind="primary"]:hover {
+            background-color: #050612 !important;
+            color: #ffffff !important;
+            border-color: #ff239f !important;
+            box-shadow: 0 0 25px rgba(255, 35, 159, 0.8) !important;
+        }
+
+        div#btn-propietario-wrapper div.stButton > button {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+        }
+
+        div.stButton > button[kind="secondary"] {
+            background: linear-gradient(135deg, #00cfff, #050612) !important;
+            color: #ffffff !important;
+            border: 2px solid #00cfff !important;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.4) !important;
+        }
+        div.stButton > button[kind="secondary"]:hover {
+            background: #050612 !important;
+            color: #ffffff !important;
+            border-color: #00cfff !important;
+            box-shadow: 0 0 25px rgba(0, 191, 255, 0.8) !important;
+        }
+
+        /* Características inferiores */
+        .features-grid {
+            display: grid;
+            grid-repeat: repeat(4, 1fr);
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 6px !important;
+            margin-bottom: 5px !important;
+            padding: 10px 12px;
+            border: 1px solid rgba(150, 55, 255, 0.35);
+            border-radius: 12px;
+            background: rgba(10, 8, 28, 0.85);
+        }
+        .feature-item {
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 0 6px; 
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .feature-item:last-child { border-right: none; }
+        .feature-icon { font-size: 20px; }
+        .feature-title { font-size: 11px; font-weight: bold; color: #ffffff; }
+        .feature-subtitle { font-size: 9px; color: #aaa; margin-top: 2px; }
+
+        /* Footer */
+        .footer-box {
+            text-align: center; 
+            margin-top: 4px; 
+            padding-top: 4px; 
+            border-top: 1px solid rgba(255, 255, 255, 0.1); 
+            color: #9ca3af; 
+            font-size: 11px;
+        }
+        .footer-socials { font-size: 14px; margin: 3px 0; }
+        .footer-socials a { color: #ffffff; margin: 0 5px; text-decoration: none; }
+        .footer-links a { color: #38bdf8; text-decoration: none; margin: 0 4px; }
+
+        /* --- REGLA EXCLUSIVA PARA MÓVIL (FORZAR APILAMIENTO) --- */
+        @media (max-width: 768px) {
+            section[data-testid="stSidebar"] {
+                width: 85% !important;
+                max-width: 300px !important;
+            }
+            .block-container {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+                max-width: 100% !important;
+            }
+            
+            /* Forzar que las columnas de Streamlit se apilen verticalmente en móviles */
+            [data-testid="stHorizontalBlock"] {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+            [data-testid="stHorizontalBlock"] > div {
+                width: 100% !important;
+                flex: none !important;
+                margin-bottom: 10px !important;
+            }
+
+            div.stButton > button {
+                color: white !important;
+                width: 100% !important;
+            }
+            .hero-title {
+                font-size: 22px !important;
+                white-space: normal !important;
+            }
+            .hero-subtitle {
+                font-size: 11px !important;
+                white-space: normal !important;
+            }
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 6px;
+                padding: 6px;
+            }
+            .feature-item {
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+                padding-bottom: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+</body>
+</html>

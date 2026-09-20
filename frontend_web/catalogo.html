@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookea - Catálogo de Eventos</title>
+    <style>
+        :root {
+            --bg-color: #050612;
+            --card-bg: #0b0d1e;
+            --accent-pink: #ff3da9;
+            --text-main: #f7f7ff;
+            --text-muted: #a0aec0;
+            --border-color: rgba(255, 61, 169, 0.2);
+        }
+
+        html, body {
+            background-color: var(--bg-color) !important;
+            color: var(--text-main) !important;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .feed-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 15px;
+        }
+
+        .feed-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .feed-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .feed-title span {
+            color: var(--accent-pink);
+            text-shadow: 0 0 15px rgba(255, 61, 169, 0.5);
+        }
+
+        .feed-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Estilo Grid tipo Instagram Feed */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .event-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(255, 61, 169, 0.25);
+            border-color: var(--accent-pink);
+        }
+
+        .event-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background-color: #12152b;
+        }
+
+        .event-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .event-card:hover .event-image-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .event-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(5, 6, 18, 0.85);
+            color: var(--accent-pink);
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 20px;
+            border: 1px solid var(--accent-pink);
+            backdrop-filter: blur(5px);
+        }
+
+        .event-details {
+            padding: 20px;
+        }
+
+        .event-local {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .event-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0 0 10px 0;
+        }
+
+        .event-info-row {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .event-info-row svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--accent-pink);
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .event-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 15px;
+        }
+
+        .event-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .btn-reserve {
+            background: linear-gradient(135deg, #ff3da9, #ff65b8);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 0 10px rgba(255, 61, 169, 0.4);
+        }
+
+        .btn-reserve:hover {
+            opacity: 0.9;
+        }
+
+        /* Responsivo para celulares */
+        @media (max-width: 768px) {
+            .feed-container {
+                padding: 10px 5px;
+            }
+            .events-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        <div class="feed-header">
+            <h1 class="feed-title">Cartelera de <span>Eventos</span></h1>
+            <p class="feed-subtitle">Descubre las mejores experiencias, noches exclusivas y reserva tu mesa al instante.</p>
+        </div>
+
+        <!-- Grilla de Tarjetas (Simulando el feed visual) -->
+        <div class="events-grid">
+            
+            <!-- Tarjeta de Ejemplo 1 -->
+            <div class="event-card">
+                <div class="event-image-wrapper">
+                    <span class="event-badge">VIP / Electrónica</span>
+                    <img src="https://images.unsplash.com/photo-1574391884720-bbc3540a1d95?auto=format&fit=crop&w=600&q=80" alt="Evento">
+                </div>
+                <div class="event-details">
+                    <div class="event-local">Sky Bar Guayaquil</div>
+                    <h3 class="event-name">Neon Night Festival</h3>
+                    <div class="event-info-row">
+                        <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
+                        Viernes, 18 de Septiembre • 21:00
+                    </div>
+                    <div class="event-info-row">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        Terraza Principal, Piso 4
+                    </div>
+                    <div class="event-footer">
+                        <span class="event-price">Consumo min: $30</span>
+                        <a href="#" class="btn-reserve">Reservar</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Ejemplo 2 -->
+            <div class="event-card">
+                <div class="event-image-wrapper">
+                    <span class="event-badge">Reggaeton / Urbano</span>
+                    <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=600&q=80" alt="Evento">
+                </div>
+                <div class="event-details">
+                    <div class="event-local">La Mansión Club</div>
+                    <h3 class="event-name">Perreo Sessions Vol. 4</h3>
+                    <div class="event-info-row">
+                        <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
+                        Sábado, 19 de Septiembre • 22:00
+                    </div>
+                    <div class="event-info-row">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        Zona VIP Central
+                    </div>
+                    <div class="event-footer">
+                        <span class="event-price">Consumo min: $50</span>
+                        <a href="#" class="btn-reserve">Reservar</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
