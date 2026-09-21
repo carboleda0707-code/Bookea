@@ -6,3 +6,4 @@ requests
 sqlalchemy
 python-jose
 passlib
+email-validator
