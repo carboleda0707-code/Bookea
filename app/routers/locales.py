@@ -58,20 +58,33 @@ def listar_todos_los_locales(
   if propietario_id:
     query = query.filter(models.Local.propietario_id == propietario_id)
 
+    if hasattr(models.Local, "propietario_id"):
+      query = query.filter(models.Local.propietario_id == propietario_id)
+    elif hasattr(models.Local, "usuario_id"):
+      query = query.filter(models.Local.usuario_id == propietario_id)
+    elif hasattr(models.Local, "id_propietario"):
+      query = query.filter(models.Local.id_propietario == propietario_id)
+
+
+
   locales = query.all()
   resultado = []
   for loc in locales:
-    ruc_empresa = loc.empresa.ruc_nit if hasattr(loc, "empresa") and loc.empresa else ""
+    ruc_empresa = ""
+    try:
+      if hasattr(loc, "empresa") and loc.empresa:
+        ruc_empresa = loc.empresa.ruc_nit
+    except Exception:
+      ruc_empresa = ""
+
     resultado.append({
         "id": loc.id,
         "nombre_local": loc.nombre,
         "nombre": loc.nombre,
         "tipo_establecimiento": loc.tipo_establecimiento,
         "ciudad": loc.ciudad,
-        "direccion": getattr(loc, "direccion", "S/D"),
-        "telefono_contacto": getattr(
-            loc, "telefono", getattr(loc, "telefono_contacto", "S/D")
-        ),
+        "direccion": getattr(loc, "direccion", ""),
+        "telefono_contacto": getattr(loc, "telefono", getattr(loc, "telefono_contacto", "")),
         "email_contacto": getattr(loc, "email_contacto", ""),
         "ruc_nit": ruc_empresa,
         "slug": loc.slug,

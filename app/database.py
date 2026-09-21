@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 # Lee la variable de entorno DATABASE_URL que configuramos en Railway
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    "postgresql+psycopg2://postgres:54312@localhost:5432/postgres"
+    "postgresql+psycopg://postgres:Litos0707@localhost:5432/postgres"
 )
 
 # Ajuste de prefijo si Railway provee postgres://

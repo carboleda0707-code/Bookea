@@ -363,6 +363,7 @@ else:
   # --- ROL: PROPIETARIO ---
   # ==========================================
   else:
+    
     user_id = st.session_state.get("propietario_id") or st.session_state.get(
         "user_id"
     )
@@ -370,7 +371,13 @@ else:
     # 1. Obtener y filtrar los locales del propietario
     locales_propietario = []
 
-    # Recuperar local desde URL si existe
+    # Recuperar el ID del usuario logueado de forma robusta
+    user_id = (
+        st.session_state.get("user_id")
+        or st.session_state.get("propietario_id")
+        or st.session_state.get("id")
+    )
+
     local_id_url = query_params.get("local_id")
     local_id_actual = (
         local_id_url
@@ -381,6 +388,7 @@ else:
 
     try:
       if user_id:
+        # Petición a la API filtrando estrictamente por el propietario logueado
         res_api = requests.get(f"{API_URL}/locales/?propietario_id={user_id}")
         if res_api.status_code != 200:
           res_api = requests.get(
@@ -402,12 +410,12 @@ else:
         nombre = loc.get(
             "nombre", loc.get("nombre_local", loc.get("nombre_comercial", "Local"))
         )
-        etiqueta = f"{nombre} (ID: {lid})"
+        # Formato solicitado: ID y Nombre del local en el selector
+        etiqueta = f"ID {lid} - {nombre}"
         opciones_locales[etiqueta] = lid
 
       nombres_opciones = list(opciones_locales.keys())
 
-      # Validar si el local actual está en las opciones, si no, tomar el de la URL o el primero
       valido = False
       for etiqueta, lid in opciones_locales.items():
         if str(lid) == str(local_id_actual):
