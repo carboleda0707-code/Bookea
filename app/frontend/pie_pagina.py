@@ -1,8 +1,9 @@
 # app/frontend/pie_pagina.py
 import streamlit as st
 import requests
+import os
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = os.getenv("API_URL", "https://bookea-production-6dd4.up.railway.app")
 
 def render_pie_pagina():
     total_comensales = 3
