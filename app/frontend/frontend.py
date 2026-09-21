@@ -42,7 +42,6 @@ except ImportError:
 
 configurar_puente_html()
 
-
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(page_title="Bookea - Sistema de Reservas", layout="wide")
