@@ -122,7 +122,7 @@ def registrar_propietario(datos: RegistroPropietarioSchema, db: Session = Depend
                 tipo_establecimiento=datos.tipo_negocio,
                 propietario_id=existente.propietario_id,
                 telefono=datos.telefono,
-                empresa_id=datos.ruc
+                empresa_id=int(datos.ruc) if datos.ruc and datos.ruc.isdigit() else None,
             )
             db.add(nuevo_local)
             db.commit()
@@ -160,7 +160,7 @@ def registrar_propietario(datos: RegistroPropietarioSchema, db: Session = Depend
             tipo_establecimiento=datos.tipo_negocio,
             propietario_id=nuevo_propietario.propietario_id,
             telefono=datos.telefono,
-            empresa_id=datos.ruc
+            empresa_id=int(datos.ruc) if datos.ruc and datos.ruc.isdigit() else None,
         )
         db.add(nuevo_local)
         
