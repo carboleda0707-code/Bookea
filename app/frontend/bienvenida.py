@@ -4,8 +4,14 @@ import requests
 FUCSIA, AZUL = "#ff1493", "#2196f3"
 
 def mostrar_error(r, default):
-    try: st.error(r.json().get("detail", default))
-    except: st.error(default)
+    try:
+        # Intentamos obtener el detalle que envía FastAPI
+        detalle = r.json().get("detail", default)
+        # Mostramos tanto el código de estado como el mensaje exacto para depurar
+        st.error(f"Error [{r.status_code}]: {detalle}")
+    except Exception:
+        # Si no es un JSON válido, mostramos el texto por defecto y el código HTTP
+        st.error(f"Error [{r.status_code}]: {default}")
 
 def etiqueta(t, c):
     st.markdown(f'<div class="campo-label" style="color:{c};">{t}</div>', unsafe_allow_html=True)
