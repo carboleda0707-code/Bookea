@@ -43,11 +43,23 @@ def generar_slug(texto: str) -> str:
 @router.post("/login")
 def login_usuario(credentials: LoginRequest, db: Session = Depends(get_db)):
     try:
+        # --- CHIVATO DE DIAGNÓSTICO TOTAL ---
+        todos_los_usuarios = db.query(models.Usuario).all()
+        lista_emails = [u.correo for u in todos_los_usuarios]
+        print(f"🔍 [CHIVATO NUBE] Conectado a BD. Correos encontrados en la tabla: {lista_emails}")
+        
         correo_limpio = credentials.correo.strip().lower()
         usuario = db.query(models.Usuario).filter(func.lower(models.Usuario.correo) == correo_limpio).first()
         
-        if not usuario or not usuario.activo:
-            raise HTTPException(status_code=401, detail="Usuario no encontrado o inactivo")
+        if not usuario:
+            # Si no lo encuentra, devolvemos un 401 que incluye la lista para verla de inmediato
+            raise HTTPException(
+                status_code=401, 
+                detail=f"Usuario no encontrado. Busqué '{correo_limpio}'. Encontrados en BD: {lista_emails}"
+            )
+            
+        if not usuario.activo:
+            raise HTTPException(status_code=401, detail=f"El usuario existe pero 'activo' es: {usuario.activo}")
         
         # Verificación segura con bcrypt
         if not verificar_password(credentials.contrasena, usuario.contrasena):
