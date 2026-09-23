@@ -248,7 +248,7 @@ class Usuario(Base):
 
   propietario_id = Column(Integer, primary_key=True, index=True)
   empresa_id = Column(
-      Integer, ForeignKey("empresas.id", ondelete="CASCADE"), nullable=True
+      BigInteger, ForeignKey("empresas.id", ondelete="CASCADE"), nullable=True
   )
   nombre = Column(String(100), nullable=False)
   correo = Column(String(150), unique=True, nullable=False, index=True)
