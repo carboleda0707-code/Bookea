@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlalchemy import (
+    BigInteger,  # <--- Asegúrate de importar BigInteger aquí
     Boolean,
     Column,
     DateTime,
@@ -11,6 +12,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
+
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -36,7 +38,7 @@ reserva_mesas = Table(
 class Empresa(Base):
   __tablename__ = "empresas"
 
-  id = Column(Integer, primary_key=True, index=True)
+  id = Column(BigInteger, primary_key=True, index=True)  # <--- Cambiado a BigInteger
   nombre_comercial = Column(String(150), nullable=False)
   ruc_nit = Column(String(20), unique=True, nullable=False, index=True)
   activo = Column(Boolean, default=True)
@@ -51,8 +53,8 @@ class Local(Base):
 
   id = Column(Integer, primary_key=True, index=True)
   empresa_id = Column(
-      Integer, ForeignKey("empresas.id", ondelete="CASCADE"), nullable=True
-  )
+      BigInteger, ForeignKey("empresas.id", ondelete="CASCADE"), nullable=True
+  )  # <--- Cambiado a BigInteger
   propietario_id = Column(
       Integer,
       ForeignKey("usuarios.propietario_id", ondelete="CASCADE"),
