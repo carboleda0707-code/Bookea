@@ -107,92 +107,119 @@ def login_usuario(credentials: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.post("/registro")
-def registrar_propietario(datos: RegistroPropietarioSchema, db: Session = Depends(get_db)):
-    try:
-        correo_limpio = datos.correo.strip().lower()
-        existente = db.query(models.Usuario).filter(func.lower(models.Usuario.correo) == correo_limpio).first()
-        
-        slug_generado = generar_slug(datos.nombre_comercial)
-        password_hash = obtener_password_hash(datos.contrasena)
+def registrar_propietario(
+    datos: RegistroPropietarioSchema, db: Session = Depends(get_db)
+):
+  try:
+    correo_limpio = datos.correo.strip().lower()
+    existente = (
+        db.query(models.Usuario)
+        .filter(func.lower(models.Usuario.correo) == correo_limpio)
+        .first()
+    )
 
-        if existente:
-            # Si el correo ya existe, actualizamos su rol, datos comerciales y contraseña cifrada
-            existente.rol = "propietario"
-            existente.nombre_comercial = datos.nombre_comercial
-            existente.tipo_negocio = datos.tipo_negocio
-            existente.contrasena = password_hash
-            if datos.latitud is not None and datos.longitud is not None:
-                existente.latitud = datos.latitud
-                existente.longitud = datos.longitud
-            db.commit()
-            db.refresh(existente)
-            
-            # Creamos el nuevo local asociado al usuario existente
-            nuevo_local = models.Local(
-                nombre=datos.nombre_comercial,
-                slug=slug_generado,
-                tipo_establecimiento=datos.tipo_negocio,
-                propietario_id=existente.propietario_id,
-                telefono=datos.telefono,
-                empresa_id=int(datos.ruc) if datos.ruc and datos.ruc.isdigit() else None,
-            )
-            db.add(nuevo_local)
-            db.commit()
-            db.refresh(nuevo_local)
-            
-            return {
-                "mensaje": "¡Negocio registrado con éxito para tu cuenta existente!",
-                "usuario_id": existente.propietario_id,
-                "local_id": nuevo_local.id
-            }
+    slug_generado = generar_slug(datos.nombre_comercial)
+    password_hash = obtener_password_hash(datos.contrasena)
 
-        # --- Si es un usuario completamente nuevo ---
-        max_id = db.query(func.max(models.Usuario.propietario_id)).scalar()
-        siguiente_id = (max_id or 0) + 1
-        
-        nuevo_propietario = models.Usuario(
-            propietario_id=siguiente_id,
-            nombre=datos.nombre,
-            correo=correo_limpio,
-            contrasena=password_hash,
+    # 1. VALIDAR Y CREAR LA EMPRESA PRIMERO (Evita el error de llave foránea)
+    empresa_id_val = None
+    if datos.ruc and datos.ruc.isdigit():
+      empresa_id_val = int(datos.ruc)
+      empresa_existente = (
+          db.query(models.Empresa)
+          .filter(models.Empresa.id == empresa_id_val)
+          .first()
+      )
+      if not empresa_existente:
+        nueva_empresa = models.Empresa(
+            id=empresa_id_val,
             nombre_comercial=datos.nombre_comercial,
-            tipo_negocio=datos.tipo_negocio,
-            rol="propietario",
+            ruc_nit=datos.ruc,
             activo=True,
-            latitud=datos.latitud,
-            longitud=datos.longitud
         )
-        
-        db.add(nuevo_propietario)
-        db.flush() 
-        
-        nuevo_local = models.Local(
-            nombre=datos.nombre_comercial,
-            slug=slug_generado,
-            tipo_establecimiento=datos.tipo_negocio,
-            propietario_id=nuevo_propietario.propietario_id,
-            telefono=datos.telefono,
-            empresa_id=int(datos.ruc) if datos.ruc and datos.ruc.isdigit() else None,
-        )
-        db.add(nuevo_local)
-        
-        db.commit()
-        db.refresh(nuevo_local)
-        
-        return {
-            "mensaje": "¡Negocio y propietario registrados con éxito!",
-            "usuario_id": nuevo_propietario.propietario_id,
-            "local_id": nuevo_local.id
-        }
-        
-    except HTTPException as he:
-        db.rollback()
-        raise he
-    except Exception as e:
-        db.rollback()
-        print(f"❌ Error crítico en registro: {e}")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        db.add(nueva_empresa)
+        db.flush()  # Guarda de forma provisional en la transacción
+
+    if existente:
+      existente.rol = "propietario"
+      existente.nombre_comercial = datos.nombre_comercial
+      existente.tipo_negocio = datos.tipo_negocio
+      existente.contrasena = password_hash
+      existente.empresa_id = empresa_id_val
+      if datos.latitud is not None and datos.longitud is not None:
+        existente.latitud = datos.latitud
+        existente.longitud = datos.longitud
+      db.commit()
+      db.refresh(existente)
+
+      nuevo_local = models.Local(
+          nombre=datos.nombre_comercial,
+          slug=slug_generado,
+          tipo_establecimiento=datos.tipo_negocio,
+          propietario_id=existente.propietario_id,
+          telefono=datos.telefono,
+          empresa_id=empresa_id_val,
+      )
+      db.add(nuevo_local)
+      db.commit()
+      db.refresh(nuevo_local)
+
+      return {
+          "mensaje": (
+              "¡Negocio registrado con éxito para tu cuenta existente!"
+          ),
+          "usuario_id": existente.propietario_id,
+          "local_id": nuevo_local.id,
+      }
+
+    # --- Si es un usuario nuevo ---
+    max_id = db.query(func.max(models.Usuario.propietario_id)).scalar()
+    siguiente_id = (max_id or 0) + 1
+
+    nuevo_propietario = models.Usuario(
+        propietario_id=siguiente_id,
+        nombre=datos.nombre,
+        correo=correo_limpio,
+        contrasena=password_hash,
+        nombre_comercial=datos.nombre_comercial,
+        tipo_negocio=datos.tipo_negocio,
+        empresa_id=empresa_id_val,
+        rol="propietario",
+        activo=True,
+        latitud=datos.latitud,
+        longitud=datos.longitud,
+    )
+
+    db.add(nuevo_propietario)
+    db.flush()
+
+    nuevo_local = models.Local(
+        nombre=datos.nombre_comercial,
+        slug=slug_generado,
+        tipo_establecimiento=datos.tipo_negocio,
+        propietario_id=nuevo_propietario.propietario_id,
+        telefono=datos.telefono,
+        empresa_id=empresa_id_val,
+    )
+    db.add(nuevo_local)
+
+    db.commit()
+    db.refresh(nuevo_local)
+
+    return {
+        "mensaje": "¡Negocio y propietario registrados con éxito!",
+        "usuario_id": nuevo_propietario.propietario_id,
+        "local_id": nuevo_local.id,
+    }
+
+  except HTTPException as he:
+    db.rollback()
+    raise he
+  except Exception as e:
+    db.rollback()
+    print(f"❌ Error crítico en registro: {e}")
+    traceback.print_exc()
+    raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 @router.get("/vip/por-slug/{slug}")
 def obtener_propietario_por_slug(slug: str, db: Session = Depends(get_db)):
