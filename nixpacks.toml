@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["python3", "gcc"]
+nixPkgs = ["python3", "gcc", "postgresql"]
 
 [phases.start]
-cmd = "uvicorn app.main:app --host 127.0.0.1 --port 8000 & streamlit run app/frontend/frontend.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --server.enableCORS false"
+cmd = "uvicorn app.main:app --host 127.0.0.1 --port 8000 & PYTHONPATH=. streamlit run app/frontend/frontend.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --server.enableCORS false"

@@ -1,6 +1,6 @@
 streamlit
+psycopg[binary]
 psycopg2-binary
-psycopg
 fastapi
 uvicorn
 requests
