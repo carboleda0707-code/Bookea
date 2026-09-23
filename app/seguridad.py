@@ -12,11 +12,15 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # Token válido por 7 días
 
 def verificar_password(password_plana: str, password_hash: str) -> bool:
     """Verifica si una contraseña en texto plano coincide con su hash."""
-    return pwd_context.verify(password_plana, password_hash)
+    password_bytes = password_plana.encode("utf-8")[:72]
+    password_segura = password_bytes.decode("utf-8", errors="ignore")
+    return pwd_context.verify(password_segura, password_hash)
 
 def obtener_password_hash(password: str) -> str:
     """Genera un hash seguro usando bcrypt para una contraseña."""
-    return pwd_context.hash(password)
+    password_bytes = password.encode("utf-8")[:72]
+    password_segura = password_bytes.decode("utf-8", errors="ignore")
+    return pwd_context.hash(password_segura)
 
 def crear_token_acceso(data: dict, expires_delta: timedelta = None) -> str:
     """Crea un token JWT que podrá ser usado por la web y la app móvil."""
