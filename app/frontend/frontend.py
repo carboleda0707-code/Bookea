@@ -35,6 +35,15 @@ from app.frontend.reserva_mesa import render_seleccion_mesas
 from app.frontend.truco_java import configurar_puente_html
 from app.frontend.validaciones_cliente import render_mantenimiento_cliente
 
+
+# Configuración PWA mediante inyección segura de texto plano
+pwa_html = chr(60) + 'link rel="manifest" href="/static/manifest.json"' + chr(62)
+pwa_html += chr(60) + 'meta name="theme-color" content="#050612"' + chr(62)
+pwa_html += chr(60) + 'meta name="apple-mobile-web-app-capable" content="yes"' + chr(62)
+pwa_html += chr(60) + 'script' + chr(62) + "if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}" + chr(60) + '/script' + chr(62)
+
+st.markdown(pwa_html, unsafe_allow_html=True)
+
 try:
   from app.frontend.filtro_cartelera import render_sidebar_filtros
 except ImportError:

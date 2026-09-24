@@ -7,7 +7,7 @@ import streamlit as st
 
 
 def render_agenda_propietario(api_url):
-  
+    
   # ============================================================
   # ESTILOS CSS GLOBALES Y SÚPER COMPACTOS PARA MÓVIL
   # ============================================================

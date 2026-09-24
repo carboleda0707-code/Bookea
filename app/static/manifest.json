@@ -1,0 +1,20 @@
+{
+  "name": "Bookea - Sistema de Reservas",
+  "short_name": "Bookea",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050612",
+  "theme_color": "#050612",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3176/3176363.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3176/3176363.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
