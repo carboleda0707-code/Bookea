@@ -148,6 +148,9 @@ class Evento(Base):
   estado = Column(String(30), default="programado")
   imagen = Column(String(255))
 
+  # --- CAMPO NUEVO PARA EL CREADOR (ID del propietario o comensal) ---
+  creador = Column(Integer, nullable=True)
+
   local = relationship("Local", back_populates="eventos")
   precios_mesas = relationship(
       "PrecioEventoMesa", back_populates="evento", cascade="all, delete"

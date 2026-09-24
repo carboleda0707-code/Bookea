@@ -201,7 +201,11 @@ def render_crear_zonas(API_URL):
     with col_z2:
         st.subheader("✨ Crear Nueva Zona")
         
-    with st.form("form_zona"):
+    # Usamos un marcador en session_state para limpiar los inputs al guardar con éxito
+    if "form_zona_submitted" not in st.session_state:
+        st.session_state["form_zona_submitted"] = False
+
+    with st.form("form_zona", clear_on_submit=True):
         nombre_zona = st.text_input("Nombre de la Zona (ej. Terraza, VIP)")
         descripcion = st.text_area("Descripción (opcional)")
         submit = st.form_submit_button("Guardar Zona")

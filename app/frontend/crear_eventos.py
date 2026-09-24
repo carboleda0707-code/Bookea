@@ -212,6 +212,15 @@ def render_crear_eventos(API_URL):
     hora_formateada = hora.strftime("%H:%M:%S")
     fecha_hora_str = f"{fecha}T{hora_formateada}"
 
+
+    # Obtener el ID del creador desde el session_state (según quién haya iniciado sesión)
+    id_creador = (
+        str_lit.session_state.get("usuario_id")
+        or str_lit.session_state.get("propietario_id")
+        or str_lit.session_state.get("cliente_id")
+        or 1
+    )
+
     data_evento = {
         "local_id": str(local_id),
         "nombre_evento": nombre_evento,
@@ -220,6 +229,7 @@ def render_crear_eventos(API_URL):
         "descripcion": descripcion if descripcion else "",
         "generar_reel": str(generar_reel).lower(),
         "estado": "activo",
+        "creador": str(id_creador)  # <--- Añade esta línea aquí para enviarlo a la API
     }
 
     files = {}
