@@ -21,6 +21,10 @@ def campo_texto(t, key, color, tipo=None, placeholder=None):
     return st.text_input(t, key=key, type=tipo or "default", placeholder=placeholder, label_visibility="collapsed")
 
 def render_bienvenida(API_URL):
+    if "accion_cli" not in st.session_state:
+     st.session_state.accion_cli = "Iniciar Sesión"
+    if "accion_prop" not in st.session_state:
+      st.session_state.accion_prop = "Iniciar Sesión"
     st.markdown(f"""
         <style>
         .block-container {{ max-width: 950px; padding: 1rem 0 2rem 0; font-family: "Segoe UI", Arial, sans-serif; }}
@@ -78,8 +82,20 @@ def render_bienvenida(API_URL):
         # ================= CLIENTE =================
         with tab_cli:
             st.markdown('<div class="tab-cliente">', unsafe_allow_html=True)
-            accion_cli = st.selectbox("Acción Cliente", ["Iniciar Sesión", "Registrarse", "Olvide Contraseña"], key="menu_cli", label_visibility="collapsed")
+            b1, b2, b3 = st.columns(3)
+            if b1.button("Iniciar Sesión", use_container_width=True, key="btn_nav_cli_1"):
+                st.session_state.accion_cli = "Iniciar Sesión"
+                st.rerun()
+            if b2.button("Registrarse", use_container_width=True, key="btn_nav_cli_2"):
+                st.session_state.accion_cli = "Registrarse"
+                st.rerun()
+            if b3.button("Olvide Contraseña", use_container_width=True, key="btn_nav_cli_3"):
+                st.session_state.accion_cli = "Olvide Contraseña"
+                st.rerun()
+
+            accion_cli = st.session_state.accion_cli
             
+        
             if accion_cli == "Iniciar Sesión":
                 st.markdown('<div class="titulo-cliente">🔐 Iniciar Sesión - Cliente</div>', unsafe_allow_html=True)
                 with st.form("form_login_cliente"):
@@ -173,7 +189,18 @@ def render_bienvenida(API_URL):
         # ================= PROPIETARIO =================
         with tab_prop:
             st.markdown('<div class="tab-propietario">', unsafe_allow_html=True)
-            accion_prop = st.selectbox("Acción Propietario", ["Iniciar Sesión", "Registrarse", "Olvide Contraseña"], key="menu_prop", label_visibility="collapsed")
+            p1, p2, p3 = st.columns(3)
+            if p1.button("Iniciar Sesión", use_container_width=True, key="btn_nav_prop_1"):
+                st.session_state.accion_prop = "Iniciar Sesión"
+                st.rerun()
+            if p2.button("Registrarse", use_container_width=True, key="btn_nav_prop_2"):
+                st.session_state.accion_prop = "Registrarse"
+                st.rerun()
+            if p3.button("Olvide Contraseña", use_container_width=True, key="btn_nav_prop_3"):
+                st.session_state.accion_prop = "Olvide Contraseña"
+                st.rerun()
+
+            accion_prop = st.session_state.accion_prop
             
             if accion_prop == "Iniciar Sesión":
                 st.markdown('<div class="titulo-propietario">🔐 Iniciar Sesión - Propietario</div>', unsafe_allow_html=True)
