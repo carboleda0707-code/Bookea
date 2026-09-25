@@ -91,10 +91,10 @@ def render_crear_mesas(API_URL):
       unsafe_allow_html=True,
   )
 
-  # Encabezado principal centrado mediante columnas simétricas
-  _, col_title, _ = st.columns([1, 3, 1])
-  with col_title:
-    st.subheader("🛠️ Configuración de Mesas y Distribución")
+  # ==========================================================
+  # TÍTULO PRINCIPAL
+  # ==========================================================
+  st.subheader("🛠️ Configuración de Mesas y Distribución")
 
   # ==========================================================
   # CAPTURAR LOCAL ID DESDE EL ESTABLECIMIENTO ACTIVO GLOBAL
@@ -107,7 +107,7 @@ def render_crear_mesas(API_URL):
   )
   st.session_state["local_id"] = int(local_id)
 
-  # Obtener nombre del local actual para referencias visuales
+  # Obtener nombre del local actual
   user_id = st.session_state.get("propietario_id") or st.session_state.get(
       "user_id"
   )
@@ -167,11 +167,10 @@ def render_crear_mesas(API_URL):
     return
 
   # ==========================================================
-  # TÍTULO E INTERFAZ DE CREACIÓN DE MESA (DEBAJO DEL SELECTOR)
+  # CREACIÓN DE NUEVA MESA (FORMULARIO)
   # ==========================================================
   st.markdown("---")
-  with col_title:
-    st.subheader(f"➕ Crear Nueva Mesa en Zona: {nombre_zona_actual}")
+  st.subheader(f"➕ Crear Nueva Mesa en Zona: {nombre_zona_actual}")
 
   with st.form("form_crear_mesa"):
     numero_mesa = st.text_input("Número o Nombre de la Mesa (ej. MESA 1, VIP-1)")
@@ -188,33 +187,40 @@ def render_crear_mesas(API_URL):
       st.warning("El número o nombre de la mesa no puede estar vacío.")
     else:
       payload_mesa = {
-          "numero_mesa": numero_mesa,
+          "numero_mesa": numero_mesa.strip(),
           "capacidad": int(capacidad),
           "forma": forma,
           "zona_id": int(zona_id),
           "local_id": int(local_id),
       }
       try:
-        res_m = requests.post(f"{API_URL}/mesas/", json=payload_mesa)
+        # Apuntando al endpoint correcto dentro de precios_mesas
+        url_post = f"{API_URL}/precio-evento-mesa/mesas"
+        res_m = requests.post(url_post, json=payload_mesa)
         if res_m.status_code in [200, 201]:
           st.success("¡Mesa creada con éxito!")
           st.rerun()
         else:
-          st.error(f"Error al crear la mesa: {res_m.text}")
+          st.error(f"Error al crear la mesa (Código {res_m.status_code})")
+          st.code(
+              f"CHIVATO POST:\nURL: {url_post}\nPayload enviado:"
+              f" {payload_mesa}\nRespuesta del servidor: {res_m.text}"
+          )
       except Exception as e:
-        st.error(f"Error de conexión: {e}")
+        st.error(f"Error de conexión en POST: {e}")
 
   # ==========================================================
-  # TÍTULO Y SECCIÓN DE MESAS REGISTRADAS (DEBAJO DEL FORMULARIO)
+  # SECCIÓN DE MESAS REGISTRADAS
   # ==========================================================
   st.markdown("---")
-  with col_title:
-    st.subheader(f"📋 Mesas Registradas en Zona → {nombre_zona_actual}")
+  st.subheader(f"📋 Mesas Registradas en Zona → {nombre_zona_actual}")
 
   try:
-    res_mesas = requests.get(
-        f"{API_URL}/mesas/", params={"zona_id": zona_id}
-    )
+    # Apuntando al endpoint de listado con el local_id correspondiente
+    url_get = f"{API_URL}/precio-evento-mesa/mesas"
+    params_get = {"local_id": local_id}
+    res_mesas = requests.get(url_get, params=params_get)
+
     if res_mesas.status_code == 200:
       datos_mesas = res_mesas.json()
       mesas = (
@@ -228,20 +234,25 @@ def render_crear_mesas(API_URL):
       )
 
       if mesas:
-        # Tabla centrada y optimizada
+        mesas_tabla = [
+            {
+                "ID": m.get("id"),
+                "Mesa": m.get("numero_mesa"),
+                "Capacidad": m.get("capacidad"),
+                "Forma": m.get("forma", "rectangulo"),
+            }
+            for m in mesas
+        ]
+
         st.dataframe(
-            mesas,
+            mesas_tabla,
+            hide_index=True,
             use_container_width=False,
-            column_order=["id", "numero_mesa", "capacidad", "forma"],
             column_config={
-                "id": st.column_config.NumberColumn("ID", width="small"),
-                "numero_mesa": st.column_config.TextColumn(
-                    "Mesa", width="medium"
-                ),
-                "capacidad": st.column_config.NumberColumn(
-                    "Cap.", width="small"
-                ),
-                "forma": st.column_config.TextColumn("Forma", width="small"),
+                "ID": st.column_config.NumberColumn("ID", width="small"),
+                "Mesa": st.column_config.TextColumn("Mesa", width="medium"),
+                "Capacidad": st.column_config.NumberColumn("Cap.", width="small"),
+                "Forma": st.column_config.TextColumn("Forma", width="small"),
             },
         )
 
@@ -269,30 +280,30 @@ def render_crear_mesas(API_URL):
               max_value=50,
               value=int(mesa_sel.get("capacidad", 4)),
           )
+          forma_actual = mesa_sel.get("forma", "rectangulo")
+          idx_forma = (
+              ["rectangulo", "circulo", "cuadrado"].index(forma_actual)
+              if forma_actual in ["rectangulo", "circulo", "cuadrado"]
+              else 0
+          )
           nueva_forma = st.selectbox(
               "Nueva Forma",
               ["rectangulo", "circulo", "cuadrado"],
-              index=(
-                  ["rectangulo", "circulo", "cuadrado"].index(
-                      mesa_sel.get("forma", "rectangulo")
-                  )
-                  if mesa_sel.get("forma") in ["rectangulo", "circulo", "cuadrado"]
-                  else 0
-              ),
+              index=idx_forma,
           )
           submit_edit = st.form_submit_button("Guardar Cambios de Mesa")
 
           if submit_edit:
             payload_edit = {
-                "numero_mesa": nuevo_num,
+                "numero_mesa": nuevo_num.strip(),
                 "capacidad": int(nueva_cap),
                 "forma": nueva_forma,
                 "zona_id": int(zona_id),
-                "local_id": int(local_id),
             }
             try:
               res_upd = requests.put(
-                  f"{API_URL}/mesas/{mesa_sel.get('id')}", json=payload_edit
+                  f"{API_URL}/precio-evento-mesa/mesas/{mesa_sel.get('id')}",
+                  json=payload_edit,
               )
               if res_upd.status_code in [200, 201]:
                 st.success("¡Mesa actualizada con éxito!")
@@ -313,7 +324,9 @@ def render_crear_mesas(API_URL):
         if st.button("Eliminar Mesa Seleccionada", type="primary"):
           id_mesa_del = opciones_mesas[mesa_borrar_str]["id"]
           try:
-            res_del = requests.delete(f"{API_URL}/mesas/{id_mesa_del}")
+            res_del = requests.delete(
+                f"{API_URL}/precio-evento-mesa/mesas/{id_mesa_del}"
+            )
             if res_del.status_code in [200, 204]:
               st.success(f"Mesa ID {id_mesa_del} eliminada correctamente.")
               st.rerun()
@@ -324,6 +337,13 @@ def render_crear_mesas(API_URL):
       else:
         st.info(f"No hay mesas registradas en la zona {nombre_zona_actual}.")
     else:
-      st.error("No se pudo cargar el listado de mesas.")
+      st.error(
+          "⚠️ CHIVATO GET: No se pudo cargar el listado de mesas desde el"
+          f" servidor (Código {res_mesas.status_code})."
+      )
+      st.code(
+          f"URL consultada: {url_get}\nParámetros: {params_get}\nCódigo HTTP:"
+          f" {res_mesas.status_code}\nRespuesta de la API:\n{res_mesas.text}"
+      )
   except Exception as e:
-    st.error(f"Error al conectar con el servidor: {e}")
+    st.error(f"Error crítico de conexión al listar mesas: {e}")

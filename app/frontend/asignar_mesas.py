@@ -172,11 +172,7 @@ def render_asignar_mesas(API_URL):
   tab1, tab2 = st.tabs(["➕ Nueva Asignación", "✏️ Modificar Asignación Existente"])
 
   with tab1:
-    st.info(
-        "💡 Asigna mesas a la **Plantilla Master** para habilitar que los"
-        " comensales puedan crear su propio evento en este local, o"
-        " selecciónalas para eventos programados."
-    )
+            
     with st.form("form_asignar"):
       evento_seleccionado = st.selectbox(
           "Selecciona el Evento o Plantilla Master",
@@ -303,9 +299,9 @@ def render_asignar_mesas(API_URL):
                   f" asociadas): {res_update.text}"
               )
 
-  st.markdown("---")
+  #st.markdown("---")
   with col_title:
-    st.subheader("Asignaciones Actuales (Precios y Mesas Vinculadas)")
+    st.subheader(" ")
 
   if asignaciones:
     st.dataframe(

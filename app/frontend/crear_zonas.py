@@ -123,7 +123,6 @@ def render_crear_zonas(API_URL):
         "nombre_local_actual", f"Local (ID: {local_id})"
     )
 
-    # Detectar cambio de establecimiento para regresar limpiamente a Agenda de Eventos
     if "ultimo_local_id_zonas" not in st.session_state:
         st.session_state["ultimo_local_id_zonas"] = local_id
 
@@ -132,7 +131,6 @@ def render_crear_zonas(API_URL):
         st.session_state["menu_gestion"] = "Agenda de Eventos"
         st.rerun()
 
-    # Redirección controlada tras guardar
     if st.session_state.get("redirigir_a_agenda_zonas", False):
         st.session_state["redirigir_a_agenda_zonas"] = False
         st.session_state["menu_gestion"] = "Agenda de Eventos"
@@ -145,7 +143,7 @@ def render_crear_zonas(API_URL):
         st.markdown("🗺️ **Plano o Distribución de Mesas del Local**")
 
     # ==========================================================
-    # 1. MOSTRAR PLANO (CENTRADO) Y FORMULARIO DE ACTUALIZACIÓN
+    # 1. MOSTRAR PLANO Y FORMULARIO DE ACTUALIZACIÓN DEL PLANO
     # ==========================================================
     try:
         res_plano_act = requests.get(f"{API_URL}/zonas/plano/{local_id}")
@@ -195,45 +193,8 @@ def render_crear_zonas(API_URL):
             st.warning("Por favor seleccione una imagen antes de guardar.")
 
     # ==========================================================
-    # 2. FORMULARIO DE CREACIÓN DE ZONA (DEBAJO DEL PLANO)
+    # 2. VERIFICAR Y COMPLETAR HASTA 10 ZONAS POR DEFECTO
     # ==========================================================
-    col_z1, col_z2, col_z3 = st.columns([1, 3, 1])
-    with col_z2:
-        st.subheader("✨ Crear Nueva Zona")
-        
-    # Usamos un marcador en session_state para limpiar los inputs al guardar con éxito
-    if "form_zona_submitted" not in st.session_state:
-        st.session_state["form_zona_submitted"] = False
-
-    with st.form("form_zona", clear_on_submit=True):
-        nombre_zona = st.text_input("Nombre de la Zona (ej. Terraza, VIP)")
-        descripcion = st.text_area("Descripción (opcional)")
-        submit = st.form_submit_button("Guardar Zona")
-
-    if submit:
-        payload = {
-            "nombre_zona": nombre_zona,
-            "descripcion": descripcion if descripcion else "",
-            "local_id": int(local_id),
-        }
-        try:
-            res = requests.post(f"{API_URL}/zonas/", json=payload)
-            if res.status_code in [200, 201]:
-                st.success("¡Zona creada con éxito! Redirigiendo...")
-                st.session_state["redirigir_a_agenda_zonas"] = True
-                st.rerun()
-            else:
-                st.error(f"Error al crear: {res.text}")
-        except Exception as e:
-            st.error(f"Error de conexión: {e}")
-
-    # ==========================================================
-    # 3. ZONAS REGISTRADAS, EDICIÓN Y ELIMINACIÓN
-    # ==========================================================
-    col_r1, col_r2, col_r3 = st.columns([1, 3, 1])
-    with col_r2:
-        st.subheader("📋 Zonas Registradas")
-
     try:
         response = requests.get(f"{API_URL}/zonas/", params={"local_id": local_id})
         if response.status_code == 200:
@@ -244,85 +205,102 @@ def render_crear_zonas(API_URL):
                 else []
             )
 
-            if zonas:
-                # Tabla sin la columna local_id y ajustada de manera compacta
-                st.dataframe(
-                    zonas,
-                    hide_index=True,
-                    column_order=["nombre_zona", "descripcion", "id"],
-                    column_config={
-                        "nombre_zona": st.column_config.TextColumn("Nombre de Zona", width="small"),
-                        "descripcion": st.column_config.TextColumn("Descripción", width="small"),
-                        "id": st.column_config.NumberColumn("ID", width="small")
-                    },
-                    use_container_width=False
-                )
-
-                opciones_zonas = {
-                    f"{z['nombre_zona']} (ID: {z['id']})": z for z in zonas
-                }
-
-                # SECCIÓN DE MODIFICAR / EDITAR ZONA
-                st.markdown("### ✏️ Modificar / Editar Zona")
-                zona_a_editar_str = st.selectbox(
-                    "Seleccione la zona que desea modificar",
-                    list(opciones_zonas.keys()),
-                    key="select_editar_zona_id",
-                )
-                zona_seleccionada = opciones_zonas[zona_a_editar_str]
-
-                with st.form("form_editar_zona"):
-                    nuevo_nombre = st.text_input(
-                        "Nuevo Nombre de la Zona",
-                        value=zona_seleccionada.get("nombre_zona", ""),
-                    )
-                    nueva_descripcion = st.text_area(
-                        "Nueva Descripción",
-                        value=zona_seleccionada.get("descripcion", ""),
-                    )
-                    submit_editar = st.form_submit_button("Guardar Cambios de Zona")
-
-                    if submit_editar:
-                        payload_edit = {
-                            "nombre_zona": nuevo_nombre,
-                            "descripcion": nueva_descripcion if nueva_descripcion else "",
+            if len(zonas) < 10:
+                nombres_existentes = [z.get("nombre_zona", "").lower() for z in zonas]
+                for i in range(1, 11):
+                    nombre_default = f"Zona {i}"
+                    if not any(nombre_default.lower() in n for n in nombres_existentes):
+                        payload_def = {
+                            "nombre_zona": nombre_default,
+                            "descripcion": f"Descripción de la {nombre_default}",
                             "local_id": int(local_id),
                         }
                         try:
-                            res_update = requests.put(
-                                f"{API_URL}/zonas/{zona_seleccionada.get('id')}",
-                                json=payload_edit,
-                            )
-                            if res_update.status_code in [200, 201]:
-                                st.success("¡Zona actualizada exitosamente!")
-                                st.rerun()
-                            else:
-                                st.error(f"Error al actualizar la zona: {res_update.text}")
-                        except Exception as e:
-                            st.error(f"Error de conexión al actualizar: {e}")
+                            requests.post(f"{API_URL}/zonas/", json=payload_def)
+                        except Exception:
+                            pass
+                st.rerun()
+        else:
+            zonas = []
+    except Exception:
+        zonas = []
 
-                # SECCIÓN DE ELIMINAR ZONA
-                st.markdown("### 🗑️ Eliminar Zona")
-                zona_a_borrar_str = st.selectbox(
-                    "Seleccione la zona que desea eliminar",
-                    list(opciones_zonas.keys()),
-                    key="select_borrar_zona_id",
+    # ==========================================================
+    # 3. ZONAS REGISTRADAS Y SELECTOR PARA MODIFICAR UNA ZONA
+    # ==========================================================
+    col_r1, col_r2, col_r3 = st.columns([1, 3, 1])
+    with col_r2:
+        st.subheader("📋 Zonas Registradas y Modificación")
+
+    if zonas:
+        zonas_tabla = [
+            {
+                "Nombre de Zona": z.get("nombre_zona"),
+                "Descripción": z.get("descripcion"),
+                "ID": z.get("id")
+            }
+            for z in zonas
+        ]
+
+        # Tabla con ancho controlado y sin espacios muertos
+        st.dataframe(
+            zonas_tabla,
+            hide_index=True,
+            use_container_width=False,
+            column_config={
+                "Nombre de Zona": st.column_config.TextColumn("Nombre de Zona", width="medium"),
+                "Descripción": st.column_config.TextColumn("Descripción", width="large"),
+                "ID": st.column_config.NumberColumn("ID", width="small")
+            }
+        )
+
+        st.markdown("### ✏️ Modificar Zona Individual")
+        
+        zonas_ordenadas = sorted(zonas, key=lambda x: x.get("id", 0))[:10]
+        
+        opciones_zonas = {f"ID {z.get('id')}: {z.get('nombre_zona')}": z for z in zonas_ordenadas}
+        
+        zona_seleccionada_label = st.selectbox(
+            "Seleccione la zona a modificar",
+            options=list(opciones_zonas.keys()),
+            key="select_zona_modificar"
+        )
+        
+        if zona_seleccionada_label:
+            z_activa = opciones_zonas[zona_seleccionada_label]
+            z_id = z_activa.get("id")
+            
+            with st.form(f"form_editar_zona_{z_id}"):
+                nuevo_nombre = st.text_input(
+                    "Nombre de la Zona",
+                    value=z_activa.get("nombre_zona", ""),
+                    key=f"nombre_z_{z_id}"
                 )
+                nueva_desc = st.text_input(
+                    "Descripción",
+                    value=z_activa.get("descripcion", ""),
+                    key=f"desc_z_{z_id}"
+                )
+                
+                submit_una = st.form_submit_button("Guardar Cambios de la Zona")
 
-                if st.button("Eliminar Zona Seleccionada", type="primary"):
-                    id_zona_eliminar = opciones_zonas[zona_a_borrar_str]["id"]
+                if submit_una:
+                    payload_edit = {
+                        "nombre_zona": nuevo_nombre,
+                        "descripcion": nueva_desc if nueva_desc else "",
+                        "local_id": int(local_id),
+                    }
                     try:
-                        res_del = requests.delete(f"{API_URL}/zonas/{id_zona_eliminar}")
-                        if res_del.status_code in [200, 204]:
-                            st.success(f"Zona ID {id_zona_eliminar} eliminada correctamente.")
+                        res_update = requests.put(
+                            f"{API_URL}/zonas/{z_id}",
+                            json=payload_edit,
+                        )
+                        if res_update.status_code in [200, 201]:
+                            st.success(f"¡Zona ID {z_id} actualizada exitosamente!")
                             st.rerun()
                         else:
-                            st.error(f"No se pudo eliminar la zona: {res_del.text}")
+                            st.error(f"Error al actualizar la zona: {res_update.text}")
                     except Exception as e:
-                        st.error(f"Error de conexión al eliminar: {e}")
-            else:
-                st.info("No hay zonas registradas para el establecimiento actual.")
-        else:
-            st.error("No se pudo cargar el listado de zonas.")
-    except Exception as e:
-        st.error(f"Error al conectar con el servidor: {e}")
+                        st.error(f"Error de conexión: {e}")
+    else:
+        st.warning("No se pudieron cargar las zonas.")
