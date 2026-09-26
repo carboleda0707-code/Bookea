@@ -385,3 +385,22 @@ def crear_evento_desde_web(evento_data: dict, db: Session = Depends(get_db)):
       "mensaje": "Evento creado exitosamente en la cartelera.",
       "evento_id": nuevo_evento.id,
   }
+  
+  @router.put("/{local_id}", response_model=dict)
+  def actualizar_local(local_id: int, local_data: dict, db: Session = Depends(get_db)):
+    """Actualiza la información de un local existente."""
+    local = db.query(models.Local).filter(models.Local.id == local_id).first()
+    if not local:
+        raise HTTPException(status_code=404, detail="Local no encontrado.")
+    
+    # Actualizar campos permitidos
+    local.nombre = local_data.get("nombre", local.nombre)
+    local.tipo_establecimiento = local_data.get("tipo_establecimiento", local.tipo_establecimiento)
+    local.direccion = local_data.get("direccion", local.direccion)
+    local.ciudad = local_data.get("ciudad", local.ciudad)
+    local.email_contacto = local_data.get("email_contacto", local.email_contacto)
+    local.telefono = local_data.get("telefono", local.telefono)
+    
+    db.commit()
+    db.refresh(local)
+    return {"mensaje": "Local actualizado exitosamente.", "local_id": local.id}
