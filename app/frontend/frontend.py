@@ -224,7 +224,8 @@ if slug_vip and not st.session_state.get("logged_in", False):
 # --- 2. VISTA DE BIENVENIDA (NO LOGEADO) ---
 if not st.session_state.get("logged_in", False):
   render_bienvenida(API_URL)
-
+  render_pie_pagina()
+  st.stop()
 else:
   # ============================================================
   # BOOKEA — CORRECCIÓN VISUAL SOLO PARA USUARIOS LOGUEADOS
