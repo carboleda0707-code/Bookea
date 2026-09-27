@@ -29,17 +29,23 @@ def calcular_distancia(lat1, lon1, lat2, lon2):
 
 
 @router.post("/", response_model=dict)
-def crear_sucursal(local_data: LocalCreate, db: Session = Depends(get_db)):
+def crear_sucursal(local_data: dict, db: Session = Depends(get_db)):
   """Permite registrar un nuevo local/sucursal vinculado a la base de datos."""
+  
+  # Capturamos el propietario_id enviado desde el frontend (puede venir como propietario_id o usuario_id)
+  prop_id = local_data.get("propietario_id") or local_data.get("usuario_id")
+
   nuevo_local = models.Local(
-      nombre=getattr(local_data, "nombre_local", getattr(local_data, "nombre", "Establecimiento Principal")),
-      tipo_establecimiento=getattr(local_data, "tipo_establecimiento", getattr(local_data, "tipo_negocio", "Restaurant")),
-      direccion=getattr(local_data, "direccion", "Dirección Principal"),
-      ciudad=getattr(local_data, "ciudad", "Samborondón"),
-      email_contacto=getattr(local_data, "email_contacto", "contacto@establecimiento.com"),
-      telefono=getattr(local_data, "telefono", getattr(local_data, "telefono_contacto", "0999999999")),
-      activo=True,
-      slug="establecimiento-principal",
+      nombre=local_data.get("nombre_local", local_data.get("nombre", "Establecimiento Principal")),
+      tipo_establecimiento=local_data.get("tipo_establecimiento", "Restaurant"),
+      direccion=local_data.get("direccion", "Dirección Principal"),
+      ciudad=local_data.get("ciudad", "Guayaquil"),
+      pais=local_data.get("pais", "Ecuador"),
+      email_contacto=local_data.get("email_contacto", "contacto@establecimiento.com"),
+      telefono=local_data.get("telefono_contacto", local_data.get("telefono", "0999999999")),
+      propietario_id=prop_id, # <-- ASIGNACIÓN CORRECTA DEL PROPIETARIO
+      activo=local_data.get("activo", False),
+      slug=local_data.get("slug", "nuevo-local")
   )
 
   db.add(nuevo_local)
@@ -386,8 +392,8 @@ def crear_evento_desde_web(evento_data: dict, db: Session = Depends(get_db)):
       "evento_id": nuevo_evento.id,
   }
   
-  @router.put("/{local_id}", response_model=dict)
-  def actualizar_local(local_id: int, local_data: dict, db: Session = Depends(get_db)):
+@router.put("/{local_id}", response_model=dict)
+def actualizar_local(local_id: int, local_data: dict, db: Session = Depends(get_db)):
     """Actualiza la información de un local existente."""
     local = db.query(models.Local).filter(models.Local.id == local_id).first()
     if not local:

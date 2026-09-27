@@ -34,7 +34,7 @@ from app.frontend.pie_pagina import render_pie_pagina
 from app.frontend.reserva_mesa import render_seleccion_mesas
 from app.frontend.truco_java import configurar_puente_html
 from app.frontend.validaciones_cliente import render_mantenimiento_cliente
-
+from app.frontend.filtro_locales import render_filtro_locales
 
 # Configuración PWA mediante inyección segura de texto plano
 pwa_html = chr(60) + 'link rel="manifest" href="/static/manifest.json"' + chr(62)
@@ -45,10 +45,10 @@ pwa_html += chr(60) + 'script' + chr(62) + "if('serviceWorker' in navigator){nav
 
 st.markdown(pwa_html, unsafe_allow_html=True)
 
-try:
-  from app.frontend.filtro_cartelera import render_sidebar_filtros
-except ImportError:
-  from filtro_cartelera import render_sidebar_filtros
+#try:
+#  from app.frontend.filtro_cartelera import render_sidebar_filtros
+#except ImportError:
+#  from filtro_cartelera import render_sidebar_filtros
 
 configurar_puente_html()
 
@@ -324,55 +324,63 @@ else:
           unsafe_allow_html=True,
       )
       
-      opciones_cliente = [
-          "Catálogo de Eventos",
-          "Mis Reservas",
-          "Actualizar Datos",
-          "Cerrar Sesión",
-      ]
-      opcion = st.selectbox(
-          "Mi Cuenta", opciones_cliente, label_visibility="collapsed"
-      )
+opciones_cliente = [
+      "Catálogo de Eventos",
+      "🔍 Buscar Locales",
+      "Mis Reservas",
+      "Actualizar Datos",
+      "Cerrar Sesión",
+  ]
+  
+  # Selectbox nativo y limpio, sin callbacks extraños que alteren tu lógica
+opcion = st.selectbox(
+      "Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal"
+  )
 
-    if opcion == "Cerrar Sesión":
-      st.session_state.logged_in = False
-      st.session_state.user_role = None
-      st.query_params.clear()
+if opcion == "Cerrar Sesión":
+  st.session_state.logged_in = False
+  st.session_state.user_role = None
+  st.query_params.clear()
+  st.rerun()
+
+# Flujo directo y natural respetando tu arquitectura original
+if opcion == "Catálogo de Eventos":
+  if "paso_reserva" not in st.session_state:
+    st.session_state.paso_reserva = "catalogo"
+
+  if st.session_state.paso_reserva == "catalogo":
+    render_catalogo_clientes(API_URL)
+  elif st.session_state.paso_reserva == "seleccionar_mesa":
+    if st.button("⬅️ Volver a la cartelera"):
+      st.session_state.paso_reserva = "catalogo"
       st.rerun()
+    render_seleccion_mesas(
+        API_URL,
+        st.session_state.evento_a_reservar,
+        st.session_state.get("user_id"),
+    )
+  elif st.session_state.paso_reserva == "crear_celebracion":
+    if st.button("⬅️ Volver a la cartelera"):
+      st.session_state.paso_reserva = "catalogo"
+      st.rerun()
+    render_crear_reserva_personalizada(
+        API_URL, st.session_state.get("user_id")
+    )
 
-    if opcion == "Catálogo de Eventos":
-      if "paso_reserva" not in st.session_state:
-        st.session_state.paso_reserva = "catalogo"
+elif opcion == "🔍 Buscar Locales":
+  # Llamada directa al filtro de locales tal como lo tenías diseñado
+  render_filtro_locales(API_URL)
 
-      if st.session_state.paso_reserva == "catalogo":
-        render_catalogo_clientes(API_URL)
-      elif st.session_state.paso_reserva == "seleccionar_mesa":
-        if st.button("⬅️ Volver a la cartelera"):
-          st.session_state.paso_reserva = "catalogo"
-          st.rerun()
-        render_seleccion_mesas(
-            API_URL,
-            st.session_state.evento_a_reservar,
-            st.session_state.get("user_id"),
-        )
-      elif st.session_state.paso_reserva == "crear_celebracion":
-        if st.button("⬅️ Volver a la cartelera"):
-          st.session_state.paso_reserva = "catalogo"
-          st.rerun()
-        render_crear_reserva_personalizada(
-            API_URL, st.session_state.get("user_id")
-        )
+elif opcion == "Mis Reservas":
+  render_mis_reservas(API_URL, st.session_state.get("user_id"))
 
-    elif opcion == "Mis Reservas":
-      render_mis_reservas(API_URL, st.session_state.get("user_id"))
-
-    elif opcion == "Actualizar Datos":
-      render_mantenimiento_cliente(API_URL)
+elif opcion == "Actualizar Datos":
+  render_mantenimiento_cliente(API_URL)
 
   # ==========================================
   # --- ROL: PROPIETARIO ---
   # ==========================================
-  else:
+else:
     
     user_id = st.session_state.get("propietario_id") or st.session_state.get(
         "user_id"

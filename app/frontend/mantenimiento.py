@@ -4,38 +4,14 @@ import requests
 def render_mantenimiento(api_url):
     
     # ============================================================
-    # ESTILOS CSS GLOBALES (CAMPOS OSCUROS Y TÍTULOS RESALTADOS)
+    # ESTILOS CSS OPTIMIZADOS (CAMPOS COMPACTOS Y TÍTULOS VISIBLES)
     # ============================================================
     st.markdown("""
-    <style>
-    .block-container {
-        max-width: 900px !important;
-        margin: 0 auto !important;
-    }
-    div[data-testid="stTextInput"] label p {
-        color: #38bdf8 !important;
-        font-weight: 600 !important;
-        font-size: 15px !important;
-    }
-    div[data-testid="stTextInput"] input {
-        background-color: #141625 !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(150, 55, 255, 0.4) !important;
-        border-radius: 8px !important;
-    }
-    div[data-testid="stTextInput"] input:focus {
-        border-color: #38bdf8 !important;
-        box-shadow: 0 0 5px rgba(56, 189, 248, 0.3) !important;
-    }
-    div[data-testid="stTextInput"] div[data-baseweb="input"] {
-        background-color: #141625 !important;
-        border-radius: 8px !important;
-    }
-    </style>
+    
     """, unsafe_allow_html=True)
 
     st.markdown("### 🛠️ Gestión y Mantenimiento de Locales")
-    st.write("Modifica la información oficial de tu establecimiento registrado en el sistema.")
+    st.write("Modifica la información de tu establecimiento o registra nuevas sucursales para revisión del sistema.")
 
     # ============================================================
     # RECUPERAR IDENTIFICADORES DINÁMICOS DE LA SESIÓN O URL
@@ -43,7 +19,7 @@ def render_mantenimiento(api_url):
     query_params = st.query_params
     local_id_url = query_params.get("local_id")
     
-    usuario_id = st.session_state.get("usuario_id") or st.session_state.get("user_id")
+    usuario_id = st.session_state.get("usuario_id") or st.session_state.get("user_id") or st.session_state.get("propietario_id")
     empresa_id = st.session_state.get("empresa_id") or st.session_state.get("id_empresa")
     local_id = st.session_state.get("local_id") or local_id_url
 
@@ -52,7 +28,6 @@ def render_mantenimiento(api_url):
     # ============================================================
     local_data = None
     
-    # 1. Intentar buscar directamente por el ID del local actual (si viene en URL o sesión)
     if local_id:
         try:
             resp = requests.get(f"{api_url}/locales/{local_id}", timeout=4)
@@ -61,14 +36,13 @@ def render_mantenimiento(api_url):
         except Exception:
             pass
 
-    # 2. Si no se encontró por ID directo, buscar por empresa o propietario logueado
     if not local_data and empresa_id:
         try:
             resp = requests.get(f"{api_url}/locales/empresa/{empresa_id}", timeout=4)
             if resp.status_code == 200:
                 lista = resp.json()
                 if lista:
-                    local_data = lista[0] # Tomar el primer local vinculado a la empresa
+                    local_data = lista[0]
         except Exception:
             pass
 
@@ -83,50 +57,101 @@ def render_mantenimiento(api_url):
             pass
 
     # ============================================================
-    # RENDERIZAR FORMULARIO CON DATOS REALES (SIN QUEMAR)
+    # CREACIÓN DE PESTAÑAS (EDITAR ACTUAL VS. AÑADIR NUEVO)
     # ============================================================
-    st.markdown("---")
-    st.subheader("📍 Información del Local Actual")
+    tab_editar, tab_nuevo = st.tabs(["📝 Editar Local Actual", "➕ Registrar Nuevo Local"])
 
-    if local_data:
-        actual_id = local_data.get("id")
-        
-        with st.form("form_editar_local_real"):
-            col1, col2 = st.columns(2)
-            with col1:
-                # Usamos los nombres de campos exactos que maneja el backend (models.py / locales.py)
-                nombre = st.text_input("Nombre Comercial", value=local_data.get("nombre", local_data.get("nombre_local", "")))
-                ruc = st.text_input("RUC / NIT", value=local_data.get("ruc_nit", ""))
-                direccion = st.text_input("Dirección Exacta", value=local_data.get("direccion", ""))
-            with col2:
-                ciudad = st.text_input("Ciudad", value=local_data.get("ciudad", ""))
-                tipo = st.text_input("Tipo de Establecimiento", value=local_data.get("tipo_establecimiento", ""))
-                email = st.text_input("Correo Electrónico de Contacto", value=local_data.get("email_contacto", ""))
-                telefono = st.text_input("Teléfono / WhatsApp", value=local_data.get("telefono_contacto", local_data.get("telefono", "")))
-                
-            submit_cambios = st.form_submit_button("💾 Guardar Cambios")
+    # --- PESTAÑA 1: EDITAR LOCAL ACTUAL ---
+    with tab_editar:
+        st.markdown("---")
+        st.subheader("📍 Información del Local Actual")
+
+        if local_data:
+            actual_id = local_data.get("id")
             
-            if submit_cambios:
-                payload = {
-                    "nombre": nombre,
-                    "nombre_local": nombre,
-                    "ruc_nit": ruc,
-                    "direccion": direccion,
-                    "ciudad": ciudad,
-                    "tipo_establecimiento": tipo,
-                    "email_contacto": email,
-                    "telefono": telefono,
-                    "telefono_contacto": telefono
-                }
-                try:
-                    # Endpoint para actualizar el local específico del usuario logueado
-                    resp_put = requests.put(f"{api_url}/locales/{actual_id}", json=payload, timeout=5)
-                    if resp_put.status_code in [200, 201]:
-                        st.success("¡Información del local actualizada correctamente!")
-                        st.rerun()
-                    else:
-                        st.error(f"No se pudo actualizar: {resp_put.text}")
-                except Exception as e:
-                    st.error(f"Error de conexión con el servidor: {e}")
-    else:
-        st.warning("⚠️ No se encontró ningún local asociado a tu sesión o cuenta de propietario actual. Verifica tus parámetros de inicio de sesión.")
+            with st.form("form_editar_local_real"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    nombre = st.text_input("Nombre Comercial", value=local_data.get("nombre", local_data.get("nombre_local", "")))
+                    ruc = st.text_input("RUC / NIT", value=local_data.get("ruc_nit", ""))
+                    direccion = st.text_input("Dirección Exacta", value=local_data.get("direccion", ""))
+                with col2:
+                    ciudad = st.text_input("Ciudad", value=local_data.get("ciudad", ""))
+                    pais = st.text_input("País", value=local_data.get("pais", "Ecuador"))
+                    tipo = st.text_input("Tipo de Establecimiento", value=local_data.get("tipo_establecimiento", ""))
+                    email = st.text_input("Correo Electrónico de Contacto", value=local_data.get("email_contacto", ""))
+                    telefono = st.text_input("Teléfono / WhatsApp", value=local_data.get("telefono_contacto", local_data.get("telefono", "")))
+                    
+                submit_cambios = st.form_submit_button("💾 Guardar Cambios")
+                
+                if submit_cambios:
+                    payload = {
+                        "nombre": nombre,
+                        "nombre_local": nombre,
+                        "ruc_nit": ruc,
+                        "direccion": direccion,
+                        "ciudad": ciudad,
+                        "pais": pais,
+                        "tipo_establecimiento": tipo,
+                        "email_contacto": email,
+                        "telefono": telefono,
+                        "telefono_contacto": telefono
+                    }
+                    try:
+                        resp_put = requests.put(f"{api_url}/locales/{actual_id}", json=payload, timeout=5)
+                        if resp_put.status_code in [200, 201]:
+                            st.success("¡Información del local actualizada correctamente!")
+                            st.rerun()
+                        else:
+                            st.error(f"No se pudo actualizar: {resp_put.text}")
+                    except Exception as e:
+                        st.error(f"Error de conexión con el servidor: {e}")
+        else:
+            st.warning("⚠️ No se encontró ningún local asociado a tu sesión actual.")
+
+    # --- PESTAÑA 2: REGISTRAR NUEVO LOCAL ---
+    with tab_nuevo:
+        st.markdown("---")
+        st.subheader("🏢 Añadir una Nueva Sucursal")
+        st.info("💡 Nota: Al registrar una nueva sucursal, esta quedará en estado pendiente de aprobación y deberá ser **activada por el Superadmin** para formar parte operativa de Bookea.")
+
+        with st.form("form_crear_nuevo_local"):
+            col_n1, col_n2 = st.columns(2)
+            with col_n1:
+                nuevo_nombre = st.text_input("Nombre Comercial del Local", placeholder="Ej. Bar Sucursal Norte")
+                nuevo_ruc = st.text_input("RUC / NIT", placeholder="Número de identificación")
+                nueva_direccion = st.text_input("Dirección Exacta", placeholder="Calle y Número")
+            with col_n2:
+                nueva_ciudad = st.text_input("Ciudad", placeholder="Ciudad")
+                nuevo_pais = st.text_input("País", value="Ecuador", placeholder="País")
+                nuevo_tipo = st.text_input("Tipo de Establecimiento", placeholder="Ej. Discoteca, Restaurante...")
+                nuevo_telefono = st.text_input("Teléfono / WhatsApp de Contacto", placeholder="Teléfono")
+
+            submit_crear = st.form_submit_button("🚀 Enviar para Activación")
+            
+            if submit_crear:
+                if nuevo_nombre and nueva_direccion:
+                    payload_nuevo = {
+                        "nombre": nuevo_nombre,
+                        "nombre_local": nuevo_nombre,
+                        "ruc_nit": nuevo_ruc,
+                        "direccion": nueva_direccion,
+                        "ciudad": nueva_ciudad,
+                        "pais": nuevo_pais,
+                        "tipo_establecimiento": nuevo_tipo,
+                        "telefono_contacto": nuevo_telefono,
+                        "propietario_id": usuario_id,
+                        "usuario_id": usuario_id,
+                        "activo": False,          
+                        "estado": "pendiente"     
+                    }
+                    try:
+                        resp_post = requests.post(f"{api_url}/locales/", json=payload_nuevo, timeout=5)
+                        if resp_post.status_code in [200, 201]:
+                            st.success("¡Nuevo local registrado con éxito! Pendiente de activación por el Superadmin.")
+                        else:
+                            st.error(f"Error al registrar el local: {resp_post.text}")
+                    except Exception as e:
+                        st.error(f"Error de conexión con el servidor: {e}")
+                else:
+                    st.warning("⚠️ Por favor completa al menos el Nombre Comercial y la Dirección.")

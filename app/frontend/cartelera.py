@@ -4,6 +4,7 @@ import configparser
 import os
 import requests
 import streamlit as st
+from filtro_locales import render_filtro_locales
 from pie_pagina import render_pie_pagina
 
 def render_cartelera(api_url, cliente_id=None):
@@ -317,80 +318,36 @@ def render_cartelera(api_url, cliente_id=None):
   def_id = local_inicial.get("id")
 
   # ==========================================
-  # 1. FILTROS Y BOTÓN DE CALENDARIO EN LÍNEA
+  # 1. VERIFICACIÓN CONDICIONAL DE BÚSQUEDA / FILTROS
   # ==========================================
-  _, col_izq, col_calendario_btn, _ = st.columns([0.5, 2.8, 2.8, 0.5])
-
-  with col_izq:
-        with st.popover("🔍 Filtros de Búsqueda y Ubicación", use_container_width=True):
-            col_f1, col_f2 = st.columns(2)
-            with col_f1:
-                idx_pais = lista_paises.index(def_pais) if def_pais in lista_paises else 0
-                pais_filtro = st.selectbox("Filtrar por País", lista_paises, index=idx_pais, key="filtro_pais_cartelera")
-            with col_f2:
-                ciudades_disponibles = sorted(list(set(str(l.get("ciudad")).strip() for l in locales if l.get("ciudad"))))
-                idx_ciudad = ciudades_disponibles.index(def_ciudad) if def_ciudad in ciudades_disponibles else 0
-                ciudad_filtro = st.selectbox("Filtrar por Ciudad", ciudades_disponibles, index=idx_ciudad, key="filtro_ciudad_cartelera")
-
-            locales_filtrados_geo = [l for l in locales if str(l.get("ciudad")) == ciudad_filtro]
-            if not locales_filtrados_geo:
-                locales_filtrados_geo = locales
-
-            st.markdown("---")
-
-            col_f3, col_f4 = st.columns(2)
-            with col_f3:
-                tipos_disponibles = sorted(list(set(str(loc.get("tipo_establecimiento")).strip() for loc in locales_filtrados_geo if loc.get("tipo_establecimiento"))))
-                idx_tipo = tipos_disponibles.index(def_tipo) if def_tipo in tipos_disponibles else 0
-                filtro_tipo = st.selectbox("Tipo de Local", tipos_disponibles, index=idx_tipo, key="filtro_tipo_local")
-
-            locales_filtrados_selector = [l for l in locales_filtrados_geo if str(l.get("tipo_establecimiento", "")) == filtro_tipo]
-            if not locales_filtrados_selector:
-                locales_filtrados_selector = locales_filtrados_geo
-            
-            opciones_locales = {}
-            idx_local_default = 0
-            for idx_l, loc in enumerate(locales_filtrados_selector):
-                loc_id = loc.get("id")
-                nombre_l = loc.get("nombre", loc.get("nombre_local", "Mi Local"))
-                ciudad_l = loc.get("ciudad", "General")
-                tipo_l = loc.get("tipo_establecimiento", "Local")
-                
-                etiqueta = f"{nombre_l} — [{ciudad_l}] ({tipo_l})"
-                opciones_locales[etiqueta] = loc
-                
-                if str(loc_id) == str(def_id):
-                    idx_local_default = idx_l
-
-            nombres_opciones = list(opciones_locales.keys())
-            if not nombres_opciones:
-                nombres_opciones = ["Mi Local"]
-                opciones_locales["Mi Local"] = locales[0]
-                idx_local_default = 0
-                
-            with col_f4:
-                local_seleccionado_etiqueta = st.selectbox("Establecimiento", nombres_opciones, index=idx_local_default, key="filtro_nombre_local")
-                info_local_actual = opciones_locales.get(local_seleccionado_etiqueta, list(opciones_locales.values())[0])
-
-            st.markdown("---")
-
-            busqueda_evento = st.text_input("Buscar Evento", placeholder="🔍 Buscar evento, artista...", key="busqueda_evento_input")
-            orden_cercania = st.checkbox("🎯 Orden por cercanía GPS", value=False, key="check_cercania_gps_cartelera")
-
-            st.session_state["id_local_actual"] = info_local_actual.get("id")
-            st.session_state["info_local_actual"] = info_local_actual
-            st.session_state["busqueda_evento"] = busqueda_evento
-            st.session_state["orden_cercania"] = orden_cercania
+  # Buscamos en todas las posibles claves que Streamlit u otro script usen para el menú
+  menu_cliente_actual = (
+      st.session_state.get("menu_cliente_actual") 
+      or st.session_state.get("menu_cliente") 
+      or st.session_state.get("seleccion_menu") 
+      or "Catálogo de Eventos"
+  )
   
+  busqueda_evento = st.session_state.get("busqueda_evento", "")
+  
+  # Si el texto del menú contiene "Buscar" o "Local", ejecutamos los filtros
+  if "buscar" in menu_cliente_actual.lower() or "local" in menu_cliente_actual.lower():
+      info_local_actual, busqueda_evento, _ = render_filtro_locales(api_url)
+      id_local_actual = info_local_actual.get("id")
+  else:
+      id_local_actual = local_inicial.get("id")
+      info_local_actual = local_inicial
+
+  # Selector de modo de visualización (Agenda / Calendario) centrado
+  _, col_calendario_btn, _ = st.columns([1, 2.8, 1])
   with col_calendario_btn:
-    vista_seleccionada = st.radio(
-        "Modo de visualización",
+    vista_seleccionada = st.radio("Modo de visualización",
         options=["📅 Agenda de Eventos", "🗓️ Calendario del Mes"],
         horizontal=True,
         label_visibility="collapsed",
         key="modo_vista_cartelera",
     )
-  
+    
   id_local_actual = info_local_actual.get("id")
   st.session_state["id_local_actual"] = id_local_actual
 
