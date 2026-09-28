@@ -225,17 +225,34 @@ def render_bienvenida(API_URL):
                             if r.status_code == 200:
                                 data = r.json()
                                 id_enc = data.get("propietario_id") or data.get("id") or data.get("usuario_id")
+                                
+                                rol_api = data.get("rol", "").strip().lower()
+                                rol_asignado = "superadmin" if rol_api in ["super_admin", "superadmin"] else "propietario"
+
                                 st.session_state.update({
-                                    "logged_in": True, "user_id": id_enc, "propietario_id": id_enc,
-                                    "user_role": "superadmin" if data.get("rol") in ["super_admin", "superadmin"] else "propietario",
-                                    "user_name": data.get("nombre"), "user_negocio": data.get("nombre_comercial") or "Mi Establecimiento",
-                                    "tipo_negocio": data.get("tipo_negocio", "Salsoteca"), "token": data.get("access_token")
+                                    "logged_in": True, 
+                                    "user_id": id_enc, 
+                                    "propietario_id": id_enc,
+                                    "user_role": rol_asignado,
+                                    "user_name": data.get("nombre"), 
+                                    "user_negocio": data.get("nombre_comercial") or "Mi Establecimiento",
+                                    "tipo_negocio": data.get("tipo_negocio", "Salsoteca"), 
+                                    "token": data.get("access_token"),
+                                    "menu_propietario_activo": "Agenda de Eventos"
                                 })
+                                
+                                # 🔑 2. FORZAR LOS PARÁMETROS EN LA URL PARA QUE EL FRONTEND LOS LEA AL RECARGAR
+                                st.query_params["logged"] = "true"
+                                st.query_params["role"] = rol_asignado
+                                if data.get("local_id"):
+                                    st.query_params["local_id"] = str(data.get("local_id"))
+                                
                                 st.success(f"¡Bienvenido, {data.get('nombre')}!")
                                 st.rerun()
                             else: mostrar_error(r, "Credenciales incorrectas.")
                         except requests.RequestException as e: st.error(f"Error de conexión: {e}")
                     else: st.warning("Completa todos los campos.")
+                    
                 elif reg_prop_btn:
                     st.session_state.accion_prop = "Registrarse"
                     st.rerun()

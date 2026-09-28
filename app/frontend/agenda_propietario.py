@@ -16,7 +16,7 @@ def render_agenda_propietario(api_url):
   .block-container {
       padding-top: 0.4rem !important;
       padding-bottom: 2rem !important;
-      max-width: 1200px !important;
+      max-width: 900px !important;
   }
   
   /* CONTENEDOR EXTREMADAMENTE COMPACTO PARA EL CALENDARIO */

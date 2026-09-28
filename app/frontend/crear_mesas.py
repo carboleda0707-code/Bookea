@@ -55,6 +55,11 @@ def render_crear_mesas(API_URL):
         display: flex !important;
         justify-content: center !important;
         margin: 0 auto !important;
+        max-width: 520px !important; /* Controla qué tan angosta se ve la tabla */
+    }
+    
+    div[data-testid="stDataFrame"] > div {
+        width: 100% !important;
     }
 
     /* 6. Botones centrados, compactos y modernos */
@@ -94,7 +99,7 @@ def render_crear_mesas(API_URL):
   # ==========================================================
   # TÍTULO PRINCIPAL
   # ==========================================================
-  st.subheader("🛠️ Configuración de Mesas y Distribución")
+  st.subheader("🛠️ Distribución de Mesas")
 
   # ==========================================================
   # CAPTURAR LOCAL ID DESDE EL ESTABLECIMIENTO ACTIVO GLOBAL
@@ -145,9 +150,19 @@ def render_crear_mesas(API_URL):
       )
 
     if zonas:
-      opciones_zonas = {
-          f"{z.get('nombre_zona')} (ID: {z.get('id')})": z for z in zonas
-      }
+      opciones_zonas = {}
+      for z in zonas:
+        nombre_z = z.get('nombre_zona', 'Zona')
+        desc_z = z.get('descripcion', '')
+        id_z = z.get('id')
+        
+        if desc_z and desc_z.lower() != f"descripcion de la {nombre_z.lower()}":
+            etiqueta_zona = f"{nombre_z} - {desc_z} (ID: {id_z})"
+        else:
+            etiqueta_zona = f"{nombre_z} (ID: {id_z})"
+            
+        opciones_zonas[etiqueta_zona] = z
+
       zona_elegida_str = st.selectbox(
           f"📍 Selecciona la Zona en {nombre_local_actual}",
           list(opciones_zonas.keys()),
@@ -155,7 +170,9 @@ def render_crear_mesas(API_URL):
       )
       zona_seleccionada = opciones_zonas[zona_elegida_str]
       zona_id = zona_seleccionada.get("id")
-      nombre_zona_actual = zona_seleccionada.get("nombre_zona")
+      
+      # 🔑 Extraemos el nombre limpio (quitando la parte de "(ID: ...)") para los títulos de abajo
+      nombre_zona_actual = zona_elegida_str.split(" (ID:")[0]
     else:
       st.warning(
           f"⚠️ No hay zonas registradas para {nombre_local_actual}. Por favor"
@@ -170,10 +187,10 @@ def render_crear_mesas(API_URL):
   # CREACIÓN DE NUEVA MESA (FORMULARIO)
   # ==========================================================
   st.markdown("---")
-  st.subheader(f"➕ Crear Nueva Mesa en Zona: {nombre_zona_actual}")
+  st.subheader(f"➕ Crear Mesa en : {nombre_zona_actual}")
 
   with st.form("form_crear_mesa"):
-    numero_mesa = st.text_input("Número o Nombre de la Mesa (ej. MESA 1, VIP-1)")
+    numero_mesa = st.text_input("Nombre de la Mesa (ej. MESA 1, VIP-1)")
     capacidad = st.number_input(
         "Capacidad de Personas", min_value=1, max_value=50, value=4
     )
@@ -213,7 +230,7 @@ def render_crear_mesas(API_URL):
   # SECCIÓN DE MESAS REGISTRADAS
   # ==========================================================
   st.markdown("---")
-  st.subheader(f"📋 Mesas Registradas en Zona → {nombre_zona_actual}")
+  st.subheader(f"📋 Mesas en  → {nombre_zona_actual}")
 
   try:
     # Apuntando al endpoint de listado con el local_id correspondiente

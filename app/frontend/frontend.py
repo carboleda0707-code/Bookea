@@ -57,9 +57,8 @@ API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(page_title="Bookea - Sistema de Reservas", layout="wide")
 
-st.markdown(
-    """
-<style>
+st.markdown(   """<style>
+            
 /* ============================================================
    BOOKEA — ESTILOS GLOBALES Y CORRECCIÓN DE CONTRASTE
    ============================================================ */
@@ -223,14 +222,36 @@ if slug_vip and not st.session_state.get("logged_in", False):
 
 # --- 2. VISTA DE BIENVENIDA (NO LOGEADO) ---
 if not st.session_state.get("logged_in", False):
-  render_bienvenida(API_URL)
-  render_pie_pagina()
-  st.stop()
-else:
-  # ============================================================
-  # BOOKEA — CORRECCIÓN VISUAL SOLO PARA USUARIOS LOGUEADOS
-  # ============================================================
-  st.markdown(
+    render_bienvenida(API_URL)
+    render_pie_pagina()
+    st.stop()
+    # ============================================================
+    # ZONA LOGUEADA: EVALUACIÓN ESTRICTA DE ROLES
+    # ============================================================
+    rol_actual = str(st.session_state.get("user_role", "propietario")).strip().lower()
+
+    # 1. SUPERADMIN
+    if rol_actual == "superadmin":
+        st.markdown("### 🛠️ Panel Global - SuperAdmin")
+        # ... tu código de superadmin ...
+        render_pie_pagina()
+        #st.stop()
+
+    # 2. PROPIETARIO (¡LO PONEMOS ANTES DEL CLIENTE PARA QUE NUNCA SE CRUCE!)
+    elif rol_actual == "propietario":
+        # ... TODO EL CÓDIGO DEL PROPIETARIO (agenda, locales, menús, etc.) ...
+        render_pie_pagina()
+        
+    # 3. CLIENTE (AL FINAL DE TODO)
+    else:
+        nombre_usuario = st.session_state.get("user_name", "Cliente")
+        # ... todo el código del cliente (catálogo, mis reservas, etc.) ...
+        render_pie_pagina()
+        #st.stop()
+    # ============================================================
+    # BOOKEA — CORRECCIÓN VISUAL SOLO PARA USUARIOS LOGUEADOS
+    # ============================================================
+    st.markdown(
       """
     <style>
     [data-testid="stButton"] > button,
@@ -260,21 +281,26 @@ else:
     </style>
     """,
       unsafe_allow_html=True,
-  )
+    )
 
-  rol_actual = st.session_state.get("user_role", "propietario")
+    # ==========================================
+    # --- ROL: SUPERADMIN ---
+    # ============================================================
+# ZONA LOGUEADA: EVALUACIÓN ESTRICTA DE ROLES
+# ============================================================
+rol_actual = str(st.session_state.get("user_role", "propietario")).strip().lower()
 
-  # ==========================================
-  # --- ROL: SUPERADMIN ---
-  # ==========================================
-  if rol_actual == "superadmin":
+if not rol_actual or rol_actual == "none":
+    rol_actual = "propietario"
+
+# --- ROL: SUPERADMIN ---
+if rol_actual == "superadmin":
     st.markdown("### 🛠️ Panel Global - SuperAdmin")
-
+  
     if "menu_superadmin_actual" not in st.session_state:
-      st.session_state.menu_superadmin_actual = "Panel Global"
+        st.session_state.menu_superadmin_actual = "Panel Global"
 
     opciones_superadmin = ["Panel Global", "Cerrar Sesión"]
-
     opcion_sa = st.selectbox(
         "Navegación Principal:",
         opciones_superadmin,
@@ -282,122 +308,25 @@ else:
     )
 
     if opcion_sa == "Cerrar Sesión":
-      st.session_state.logged_in = False
-      st.session_state.user_role = None
-      st.session_state.pop("menu_superadmin_actual", None)
-      st.query_params.clear()
-      st.rerun()
+        st.session_state.logged_in = False
+        st.session_state.user_role = None
+        st.session_state.pop("menu_superadmin_actual", None)
+        st.query_params.clear()
+        st.rerun()
     else:
-      render_admin_panel(API_URL)
+        render_admin_panel(API_URL)
+        render_pie_pagina()
+        st.stop()
 
-  # ==========================================
-  # --- ROL: CLIENTE ---
-  # ==========================================
-  elif rol_actual == "cliente":
-    nombre_usuario = st.session_state.get("user_name", "Cliente")
-
-    # Estilo específico para compactar y centrar el selectbox del cliente
-    st.markdown(
-        """
-        <style>
-        /* Contenedor y selectbox del cliente más angosto y compacto */
-        div[data-testid="stSelectbox"] {
-            max-width: 280px !important;
-            margin: 0 auto !important;
-        }
-        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
-            min-height: 32px !important;
-            padding-top: 0px !important;
-            padding-bottom: 0px !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    col_esp_izq, col_centro_cliente, col_esp_der = st.columns([1, 2.5, 1])
-
-    with col_centro_cliente:
-      st.markdown(
-          f"""<div style='text-align: center; margin-bottom: 6px;'>
-              👋 <b>Hola, {nombre_usuario}</b> 🌟 Bookea Tu Evento
-          </div>""",
-          unsafe_allow_html=True,
-      )
-      
-opciones_cliente = [
-      "Catálogo de Eventos",
-      "🔍 Buscar Locales",
-      "Mis Reservas",
-      "Actualizar Datos",
-      "Cerrar Sesión",
-  ]
-  
-  # Selectbox nativo y limpio, sin callbacks extraños que alteren tu lógica
-opcion = st.selectbox(
-      "Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal"
-  )
-
-if opcion == "Cerrar Sesión":
-  st.session_state.logged_in = False
-  st.session_state.user_role = None
-  st.query_params.clear()
-  st.rerun()
-
-# Flujo directo y natural respetando tu arquitectura original
-if opcion == "Catálogo de Eventos":
-  if "paso_reserva" not in st.session_state:
-    st.session_state.paso_reserva = "catalogo"
-
-  if st.session_state.paso_reserva == "catalogo":
-    render_catalogo_clientes(API_URL)
-  elif st.session_state.paso_reserva == "seleccionar_mesa":
-    if st.button("⬅️ Volver a la cartelera"):
-      st.session_state.paso_reserva = "catalogo"
-      st.rerun()
-    render_seleccion_mesas(
-        API_URL,
-        st.session_state.evento_a_reservar,
-        st.session_state.get("user_id"),
-    )
-  elif st.session_state.paso_reserva == "crear_celebracion":
-    if st.button("⬅️ Volver a la cartelera"):
-      st.session_state.paso_reserva = "catalogo"
-      st.rerun()
-    render_crear_reserva_personalizada(
-        API_URL, st.session_state.get("user_id")
-    )
-
-elif opcion == "🔍 Buscar Locales":
-  # Llamada directa al filtro de locales tal como lo tenías diseñado
-  render_filtro_locales(API_URL)
-
-elif opcion == "Mis Reservas":
-  render_mis_reservas(API_URL, st.session_state.get("user_id"))
-
-elif opcion == "Actualizar Datos":
-  render_mantenimiento_cliente(API_URL)
-
-  # ==========================================
-  # --- ROL: PROPIETARIO ---
-  # ==========================================
-else:
-    
-    user_id = st.session_state.get("propietario_id") or st.session_state.get(
-        "user_id"
-    )
-
-    # 1. Obtener y filtrar los locales del propietario
-    locales_propietario = []
-
-    # Recuperar el ID del usuario logueado de forma robusta
+# --- ROL: PROPIETARIO ---
+elif rol_actual == "propietario":
     user_id = (
         st.session_state.get("user_id")
         or st.session_state.get("propietario_id")
         or st.session_state.get("id")
     )
 
-    local_id_url = query_params.get("local_id")
+    local_id_url = st.query_params.get("local_id")
     local_id_actual = (
         local_id_url
         or st.session_state.get("local_id_actual")
@@ -405,51 +334,47 @@ else:
         or st.session_state.get("local_activo_id")
     )
 
+    locales_propietario = []
     try:
-      if user_id:
-        # Petición a la API filtrando estrictamente por el propietario logueado
-        res_api = requests.get(f"{API_URL}/locales/?propietario_id={user_id}")
-        if res_api.status_code != 200:
-          res_api = requests.get(
-              f"{API_URL}/locales/usuario/{user_id}", timeout=5
-          )
+        if user_id:
+            res_api = requests.get(f"{API_URL}/locales/?propietario_id={user_id}")
+            if res_api.status_code != 200:
+                res_api = requests.get(f"{API_URL}/locales/usuario/{user_id}", timeout=5)
 
-        if res_api.status_code == 200:
-          data_locales = res_api.json()
-          locales_propietario = (
-              data_locales if isinstance(data_locales, list) else [data_locales]
-          )
+            if res_api.status_code == 200:
+                data_locales = res_api.json()
+                locales_propietario = (
+                    data_locales if isinstance(data_locales, list) else [data_locales]
+                )
     except Exception:
-      locales_propietario = []
+        locales_propietario = []
 
+    opciones_locales = {}
     if locales_propietario:
-      opciones_locales = {}
-      for loc in locales_propietario:
-        lid = loc.get("id") or loc.get("local_id") or 1
-        nombre = loc.get(
-            "nombre", loc.get("nombre_local", loc.get("nombre_comercial", "Local"))
-        )
-        # Formato solicitado: ID y Nombre del local en el selector
-        etiqueta = f"ID {lid} - {nombre}"
-        opciones_locales[etiqueta] = lid
+        for loc in locales_propietario:
+            lid = loc.get("id") or loc.get("local_id") or 1
+            nombre = loc.get(
+                "nombre", loc.get("nombre_local", loc.get("nombre_comercial", "Local"))
+            )
+            etiqueta_loc = f"ID {lid} - {nombre}"
+            opciones_locales[etiqueta_loc] = lid
 
-      nombres_opciones = list(opciones_locales.keys())
+        nombres_opciones = list(opciones_locales.keys())
 
-      valido = False
-      for etiqueta, lid in opciones_locales.items():
-        if str(lid) == str(local_id_actual):
-          local_id_actual = lid
-          valido = True
-          break
+        valido = False
+        for etiqueta_loc, lid in opciones_locales.items():
+            if str(lid) == str(local_id_actual):
+                local_id_actual = lid
+                valido = True
+                break
 
-      if not valido and nombres_opciones:
-        local_id_actual = opciones_locales[nombres_opciones[0]]
+        if not valido and nombres_opciones:
+            local_id_actual = opciones_locales[nombres_opciones[0]]
     else:
-      opciones_locales = {}
-      nombres_opciones = []
-      local_id_actual = 1
+        opciones_locales = {}
+        nombres_opciones = []
+        local_id_actual = 1
 
-    # Sincronizamos las variables de sesión y actualizamos la URL globalmente
     st.session_state["local_id_actual"] = int(local_id_actual)
     st.session_state["local_id"] = int(local_id_actual)
     st.session_state["local_activo_id"] = int(local_id_actual)
@@ -458,132 +383,300 @@ else:
     st.query_params["role"] = rol_actual
     st.query_params["local_id"] = str(local_id_actual)
 
-    # ==========================================
-    # ESTILOS CSS PARA DISEÑO COMPACTO Y RESPONSIVE
-    # ==========================================
-    st.markdown(
-        """
-        <style>
-        .centered-header-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        div[data-testid="stSelectbox"] {
-            max-width: 340px;
-            margin: 0 auto !important;
-        }
-        div[data-testid="stSelectbox"] label p {
-            color: #ffffff !important;
-            font-weight: 600 !important;
-            font-size: 14px !important;
-            text-align: center !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
+    st.markdown(f"""Agenda Bookea ⭐ {st.session_state.get('user_name', 'Usuario')} ⭐    """,
+    unsafe_allow_html=True,
     )
 
-    st.markdown(
-        f"""
-            <div style="display: flex; justify-content: center; width: 100%;">
-                <div style="background: rgba(16, 14, 36, 0.85); border: 1px solid rgba(150, 55, 255, 0.35); padding: 10px 20px; border-radius: 12px; margin-bottom: 16px; display: inline-block; text-align: center;">
-                    <span style="font-size: 14px; font-weight: 600; color: #f7f7ff;">
-                        Agenda Bookea ⭐ <span style="color: #ffffff;">{st.session_state.get('user_name', 'Usuario')}</span> 
-                        ⭐
-                    </span>
-                </div>
-            </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # ==========================================
-    # SELECTORES CENTRADOS EN LA PARTE SUPERIOR
-    # ==========================================
-    col_espaciador_izq, col_centrada, col_espaciador_der = st.columns(
-        [1, 2.5, 1]
-    )
+    col_espaciador_izq, col_centrada, col_espaciador_der = st.columns([1, 2.5, 1])
 
     with col_centrada:
-      if nombres_opciones:
-        current_idx = 0
-        for idx, (nombre, lid) in enumerate(opciones_locales.items()):
-          if str(lid) == str(local_id_actual):
-            current_idx = idx
-            break
+        if nombres_opciones:
+            current_idx = 0
+            for idx, (nombre, lid) in enumerate(opciones_locales.items()):
+                if str(lid) == str(local_id_actual):
+                    current_idx = idx
+                    break
 
-        local_seleccionado_label = st.selectbox(
-            "🏢 Establecimiento activo",
-            nombres_opciones,
-            index=current_idx,
-            key="select_local_activo_top",
-        )
-        nuevo_local_id = opciones_locales[local_seleccionado_label]
-        if str(nuevo_local_id) != str(local_id_actual):
-          st.session_state["local_id_actual"] = int(nuevo_local_id)
-          st.session_state["local_id"] = int(nuevo_local_id)
-          st.session_state["local_activo_id"] = int(nuevo_local_id)
-          st.query_params["local_id"] = str(nuevo_local_id)
-          st.rerun()
-      else:
-        st.selectbox(
-            "🏢 Establecimiento activo",
-            ["Local por defecto (ID: 1)"],
-            key="select_local_activo_top_default",
-        )
-
-      vistas_mapeo = {
-          "Agenda de Eventos": render_agenda_propietario,
-          "Crear Eventos": render_crear_eventos,
-          "Crear Zonas": render_crear_zonas,
-          "Crear Mesas": render_crear_mesas,
-          "Asignar Mesas": render_asignar_mesas,
-          "Control de Reservas": render_control_reservas,
-          "Control de Puerta": render_control_puerta,
-          "Mapa de Mesas": render_mapa_mesas,
-          "Historial de Asistencia": render_historial_asistencia,
-          "Mantenimiento": render_mantenimiento,
-      }
-
-      opciones_menu = list(vistas_mapeo.keys()) + ["🚪 Cerrar Sesión"]
-
-      # Recuperar menú activo desde la URL si existe para persistencia absoluta
-      menu_url = query_params.get("menu")
-      if (
-          "menu_propietario_activo" not in st.session_state
-          or st.session_state.menu_propietario_activo not in opciones_menu
-      ):
-        if menu_url and menu_url in opciones_menu:
-          st.session_state.menu_propietario_activo = menu_url
+            local_seleccionado_label = st.selectbox(
+                "🏢 Establecimiento activo",
+                nombres_opciones,
+                index=current_idx,
+                key="select_local_activo_top",
+            )
+            nuevo_local_id = opciones_locales[local_seleccionado_label]
+            if str(nuevo_local_id) != str(local_id_actual):
+                st.session_state["local_id_actual"] = int(nuevo_local_id)
+                st.session_state["local_id"] = int(nuevo_local_id)
+                st.session_state["local_activo_id"] = int(nuevo_local_id)
+                st.query_params["local_id"] = str(nuevo_local_id)
+                st.rerun()
         else:
-          st.session_state.menu_propietario_activo = "Agenda de Eventos"
+            st.selectbox(
+                "🏢 Establecimiento activo",
+                ["Local por defecto (ID: 1)"],
+                key="select_local_activo_top_default",
+            )
 
-      opcion_seleccionada = st.selectbox(
-          "📌 Menú de Gestión", opciones_menu, key="menu_propietario_activo"
-      )
+        vistas_mapeo = {
+            "Agenda de Eventos": render_agenda_propietario,
+            "Crear Eventos": render_crear_eventos,
+            "Crear Zonas": render_crear_zonas,
+            "Crear Mesas": render_crear_mesas,
+            "Asignar Mesas": render_asignar_mesas,
+            "Control de Reservas": render_control_reservas,
+            "Control de Puerta": render_control_puerta,
+            "Mapa de Mesas": render_mapa_mesas,
+            "Historial de Asistencia": render_historial_asistencia,
+            "Mantenimiento": render_mantenimiento,
+        }
 
-      # Actualizar el menú actual en la URL
-      if opcion_seleccionada != "🚪 Cerrar Sesión":
-        st.query_params["menu"] = opcion_seleccionada
+        opciones_menu = list(vistas_mapeo.keys()) + ["🚪 Cerrar Sesión"]
 
-    # Evaluar si se seleccionó Cerrar Sesión
+        menu_url = st.query_params.get("menu")
+        if (
+            "menu_propietario_activo" not in st.session_state
+            or st.session_state.menu_propietario_activo not in opciones_menu
+        ):
+            if menu_url and menu_url in opciones_menu:
+                st.session_state.menu_propietario_activo = menu_url
+            else:
+                st.session_state.menu_propietario_activo = "Agenda de Eventos"
+
+        opcion_seleccionada = st.selectbox(
+            "📌 Menú de Gestión", opciones_menu, key="menu_propietario_activo"
+        )
+
+        if opcion_seleccionada != "🚪 Cerrar Sesión":
+            st.query_params["menu"] = opcion_seleccionada
+
     if opcion_seleccionada == "🚪 Cerrar Sesión":
-      st.session_state.logged_in = False
-      st.session_state.user_role = None
-      st.session_state.pop("menu_propietario_activo", None)
-      st.query_params.clear()
-      st.rerun()
+        st.session_state.logged_in = False
+        st.session_state.user_role = None
+        st.session_state.pop("menu_propietario_activo", None)
+        st.query_params.clear()
+        st.rerun()
 
-    # Renderizado dinámico fluido de la vista seleccionada
     funcion_a_renderizar = vistas_mapeo.get(
         opcion_seleccionada, render_agenda_propietario
     )
     funcion_a_renderizar(API_URL)
 
-# --- PIE DE PÁGINA GLOBAL ---
+    render_pie_pagina()
+    st.stop() 
+                  
+            
+  # ==========================================
+  # --- ROL: CLIENTE ---
+  # ==========================================
+elif rol_actual == "cliente":
+        nombre_usuario = st.session_state.get("user_name", "Cliente")
+
+      # Estilo específico para compactar y centrar el selectbox del cliente
+st.markdown(
+          """
+          <style>
+          /* Contenedor y selectbox del cliente más angosto y compacto */
+          div[data-testid="stSelectbox"] {
+              max-width: 280px !important;
+              margin: 0 auto !important;
+          }
+          div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+              min-height: 32px !important;
+              padding-top: 0px !important;
+              padding-bottom: 0px !important;
+          }
+          </style>        """,        unsafe_allow_html=True,    )
+
+col_esp_izq, col_centro_cliente, col_esp_der = st.columns([1, 2.5, 1])
+
+with col_centro_cliente:
+    st.markdown(
+          f"""<div style='text-align: center; margin-bottom: 6px;'>
+              👋 <b>Hola, {nombre_usuario}</b> 🌟 Bookea Tu Evento
+          </div>""",
+          unsafe_allow_html=True,
+      )
+      
+    opciones_cliente = [
+      "Catálogo de Eventos",
+      "🔍 Buscar Locales",
+      "Mis Reservas",
+      "Actualizar Datos",
+      "Cerrar Sesión",
+    ]
+
+    # Selectbox nativo y limpio para el cliente
+    opcion = st.selectbox(
+      "Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal"
+    )
+
+    if opcion == "Cerrar Sesión":
+      st.session_state.logged_in = False
+      st.session_state.user_role = None
+      st.query_params.clear()
+      st.rerun()
+
+    # Flujo exclusivo del cliente
+    if opcion == "Catálogo de Eventos":
+      if "paso_reserva" not in st.session_state:
+        st.session_state.paso_reserva = "catalogo"
+
+      if st.session_state.paso_reserva == "catalogo":
+        render_catalogo_clientes(API_URL)
+      elif st.session_state.paso_reserva == "seleccionar_mesa":
+        if st.button("⬅️ Volver a la cartelera"):
+          st.session_state.paso_reserva = "catalogo"
+          st.rerun()
+        render_seleccion_mesas(
+            API_URL,
+            st.session_state.evento_a_reservar,
+            st.session_state.get("user_id"),
+        )
+      elif st.session_state.paso_reserva == "crear_celebracion":
+        if st.button("⬅️ Volver a la cartelera"):
+          st.session_state.paso_reserva = "catalogo"
+          st.rerun()
+        render_crear_reserva_personalizada(
+            API_URL, st.session_state.get("user_id")
+        )
+
+      elif opcion == "🔍 Buscar Locales":
+        render_filtro_locales(API_URL)
+
+      elif opcion == "Mis Reservas":
+        render_mis_reservas(API_URL, st.session_state.get("user_id"))
+
+      elif opcion == "Actualizar Datos":
+        render_mantenimiento_cliente(API_URL)
+        st.stop()
+
+      # ==========================================
+      # ESTILOS CSS PARA DISEÑO COMPACTO Y RESPONSIVE
+      # ==========================================
+      st.markdown(
+          """
+          <style>
+          .centered-header-container {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              width: 100%;
+              text-align: center;
+              margin-bottom: 20px;
+          }
+          div[data-testid="stSelectbox"] {
+              max-width: 340px;
+              margin: 0 auto !important;
+          }
+          div[data-testid="stSelectbox"] label p {
+              color: #ffffff !important;
+              font-weight: 600 !important;
+              font-size: 14px !important;
+              text-align: center !important;
+          }
+          </style>
+          """,
+          unsafe_allow_html=True,
+      )
+
+      st.markdown(
+          f"""
+              <div style="display: flex; justify-content: center; width: 100%;">
+                  <div style="background: rgba(16, 14, 36, 0.85); border: 1px solid rgba(150, 55, 255, 0.35); padding: 10px 20px; border-radius: 12px; margin-bottom: 16px; display: inline-block; text-align: center;">
+                      <span style="font-size: 14px; font-weight: 600; color: #f7f7ff;">
+                          Agenda Bookea ⭐ <span style="color: #ffffff;">{st.session_state.get('user_name', 'Usuario')}</span> 
+                          ⭐
+                      </span>
+                  </div>
+              </div>
+          """,
+          unsafe_allow_html=True,
+      )
+
+      # ==========================================
+      # SELECTORES CENTRADOS EN LA PARTE SUPERIOR
+      # ==========================================
+      col_espaciador_izq, col_centrada, col_espaciador_der = st.columns(
+          [1, 2.5, 1]
+      )
+
+      with col_centrada:
+        if nombres_opciones:
+          current_idx = 0
+          for idx, (nombre, lid) in enumerate(opciones_locales.items()):
+            if str(lid) == str(local_id_actual):
+              current_idx = idx
+              break
+
+          local_seleccionado_label = st.selectbox(
+              "🏢 Establecimiento activo",
+              nombres_opciones,
+              index=current_idx,
+              key="select_local_activo_top",
+          )
+          nuevo_local_id = opciones_locales[local_seleccionado_label]
+          if str(nuevo_local_id) != str(local_id_actual):
+            st.session_state["local_id_actual"] = int(nuevo_local_id)
+            st.session_state["local_id"] = int(nuevo_local_id)
+            st.session_state["local_activo_id"] = int(nuevo_local_id)
+            st.query_params["local_id"] = str(nuevo_local_id)
+            st.rerun()
+        else:
+          st.selectbox(
+              "🏢 Establecimiento activo",
+              ["Local por defecto (ID: 1)"],
+              key="select_local_activo_top_default",
+          )
+
+        vistas_mapeo = {
+            "Agenda de Eventos": render_agenda_propietario,
+            "Crear Eventos": render_crear_eventos,
+            "Crear Zonas": render_crear_zonas,
+            "Crear Mesas": render_crear_mesas,
+            "Asignar Mesas": render_asignar_mesas,
+            "Control de Reservas": render_control_reservas,
+            "Control de Puerta": render_control_puerta,
+            "Mapa de Mesas": render_mapa_mesas,
+            "Historial de Asistencia": render_historial_asistencia,
+            "Mantenimiento": render_mantenimiento,
+        }
+
+        opciones_menu = list(vistas_mapeo.keys()) + ["🚪 Cerrar Sesión"]
+
+        # Recuperar menú activo desde la URL si existe para persistencia absoluta
+        menu_url = query_params.get("menu")
+        if (
+            "menu_propietario_activo" not in st.session_state
+            or st.session_state.menu_propietario_activo not in opciones_menu
+        ):
+          if menu_url and menu_url in opciones_menu:
+            st.session_state.menu_propietario_activo = menu_url
+          else:
+            st.session_state.menu_propietario_activo = "Agenda de Eventos"
+
+        opcion_seleccionada = st.selectbox(
+            "📌 Menú de Gestión", opciones_menu, key="menu_propietario_activo"
+        )
+
+        # Actualizar el menú actual en la URL
+        if opcion_seleccionada != "🚪 Cerrar Sesión":
+          st.query_params["menu"] = opcion_seleccionada
+
+      # Evaluar si se seleccionó Cerrar Sesión
+      if opcion_seleccionada == "🚪 Cerrar Sesión":
+        st.session_state.logged_in = False
+        st.session_state.user_role = None
+        st.session_state.pop("menu_propietario_activo", None)
+        st.query_params.clear()
+        st.rerun()
+
+      # Renderizado dinámico fluido de la vista seleccionada
+      funcion_a_renderizar = vistas_mapeo.get(
+          opcion_seleccionada, render_agenda_propietario
+      )
+      funcion_a_renderizar(API_URL)
+
+  # --- PIE DE PÁGINA GLOBAL ---
 render_pie_pagina()
+st.stop()

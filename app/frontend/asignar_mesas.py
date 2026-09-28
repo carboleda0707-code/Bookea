@@ -53,6 +53,11 @@ def render_asignar_mesas(API_URL):
         display: flex !important;
         justify-content: center !important;
         margin: 0 auto !important;
+        max-width: 520px !important; /* Controla qué tan angosta se ve la tabla */
+    }
+    
+    div[data-testid="stDataFrame"] > div {
+        width: 100% !important;
     }
 
     /* 6. Botones centrados, compactos y modernos */

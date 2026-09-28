@@ -51,15 +51,17 @@ def render_crear_zonas(API_URL):
         }
 
         /* 5. Centrar y compactar la tabla / dataframe */
-        div[data-testid="stDataFrame"] {
-            display: flex !important;
-            justify-content: center !important;
-            margin: 0 auto !important;
-            max-width: 600px !important;
-        }
-        div[data-testid="stDataFrame"] > div {
-            margin: 0 auto !important;
-        }
+        /* 5. Centrar tablas / dataframes */
+    div[data-testid="stDataFrame"] {
+        display: flex !important;
+        justify-content: center !important;
+        margin: 0 auto !important;
+        max-width: 520px !important; /* Controla qué tan angosta se ve la tabla */
+    }
+    
+    div[data-testid="stDataFrame"] > div {
+        width: 100% !important;
+    }
 
         /* 6. Estilos para la imagen del plano */
         div[data-testid="stImage"] img {
@@ -212,7 +214,7 @@ def render_crear_zonas(API_URL):
                     if not any(nombre_default.lower() in n for n in nombres_existentes):
                         payload_def = {
                             "nombre_zona": nombre_default,
-                            "descripcion": f"Descripción de la {nombre_default}",
+                            "descripcion": f"Libre {nombre_default}",
                             "local_id": int(local_id),
                         }
                         try:
@@ -230,7 +232,7 @@ def render_crear_zonas(API_URL):
     # ==========================================================
     col_r1, col_r2, col_r3 = st.columns([1, 3, 1])
     with col_r2:
-        st.subheader("📋 Zonas Registradas y Modificación")
+        st.subheader("📋 Zonas Registradas ")
 
     if zonas:
         zonas_tabla = [
