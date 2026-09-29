@@ -18,7 +18,7 @@ def render_cartelera(api_url, cliente_id=None):
      0. CONTENEDOR GENERAL Y AGRUPACIÓN DE TARJETAS AL CENTRO
      ============================================================ */
   .block-container {
-      max-width: 1200px !important;
+      max-width: 1600px !important;
       padding-top: 1.5rem !important;
       padding-bottom: 2rem !important;
       margin: auto !important;
@@ -187,8 +187,8 @@ def render_cartelera(api_url, cliente_id=None):
      ============================================================ */
   div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlockBorderWrapper"] {
       padding: 10px !important;
-      width: 240px !important;
-      max-width: 240px !important;
+      width: 340px !important;
+      max-width: 340px !important;
       margin: 0 !important;
       background-color: #121620 !important;
       border: 1px solid rgba(150, 55, 255, 0.25) !important;
@@ -251,7 +251,7 @@ def render_cartelera(api_url, cliente_id=None):
   /* ============================================================
      7. CONTROL RESPONSIVO DE COLUMNAS FANTASMA (SOLO PC)
      ============================================================ */
-  @media (max-width: 768px) {
+  @media (max-width: 868px) {
       .columna-fantasma {
           display: none !important;
       }
@@ -338,15 +338,8 @@ def render_cartelera(api_url, cliente_id=None):
       id_local_actual = local_inicial.get("id")
       info_local_actual = local_inicial
 
-  # Selector de modo de visualización (Agenda / Calendario) centrado
-  _, col_calendario_btn, _ = st.columns([1, 2.8, 1])
-  with col_calendario_btn:
-    vista_seleccionada = st.radio("Modo de visualización",
-        options=["📅 Agenda de Eventos", "🗓️ Calendario del Mes"],
-        horizontal=True,
-        label_visibility="collapsed",
-        key="modo_vista_cartelera",
-    )
+  
+  
     
   id_local_actual = info_local_actual.get("id")
   st.session_state["id_local_actual"] = id_local_actual
@@ -511,7 +504,7 @@ def render_cartelera(api_url, cliente_id=None):
 
   with col_caja_info:
       st.markdown(f"""
-      <div style="background: rgba(16, 14, 36, 0.85); border: 1px solid rgba(150, 55, 255, 0.35); padding: 8px 12px; border-radius: 8px; max-width: 550px; margin: 0 auto;">
+      <div style="background: rgba(16, 14, 36, 0.85); border: 1px solid rgba(150, 55, 255, 0.35); padding: 8px 12px; border-radius: 8px; max-width: 850px; margin: 0 auto;">
           <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 4px;">
               <h3 style="color: #ffffff; font-size: 13px; font-weight: 800; margin: 0;">🗓️ Eventos - {nombre_local_cal}</h3>
               <span style="font-size: 15px; color: #ffffff; background: rgba(150, 55, 255, 0.2); padding: 2px 6px; border-radius: 4px;">{tipo_local_cal}</span>
@@ -529,7 +522,7 @@ def render_cartelera(api_url, cliente_id=None):
   with col_caja_like:
       st.markdown("<div style='margin-top: 2px;'></div>", unsafe_allow_html=True)
       likes_actuales = info_local_actual.get("likes", 0) or 0
-      if st.button(f"❤️ Me gusta ({likes_actuales})", key=f"btn_like_local_{id_local_actual}", use_container_width=True):
+      if st.button(f"❤️ Like ({likes_actuales})", key=f"btn_like_local_{id_local_actual}", use_container_width=True):
           try:
               resp_like = requests.post(f"{api_url}/auth/locales/{id_local_actual}/like", timeout=3)
               if resp_like.status_code == 200:
@@ -548,6 +541,7 @@ def render_cartelera(api_url, cliente_id=None):
   # ==========================================
   # 3. VISTA: CALENDARIO DEL MES
   # ==========================================
+  vista_seleccionada = st.session_state.get("modo_vista_cartelera", "📅 Agenda de Eventos")
   if vista_seleccionada == "🗓️ Calendario del Mes":
     st.subheader("📅 Calendario del Mes")
 
@@ -654,8 +648,7 @@ def render_cartelera(api_url, cliente_id=None):
   # ==========================================
   if not eventos_a_mostrar:
     st.info(
-        "No hay eventos programados para este establecimiento o criterio de"
-        " búsqueda."
+        "Entra a Catálogo de Eventos y busca tu local preferido"
     )
   else:
     # Iteramos en bloques de MAX_COLS

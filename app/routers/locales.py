@@ -59,19 +59,19 @@ def crear_sucursal(local_data: dict, db: Session = Depends(get_db)):
 def listar_todos_los_locales(
     propietario_id: int = None, db: Session = Depends(get_db)
 ):
-  """Lista los locales incluyendo dirección, teléfono, correo y RUC de la empresa."""
+  """Lista los locales excluyendo el establecimiento principal/propietario por defecto para los clientes."""
   query = db.query(models.Local)
+  
   if propietario_id:
-    query = query.filter(models.Local.propietario_id == propietario_id)
-
     if hasattr(models.Local, "propietario_id"):
       query = query.filter(models.Local.propietario_id == propietario_id)
     elif hasattr(models.Local, "usuario_id"):
       query = query.filter(models.Local.usuario_id == propietario_id)
     elif hasattr(models.Local, "id_propietario"):
       query = query.filter(models.Local.id_propietario == propietario_id)
-
-
+  else:
+    # Si es una consulta pública (clientes), excluimos el local principal del propietario (ID 1)
+    query = query.filter(models.Local.id != 1)
 
   locales = query.all()
   resultado = []
@@ -98,7 +98,6 @@ def listar_todos_los_locales(
         "likes": loc.likes or 0,
     })
   return resultado
-
 
 @router.get("/cercanos", response_model=List[dict])
 def obtener_locales_cercanos(
@@ -394,18 +393,35 @@ def crear_evento_desde_web(evento_data: dict, db: Session = Depends(get_db)):
   
 @router.put("/{local_id}", response_model=dict)
 def actualizar_local(local_id: int, local_data: dict, db: Session = Depends(get_db)):
-    """Actualiza la información de un local existente."""
+    """Actualiza la información completa de un local existente."""
     local = db.query(models.Local).filter(models.Local.id == local_id).first()
     if not local:
         raise HTTPException(status_code=404, detail="Local no encontrado.")
     
-    # Actualizar campos permitidos
-    local.nombre = local_data.get("nombre", local.nombre)
+    # Actualizar todos los campos enviados desde el panel de administración de manera segura
+    local.nombre = local_data.get("nombre", local_data.get("nombre_local", local.nombre))
     local.tipo_establecimiento = local_data.get("tipo_establecimiento", local.tipo_establecimiento)
     local.direccion = local_data.get("direccion", local.direccion)
     local.ciudad = local_data.get("ciudad", local.ciudad)
-    local.email_contacto = local_data.get("email_contacto", local.email_contacto)
+    local.pais = local_data.get("pais", local.pais)
+    local.email_contacto = local_data.get("email_contacto", local_data.get("correo", local.email_contacto))
     local.telefono = local_data.get("telefono", local.telefono)
+    local.telefono_contacto = local_data.get("telefono_contacto", local.telefono)
+    local.tipo_plan = local_data.get("tipo_plan", local.tipo_plan)
+    local.pagado = local_data.get("pagado", local.pagado)
+    local.slug = local_data.get("slug", local.slug)
+    local.correo_envio = local_data.get("correo_envio", local.correo_envio)
+    local.password_app = local_data.get("password_app", local.password_app)
+    local.aviso_reserva = local_data.get("aviso_reserva", local.aviso_reserva)
+    
+    if "activo" in local_data:
+        local.activo = local_data.get("activo")
+        
+    # Coordenadas geográficas opcionales
+    if "latitud" in local_data and local_data["latitud"] is not None:
+        local.latitud = local_data["latitud"]
+    if "longitud" in local_data and local_data["longitud"] is not None:
+        local.longitud = local_data["longitud"]
     
     db.commit()
     db.refresh(local)

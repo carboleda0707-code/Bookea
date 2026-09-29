@@ -89,11 +89,11 @@ def render_mantenimiento_cliente(api_url: str):
     """, unsafe_allow_html=True)
         
     # Renderizamos el saludo unificado en una sola línea horizontal
-    nombre_usuario = st.session_state.get("user_name", "Sandra Bajaña")
-    st.markdown(f'<div class="titulo-unificado">👋 <b>Hola, {nombre_usuario}</b> 🌟 Bookea Tu Evento</div>', unsafe_allow_html=True)
+    #nombre_usuario = st.session_state.get("user_name", "Sandra Bajaña")
+    #st.markdown(f'<div class="titulo-unificado">👋 <b>Hola, {nombre_usuario}</b> 🌟 Bookea Tu Evento</div>', unsafe_allow_html=True)
 
-    st.header("⚙️ Mantenimiento de Cuenta")
-    st.markdown("Actualiza tu información personal, correo y teléfono de contacto.")
+    st.header("⚙️ Mi Cuenta")
+    st.markdown("Actualiza tu información.")
     
     with st.form("form_mantenimiento_modular"):
         nombre_actual = st.session_state.get("user_name", "")

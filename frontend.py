@@ -383,57 +383,12 @@ elif rol_actual == "propietario":
     st.query_params["role"] = rol_actual
     st.query_params["local_id"] = str(local_id_actual)
 
-    # ==========================================
-    # SELECTORES Y MENÚ DE PROPIETARIO
-    # ==========================================
-    vistas_mapeo = {
-        "Agenda de Eventos": render_agenda_propietario,
-        "Crear Eventos": render_crear_eventos,
-        "Crear Zonas": render_crear_zonas,
-        "Crear Mesas": render_crear_mesas,
-        "Asignar Mesas": render_asignar_mesas,
-        "Control de Reservas": render_control_reservas,
-        "Control de Puerta": render_control_puerta,
-        "Mapa de Mesas": render_mapa_mesas,
-        "Historial de Asistencia": render_historial_asistencia,
-        "Mantenimiento": render_mantenimiento,
-    }
-
-    opciones_menu = list(vistas_mapeo.keys()) + ["🚪 Cerrar Sesión"]
-
-    menu_url = query_params.get("menu")
-    if (
-        "menu_propietario_activo" not in st.session_state
-        or st.session_state.menu_propietario_activo not in opciones_menu
-    ):
-        if menu_url and menu_url in opciones_menu:
-            st.session_state.menu_propietario_activo = menu_url
-        else:
-            st.session_state.menu_propietario_activo = "Agenda de Eventos"
-
-    opcion_seleccionada = st.selectbox(
-        "📌 Menú de Gestión", opciones_menu, key="menu_propietario_activo"
+    st.markdown(f"""Agenda Bookea ⭐ {st.session_state.get('user_name', 'Usuario')} ⭐    """,
+    unsafe_allow_html=True,
     )
 
-    if opcion_seleccionada != "🚪 Cerrar Sesión":
-        st.query_params["menu"] = opcion_seleccionada
-
-    if opcion_seleccionada == "🚪 Cerrar Sesión":
-        st.session_state.logged_in = False
-        st.session_state.user_role = None
-        st.session_state.pop("menu_propietario_activo", None)
-        st.query_params.clear()
-        st.rerun()
-
-    # Renderizar la vista seleccionada del propietario
-    funcion_a_renderizar = vistas_mapeo.get(
-        opcion_seleccionada, render_agenda_propietario
-    )
-    funcion_a_renderizar(API_URL)
-
-    # 🛑 ¡FUNDAMENTAL! El stop aquí asegura que pinte el pie de página y detenga el script
     render_pie_pagina()
-    st.stop()
+    st.stop() 
                            
   # ==========================================
   # --- ROL: CLIENTE ---
@@ -488,50 +443,42 @@ with col_centro_cliente:
 
     # Flujo exclusivo del cliente
     if opcion == "Catálogo de Eventos":
-        if "paso_reserva" not in st.session_state:
-            st.session_state.paso_reserva = "catalogo"
+      if "paso_reserva" not in st.session_state:
+        st.session_state.paso_reserva = "catalogo"
 
-        if st.session_state.paso_reserva == "catalogo":
-            render_catalogo_clientes(API_URL)
-        elif st.session_state.paso_reserva == "seleccionar_mesa":
-            if st.button("⬅️ Volver a la cartelera"):
-                st.session_state.paso_reserva = "catalogo"
-                st.rerun()
-            render_seleccion_mesas(
-                API_URL,
-                st.session_state.evento_a_reservar,
-                st.session_state.get("user_id"),
-            )
-        elif st.session_state.paso_reserva == "crear_celebracion":
-            if st.button("⬅️ Volver a la cartelera"):
-                st.session_state.paso_reserva = "catalogo"
-                st.rerun()
-            render_crear_reserva_personalizada(
-                API_URL, st.session_state.get("user_id")
-            )
-        st.stop()  # <--- ¡Este stop detiene el flujo aquí!
-
-    elif opcion == "🔍 Buscar Locales":
-        render_filtro_locales(API_URL)
-        st.stop()
-        
-    elif opcion == "Mis Reservas":
-        render_mis_reservas(API_URL, st.session_state.get("user_id"))
-        st.stop()
-        
-    elif opcion == "📅 Calendario del Mes":
-        st.session_state["modo_vista_cartelera"] = "🗓️ Calendario del Mes"
+      if st.session_state.paso_reserva == "catalogo":
         render_catalogo_clientes(API_URL)
-        st.stop()  # <--- ¡Y aquí también!
+      elif st.session_state.paso_reserva == "seleccionar_mesa":
+        if st.button("⬅️ Volver a la cartelera"):
+          st.session_state.paso_reserva = "catalogo"
+          st.rerun()
+        render_seleccion_mesas(
+            API_URL,
+            st.session_state.evento_a_reservar,
+            st.session_state.get("user_id"),
+        )
+      elif st.session_state.paso_reserva == "crear_celebracion":
+        if st.button("⬅️ Volver a la cartelera"):
+          st.session_state.paso_reserva = "catalogo"
+          st.rerun()
+        render_crear_reserva_personalizada(
+            API_URL, st.session_state.get("user_id")
+        )
 
-    elif opcion == "Actualizar Datos":
+      elif opcion == "🔍 Buscar Locales":
+        render_filtro_locales(API_URL)
+
+      elif opcion == "Mis Reservas":
+        render_mis_reservas(API_URL, st.session_state.get("user_id"))
+
+      elif opcion == "Actualizar Datos":
         render_mantenimiento_cliente(API_URL)
         st.stop()
 
       # ==========================================
       # ESTILOS CSS PARA DISEÑO COMPACTO Y RESPONSIVE
       # ==========================================
-    st.markdown(
+      st.markdown(
           """
           <style>
           .centered-header-container {
@@ -558,7 +505,7 @@ with col_centro_cliente:
           unsafe_allow_html=True,
       )
 
-    st.markdown(
+      st.markdown(
           f"""
               <div style="display: flex; justify-content: center; width: 100%;">
                   <div style="background: rgba(16, 14, 36, 0.85); border: 1px solid rgba(150, 55, 255, 0.35); padding: 10px 20px; border-radius: 12px; margin-bottom: 16px; display: inline-block; text-align: center;">

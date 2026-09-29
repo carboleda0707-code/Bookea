@@ -181,13 +181,19 @@ def obtener_mesas_disponibles(evento_id: int, db: Session = Depends(get_db)):
         p_reserva = float(precio_info.precio_reserva) if precio_info and precio_info.precio_reserva > 0 else 25.00
         p_consumo = float(precio_info.consumo_minimo) if precio_info and precio_info.consumo_minimo > 0 else 15.00
 
+        # DETECCIÓN DINÁMICA: Si es un pase general, siempre está disponible para la venta múltiple
+        es_pase_general = "pase" in str(mesa.numero_mesa).lower()
+        
+        disponible_final = True if es_pase_general else (mesa.id not in lista_reservadas)
+
         resultado.append({
             "mesa_id": mesa.id,
             "numero_mesa": mesa.numero_mesa,
             "capacidad": mesa.capacidad,
             "precio_reserva": p_reserva,
             "consumo_minimo": p_consumo,
-            "disponible": mesa.id not in lista_reservadas
+            "zona_id": mesa.zona_id,
+            "disponible": disponible_final
         })
         
     return resultado

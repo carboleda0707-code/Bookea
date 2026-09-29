@@ -15,6 +15,9 @@ class LocalCompletoUpdateModel(BaseModel):
     telefono: Optional[str] = None
     telefono_contacto: Optional[str] = None
     direccion: Optional[str] = None
+    ciudad: Optional[str] = None            # <--- 1. Agrega el campo aquí
+    pais: Optional[str] = None              # <--- Recomendado también
+    tipo_establecimiento: Optional[str] = None # <--- Recomendado también
     tipo_plan: Optional[str] = "Normal"
     pagado: Optional[bool] = False
     slug: Optional[str] = None
@@ -27,7 +30,6 @@ def listar_locales_completos(db: Session = Depends(get_db)):
     locales = db.query(Local).all()
     resultado = []
     
-    # Detección dinámica de la clave primaria de la tabla Usuario
     pk_usuario = list(Usuario.__table__.primary_key.columns)[0].name
     
     for local in locales:
@@ -52,12 +54,13 @@ def listar_locales_completos(db: Session = Depends(get_db)):
             "telefono": getattr(local, 'telefono', '') or "",
             "telefono_contacto": getattr(local, 'telefono_contacto', '') or "",
             "direccion": getattr(local, 'direccion', '') or "",
+            "ciudad": getattr(local, 'ciudad', '') or "",  # <--- 1. Incluimos la ciudad correctamente
             "tipo_plan": getattr(local, 'tipo_plan', getattr(propietario, 'tipo_plan', 'Normal') if propietario else 'Normal'),
             "pagado": getattr(local, 'pagado', getattr(propietario, 'pagado', False) if propietario else False),
             "slug": getattr(local, 'slug', '') or "",
-            # Se leen prioritariamente del propietario (tabla usuarios), con fallback al local
-            "correo_envio": getattr(propietario, 'correo_envio', '') if propietario else (getattr(local, 'correo_envio', '') or ""),
-            "password_app": getattr(propietario, 'password_app', '') if propietario else (getattr(local, 'password_app', '') or ""),
+            # 2 y 3. Leemos directamente desde la tabla local (DBeaver)
+            "correo_envio": getattr(local, 'correo_envio', '') or "",
+            "password_app": getattr(local, 'password_app', '') or "",
             "activo": getattr(local, 'activo', True)
         })
             
@@ -74,14 +77,9 @@ def actualizar_local_completo(local_id: int, data: LocalCompletoUpdateModel, db:
     if not local:
         raise HTTPException(status_code=404, detail="Local no encontrado")
     
-    # 🔑 Asignación directa y obligatoria al local (fuera del else)
+    # Asignaciones directas de campos opcionales
     local.correo_envio = data.correo_envio
     local.password_app = data.password_app
-    
-       
-    print(f"🔍 [CHIVATO BACKEND] Actualizando Local ID: {local_id}")
-    print(f"🔍 [CHIVATO BACKEND] correo_envio recibido: {repr(data.correo_envio)}")
-    print(f"🔍 [CHIVATO BACKEND] password_app recibido: {repr(data.password_app)}")
     
     if data.telefono is not None:
         local.telefono = data.telefono
@@ -92,6 +90,16 @@ def actualizar_local_completo(local_id: int, data: LocalCompletoUpdateModel, db:
         
     if data.direccion is not None:
         local.direccion = data.direccion
+        
+    # --- 2. Agrega la lógica de actualización para ciudad y otros campos ---
+    if data.ciudad is not None:
+        local.ciudad = data.ciudad
+    if data.pais is not None:
+        local.pais = data.pais
+    if data.tipo_establecimiento is not None:
+        local.tipo_establecimiento = data.tipo_establecimiento
+    # ---------------------------------------------------------------------
+
     if data.slug is not None:
         local.slug = data.slug
     
