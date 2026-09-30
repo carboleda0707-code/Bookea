@@ -8,6 +8,8 @@ sys.path.append(
 import requests
 import streamlit as st
 
+
+from app.frontend.home import render_home
 from app.frontend.admin_panel import render_admin_panel
 from app.frontend.agenda_propietario import render_agenda_propietario
 from app.frontend.asignar_mesas import render_asignar_mesas
@@ -23,7 +25,7 @@ from app.frontend.control_puerta import render_control_puerta
 from app.frontend.control_reservas import render_control_reservas
 from app.frontend.crear_eventos import render_crear_eventos
 from app.frontend.crear_mesas import render_crear_mesas
-from app.frontend.crear_reserva_personalizada import (
+from app.frontend.crear_reserva_personalizada import ( 
     render_crear_reserva_personalizada,
 )
 from app.frontend.crear_zonas import render_crear_zonas
@@ -222,7 +224,11 @@ if slug_vip and not st.session_state.get("logged_in", False):
 
 # --- 2. VISTA DE BIENVENIDA (NO LOGEADO) ---
 if not st.session_state.get("logged_in", False):
-    render_bienvenida(API_URL)
+    if st.session_state.get("vista_actual_publica") == "login":
+        render_bienvenida(API_URL)  # Aquí se mantiene solo si vas a usar el login antiguo
+    else:
+        render_home(API_URL)
+    
     render_pie_pagina()
     st.stop()
     # ============================================================

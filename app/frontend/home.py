@@ -1,0 +1,296 @@
+import configparser
+import os
+import requests
+import streamlit as st
+
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+
+
+def render_home(api_url=API_URL):
+  """Renderiza la Landing Page principal de Bookea (Vista Pública).
+
+  Incluye selectores de filtros y un sistema de expansión en línea (accordion)
+  para consultar la cartelera de eventos de cada local VIP sin salir de la
+  página.
+  """
+  current_api_url = api_url or API_URL
+
+  # --- INICIALIZAR ESTADO DE LOCAL EXPANDIDO ---
+  if "id_local_expandido" not in st.session_state:
+    st.session_state.id_local_expandido = None
+
+  # --- CABECERA: TÍTULO Y BOTÓN DE INICIO DE SESIÓN ---
+  col_logo, col_espacio, col_login = st.columns([2, 4, 1.5])
+
+  with col_logo:
+      st.markdown("## 🎟️ Bookea")
+
+  with col_login:
+      # Aquí va tu botón de iniciar sesión actual
+      if st.button("Iniciar sesión", use_container_width=True):
+          st.session_state.vista_actual_publica = "login"
+          st.rerun()
+
+  # --- 2. SECCIÓN HERO ---
+  st.markdown("Encuentra el lugar perfecto para tu evento")
+  st.markdown("Reservaciones en segundos.")
+
+  # --- 3. BUSCADOR PRINCIPAL ---
+  col_search, col_space = st.columns([2, 3])
+  with col_search:
+    busqueda_query = st.text_input(
+        "🔍 Buscar",
+        placeholder="🔍 Ej. Locales con Música en Vivo...",
+        label_visibility="collapsed",
+    )
+  
+  # --- 4. CARGAR MEGACATEGORÍAS DESDE tipo_establecimiento.ini ---
+  base_dir = os.path.dirname(os.path.abspath(__file__))
+  config_path = os.path.join(base_dir, "tipo_establecimiento.ini")
+  
+  config = configparser.ConfigParser()
+  categorias_agrupadas = {"🌐 Todas las categorías": []}
+  
+  if os.path.exists(config_path):
+    config.read(config_path, encoding="utf-8")
+    for section in config.sections():
+      nombre = config.get(section, "nombre", fallback=section)
+      icono = config.get(section, "icono", fallback="📌")
+      
+      # 💡 Soportamos tanto 'filtros' como 'filtro' para evitar que falle
+      filtros_str = config.get(section, "filtros", fallback="")
+      if not filtros_str:
+        filtros_str = config.get(section, "filtro", fallback="")
+      
+      lista_filtros = [f.strip() for f in filtros_str.split(",") if f.strip()]
+      label_key = f"{icono} {nombre}".strip()
+      categorias_agrupadas[label_key] = lista_filtros
+
+  # --- 5. OBTENER DATOS DE LA API PARA FILTROS DINÁMICOS ---
+  locales_data = []
+  ubicaciones_disponibles = set()
+  try:
+    response = requests.get(f"{current_api_url}/locales/", timeout=5)
+    if response.status_code == 200:
+      locales_data = response.json()
+      if isinstance(locales_data, list):
+        for loc in locales_data:
+          ubi = loc.get("direccion") or loc.get("ubicacion")
+          if ubi:
+            ubicaciones_disponibles.add(str(ubi).strip())
+  except Exception:
+    locales_data = []
+
+  # --- 6. FILTROS MINIMALISTAS AGRUPADOS ---
+  st.markdown("#### 🌟 Filtrar Establecimientos")
+  col_cat_filt, col_ubi_filt, col_espacio = st.columns([1, 1, 3])
+
+  with col_cat_filt:
+    cat_seleccionada_label = st.selectbox(
+        "Categoría", options=list(categorias_agrupadas.keys()), label_visibility="collapsed"
+    )
+    subcategorias_activas = categorias_agrupadas.get(cat_seleccionada_label, [])
+    # 💡 Definimos la variable aquí para que el título dinámico la reconozca sin errores
+    filtro_categoria_activo = "" if "Todas" in cat_seleccionada_label else cat_seleccionada_label
+
+  with col_ubi_filt:
+    lista_ubis = ["🌐 Todas las ubicaciones"] + sorted(list(ubicaciones_disponibles))
+    ubi_seleccionada = st.selectbox(
+        "Ubicación", options=lista_ubis, label_visibility="collapsed"
+    )
+    filtro_ubicacion_activo = "" if ubi_seleccionada == "🌐 Todas las ubicaciones" else ubi_seleccionada
+ 
+  # Título dinámico de la sección
+  titulo_seccion = "🔥 Lugares Destacados (VIP)"
+  if filtro_categoria_activo:
+    titulo_seccion += f" - {filtro_categoria_activo}"
+  if filtro_ubicacion_activo:
+    titulo_seccion += f" ({filtro_ubicacion_activo})"
+  st.markdown(f"##### {titulo_seccion}")
+
+  # --- 7. APLICAR FILTROS A LOS LOCALES VIP ---
+  destacados = []
+  if isinstance(locales_data, list):
+    for loc in locales_data:
+      tipo_plan = str(
+          loc.get("tipo_plan", loc.get("plan", loc.get("propietario_plan", "")))
+      ).strip().upper()
+      
+      # Obtenemos estrictamente el tipo_establecimiento de la tabla locales
+      tipo_est = str(loc.get("tipo_establecimiento", "")).strip().lower()
+      ubicacion_loc = str(loc.get("direccion") or loc.get("ubicacion") or "").strip()
+      
+      # --- VALIDACIÓN DIRECTA CONTRA LOCALES ---
+      cumple_categoria = True
+      if subcategorias_activas:
+        subcategorias_normalizadas = [s.strip().lower() for s in subcategorias_activas]
+        
+        # Comprobamos si alguna subcategoría coincide con el tipo de establecimiento del local
+        cumple_categoria = any(
+            sub in tipo_est or tipo_est in sub 
+            for sub in subcategorias_normalizadas
+        )
+
+      if not cumple_categoria:
+        continue
+        
+      if filtro_ubicacion_activo and filtro_ubicacion_activo.lower() not in ubicacion_loc.lower():
+        continue
+        
+      if tipo_plan == "VIP" or loc.get("es_vip", False):
+        destacados.append(loc)
+
+  # --- 8. RENDERIZADO EN 4 COLUMNAS CON EXPANSIÓN EN LÍNEA ---
+  if destacados:
+    num_cols = 4
+    cols_destacados = st.columns(num_cols)
+
+    for idx, venue in enumerate(destacados):
+      venue_id = venue.get("id")
+      col_target = cols_destacados[idx % num_cols]
+      
+      with col_target:
+        with st.container(border=True):
+          titulo = venue.get("nombre") or venue.get("nombre_local") or venue.get("titulo") or "Local VIP"
+          tipo_est = venue.get("tipo_establecimiento", "")
+          ubicacion = venue.get("direccion") or venue.get("ubicacion") or "Ubicación"
+          capacidad = venue.get("capacidad", "Consultar")
+          descripcion = venue.get("descripcion", "Espacio exclusivo para tus eventos.")
+          
+          # Obtenemos la URL o ruta de la imagen (ajusta la clave según tu base de datos: 'imagen', 'foto', 'logo', etc.)
+          # --- MOSTRAR IMAGEN CON RUTA RELATIVA AJUSTADA ---
+          # --- CHIVATO DE DIAGNÓSTICO PARA LA IMAGEN ---
+          # --- OBTENER RUTA DIRECTAMENTE DE LA BASE DE DATOS ---
+          imagen_path = venue.get("imagen") or venue.get("foto") or venue.get("url_imagen")
+          
+          if imagen_path:
+              # Verificamos si el archivo existe físicamente en disco usando exactamente lo que viene de la BD
+              if os.path.exists(imagen_path) or imagen_path.startswith("http"):
+                  st.image(
+                      imagen_path, 
+                      use_container_width=True, 
+                      output_format="JPEG"
+                  )
+              else:
+                  st.info(f"📷 Archivo no encontrado en disco")
+          else:
+              st.info("📷 Sin imagen disponible")
+          
+          # Renderizamos el título y al lado el tipo de establecimiento con una etiqueta estilizada
+          st.markdown(f"""📍 {titulo}   {tipo_est} """, unsafe_allow_html=True)
+
+          st.caption(f"{ubicacion} | 👥 {capacidad}")
+          st.write(descripcion)
+                    
+          # Convertimos ambos a texto para asegurar una comparación exacta
+          esta_expandido = (str(st.session_state.id_local_expandido) == str(venue_id))  
+          texto_boton = "Ocultar Cartelera" if esta_expandido else "Consultar Cartelera"
+          tipo_btn = "secondary" if esta_expandido else "primary"
+          if st.button(
+              texto_boton,
+              key=f"btn_vip_{venue_id}_{idx}",
+              use_container_width=True,
+              type=tipo_btn
+          ):
+            if esta_expandido:
+              st.session_state.id_local_expandido = None
+            else:
+              st.session_state.id_local_expandido = venue_id
+            st.rerun()
+
+    # --- 9. CONTENEDOR EXPANDIDO EN LÍNEA (COMPACTO Y SIN ESPACIOS EXTRAS) ---
+    if st.session_state.id_local_expandido:
+      local_activo = next((v for v in destacados if str(v.get("id")) == str(st.session_state.id_local_expandido)), None)
+      
+      if local_activo:
+        nombre_l = local_activo.get("nombre") or local_activo.get("nombre_local") or "Local"
+        ciudad_l = local_activo.get("direccion") or local_activo.get("ubicacion") or "Ciudad"
+        tipo_l = local_activo.get("tipo_establecimiento", "Establecimiento")
+
+        # Usamos un contenedor con borde sutil o un bloque directo muy compacto sin separadores gigantes
+        with st.container():
+          st.markdown(f"### 🗓️ Cartelera de Eventos - {nombre_l}")
+          st.caption(f"📍 Ubicación: {ciudad_l} | Tipo: {tipo_l} | Explora los eventos disponibles y reserva iniciando sesión.")
+
+          # Obtener eventos de este local específico
+          eventos_a_mostrar = []
+          try:
+            resp_l = requests.get(f"{current_api_url}/locales/{st.session_state.id_local_expandido}/eventos", timeout=5)
+            if resp_l.status_code == 200:
+              evs_l = resp_l.json()
+              if isinstance(evs_l, list):
+                eventos_a_mostrar = [e for e in evs_l if str(e.get("estado", "activo")).strip().lower() not in ["pendiente", "rechazado"]]
+          except Exception:
+            pass
+
+          if not eventos_a_mostrar:
+            eventos_a_mostrar = [{
+                "id": 999,
+                "titulo": "Tu Evento",
+                "estado": "plantilla",
+                "fecha": "Personalizada",
+                "artista_orquesta": "A tu elección"
+            }]
+
+          # Renderizar eventos en 4 columnas
+          cols_eventos = st.columns(4)
+          for e_idx, evento in enumerate(eventos_a_mostrar):
+            ev_id = evento.get("id")
+            nombre_ev = evento.get("titulo") or evento.get("nombre_evento", "Sin nombre")
+            estado_ev = str(evento.get("estado", "")).strip().lower()
+            es_tu_evento = (estado_ev == "plantilla" or str(nombre_ev).strip().lower() == "tu evento")
+
+            with cols_eventos[e_idx % 4]:
+              with st.container(border=True):
+                # Búsqueda de imagen
+                nombre_imagen = evento.get("imagen")
+                imagen_encontrada = None
+                posibles_nombres = []
+                
+                if nombre_imagen:
+                  posibles_nombres.append(str(nombre_imagen))
+
+                posibles_nombres.append(f"eventos_{ev_id}.jpg")
+                posibles_nombres.append(f"eventos_{ev_id}.png")
+                
+                if es_tu_evento:
+                  posibles_nombres.append("Tu Evento.png")
+                  posibles_nombres.append("Tu Evento.jpg")
+
+                for nom in posibles_nombres:
+                  limpio = os.path.basename(nom)
+                  rutas_prueba = [
+                      os.path.join("static", "uploads", limpio),
+                      os.path.join("app", "static", "uploads", limpio),
+                      os.path.join("static", "uploads", "diseño", limpio),
+                      os.path.join("app", "static", "uploads", "diseño", limpio),
+                  ]
+                  for r in rutas_prueba:
+                    if os.path.exists(r):
+                      imagen_encontrada = r
+                      break
+                  if imagen_encontrada:
+                    break
+
+                # Imagen reducida simétricamente
+                if imagen_encontrada:
+                  _, col_img, _ = st.columns([1, 2, 1])
+                  with col_img:
+                    st.image(imagen_encontrada, use_container_width=True)
+                else:
+                  st.markdown("🎧 **Experiencia Bookea**", unsafe_allow_html=True)
+                
+                st.markdown(f"**{nombre_ev}**")
+
+                if es_tu_evento:
+                  st.caption("📅 A tu elección")
+                  if st.button("✨ Reservar / Crear", key=f"inline_tu_ev_{ev_id}_{e_idx}", use_container_width=True, type="primary"):
+                    st.session_state.evento_a_reservar = ev_id
+                    st.session_state.vista_actual_publica = "login"
+                    st.rerun()
+                else:
+                  st.caption(f"📅 {evento.get('fecha', 'N/A')}")
+                  if st.button("Reservar", key=f"inline_res_{ev_id}_{e_idx}", use_container_width=True, type="primary"):
+                    st.session_state.evento_a_reservar = ev_id
+                    st.session_state.vista_actual_publica = "login"
+                    st.rerun()

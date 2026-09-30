@@ -96,6 +96,8 @@ def listar_todos_los_locales(
         "slug": loc.slug,
         "activo": loc.activo,
         "likes": loc.likes or 0,
+        "tipo_plan": getattr(loc, "tipo_plan", ""),  # <-- AGREGADO PARA EL FILTRO VIP
+        "es_vip": getattr(loc, "es_vip", False),     # <-- AGREGADO PARA EL FILTRO VIP
     })
   return resultado
 
