@@ -50,7 +50,11 @@ class Empresa(Base):
 
 class Local(Base):
   __tablename__ = "locales"
-
+  
+  #  Asegúrate de que esté definida aquí  
+  imagen = Column(String(255), nullable=True)  
+  
+  # ... tus otras columnas ...
   id = Column(Integer, primary_key=True, index=True)
   empresa_id = Column(
       BigInteger, ForeignKey("empresas.id", ondelete="CASCADE"), nullable=True

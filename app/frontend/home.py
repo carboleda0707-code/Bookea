@@ -159,22 +159,31 @@ def render_home(api_url=API_URL):
           
           # Obtenemos la URL o ruta de la imagen (ajusta la clave según tu base de datos: 'imagen', 'foto', 'logo', etc.)
           # --- MOSTRAR IMAGEN CON RUTA RELATIVA AJUSTADA ---
-          # --- CHIVATO DE DIAGNÓSTICO PARA LA IMAGEN ---
           # --- OBTENER RUTA DIRECTAMENTE DE LA BASE DE DATOS ---
           imagen_path = venue.get("imagen") or venue.get("foto") or venue.get("url_imagen")
           
           if imagen_path:
-              # Verificamos si el archivo existe físicamente en disco usando exactamente lo que viene de la BD
-              if os.path.exists(imagen_path) or imagen_path.startswith("http"):
-                  st.image(
-                      imagen_path, 
-                      use_container_width=True, 
-                      output_format="JPEG"
-                  )
+              # Limpiamos la ruta por si tiene slashes iniciales
+              ruta_limpia = imagen_path.lstrip("/")
+              
+              # Verificamos si existe el archivo físicamente en disco o es una URL externa
+              existe_fisico = os.path.exists(ruta_limpia) or os.path.exists(imagen_path)
+
+              if existe_fisico or imagen_path.startswith("http"):
+                  path_final = ruta_limpia if os.path.exists(ruta_limpia) else imagen_path
+                  
+                  # 📐 Tamaño compacto y alineado simétricamente con columnas
+                  _, col_img, _ = st.columns([1, 3, 1])
+                  with col_img:
+                      st.image(
+                          path_final, 
+                          use_container_width=True, 
+                          output_format="JPEG"
+                      )
               else:
-                  st.info(f"📷 Archivo no encontrado en disco")
+                  st.warning("⚠️ Imagen no encontrada en disco")
           else:
-              st.info("📷 Sin imagen disponible")
+              st.info("📌 Local sin imagen")
           
           # Renderizamos el título y al lado el tipo de establecimiento con una etiqueta estilizada
           st.markdown(f"""📍 {titulo}   {tipo_est} """, unsafe_allow_html=True)

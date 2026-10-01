@@ -273,6 +273,10 @@ def render_bienvenida(API_URL):
                     telefono_prop = campo_texto("Teléfono", "reg_prop_tel", AZUL, placeholder="Teléfono")
                     email_prop = campo_texto("Correo electrónico", "reg_prop_email", AZUL, placeholder="Correo electrónico")
                     password_prop = campo_texto("Contraseña", "reg_prop_pass_prop", AZUL, tipo="password", placeholder="Contraseña")
+                    
+                    # 📸 NUEVO: Selector de archivo para la foto del local
+                    etiqueta("Fotografía del Local", AZUL)
+                    foto_local_subida = st.file_uploader("Fotografía del Local", type=["jpg", "jpeg", "png"], key="reg_prop_foto", label_visibility="collapsed")
 
                     col_p1, col_p2 = st.columns(2)
                     submit_reg_prop = col_p1.form_submit_button("Registrarse", use_container_width=True)
@@ -281,12 +285,36 @@ def render_bienvenida(API_URL):
                 if submit_reg_prop:
                     if nombre_prop and email_prop and password_prop and reg_negocio:
                         try:
-                            payload = {"nombre_comercial": reg_negocio, "tipo_negocio": reg_tipo_negocio, "nombre": nombre_prop, "correo": email_prop.strip().lower(), "contrasena": password_prop, "telefono": telefono_prop, "ruc": reg_ruc_prop}
+                            payload = {
+                                "nombre_comercial": reg_negocio, 
+                                "tipo_negocio": reg_tipo_negocio, 
+                                "nombre": nombre_prop, 
+                                "correo": email_prop.strip().lower(), 
+                                "contrasena": password_prop, 
+                                "telefono": telefono_prop, 
+                                "ruc": reg_ruc_prop
+                            }
                             r = requests.post(f"{API_URL}/auth/registro", json=payload, timeout=5)
-                            if r.status_code == 200: st.success("¡Negocio registrado con éxito! Ya puedes iniciar sesión.")
-                            else: mostrar_error(r, "Error en el registro.")
-                        except requests.RequestException as e: st.error(f"Error de conexión: {e}")
-                    else: st.warning("Por favor completa los campos obligatorios.")
+                            if r.status_code == 200:
+                                data_resp = r.json()
+                                # Obtenemos el ID del local recién creado desde la respuesta de la API
+                                local_id_creado = data_resp.get("local_id") or data_resp.get("id") or data_resp.get("propietario_id")
+                                
+                                # Si se cargó una foto y obtuvimos el ID, procesamos el guardado estándar
+                                if foto_local_subida is not None and local_id_creado:
+                                    from app.utils.fotos_locales import guardar_foto_local
+                                    ruta_imagen = guardar_foto_local(foto_local_subida, local_id_creado)
+                                    if ruta_imagen:
+                                        # Actualizamos la ruta de la imagen en la API/Base de datos
+                                        requests.put(f"{API_URL}/locales/{local_id_creado}", json={"imagen": ruta_imagen}, timeout=5)
+
+                                st.success("¡Negocio registrado con éxito! Ya puedes iniciar sesión.")
+                            else: 
+                                mostrar_error(r, "Error en el registro.")
+                        except requests.RequestException as e: 
+                            st.error(f"Error de conexión: {e}")
+                    else: 
+                        st.warning("Por favor completa los campos obligatorios.")
                 elif volver_prop_btn:
                     st.session_state.accion_prop = "Iniciar Sesión"
                     st.rerun()

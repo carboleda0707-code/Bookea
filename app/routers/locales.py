@@ -96,8 +96,9 @@ def listar_todos_los_locales(
         "slug": loc.slug,
         "activo": loc.activo,
         "likes": loc.likes or 0,
-        "tipo_plan": getattr(loc, "tipo_plan", ""),  # <-- AGREGADO PARA EL FILTRO VIP
-        "es_vip": getattr(loc, "es_vip", False),     # <-- AGREGADO PARA EL FILTRO VIP
+        "tipo_plan": getattr(loc, "tipo_plan", ""),
+        "es_vip": getattr(loc, "es_vip", False),
+        "imagen": getattr(loc, "imagen", ""),  # 👈 ¡Asegúrate de incluir esta línea aquí!
     })
   return resultado
 
@@ -315,7 +316,7 @@ def obtener_local_por_id_o_slug(identificador: str, db: Session = Depends(get_db
       "descripcion": getattr(
           local, "descripcion", "Bienvenidos a nuestra mini web de reservas."
       ),
-      "imagen_url": getattr(local, "imagen_url", ""),
+      "imagen": getattr(local, "imagen", ""), # <-- ASEGURAR QUE DEVUELVA ESTE CAMPO
       "slug": local.slug,
       "activo": local.activo,
       "direccion": getattr(local, "direccion", "Dirección no especificada"),
@@ -400,7 +401,7 @@ def actualizar_local(local_id: int, local_data: dict, db: Session = Depends(get_
     if not local:
         raise HTTPException(status_code=404, detail="Local no encontrado.")
     
-    # Actualizar todos los campos enviados desde el panel de administración de manera segura
+    # Actualizar campos de texto generales
     local.nombre = local_data.get("nombre", local_data.get("nombre_local", local.nombre))
     local.tipo_establecimiento = local_data.get("tipo_establecimiento", local.tipo_establecimiento)
     local.direccion = local_data.get("direccion", local.direccion)
@@ -416,6 +417,10 @@ def actualizar_local(local_id: int, local_data: dict, db: Session = Depends(get_
     local.password_app = local_data.get("password_app", local.password_app)
     local.aviso_reserva = local_data.get("aviso_reserva", local.aviso_reserva)
     
+    # 📸 NUEVO: Guardar o actualizar la ruta de la imagen en el modelo
+    if "imagen" in local_data:
+        local.imagen = local_data.get("imagen")
+    
     if "activo" in local_data:
         local.activo = local_data.get("activo")
         
@@ -427,4 +432,4 @@ def actualizar_local(local_id: int, local_data: dict, db: Session = Depends(get_
     
     db.commit()
     db.refresh(local)
-    return {"mensaje": "Local actualizado exitosamente.", "local_id": local.id}
+    return {"mensaje": "Local actualizado exitosamente.", "local_id": local.id, "imagen": local.imagen}
