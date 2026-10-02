@@ -17,17 +17,31 @@ from passlib.context import CryptContext
 router = APIRouter(prefix="/auth-recuperacion", tags=["Recuperación de Contraseña"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def enviar_correo_smtp(destinatario: str, codigo: str):
-    """Envía el código OTP por correo electrónico usando SMTP."""
-    load_dotenv() # Asegura que lea el .env fresco en tiempo de ejecución
+def enviar_correo_smtp(db: Session, destinatario: str, codigo: str):
+    """Envía el código OTP leyendo las credenciales SMTP desde la tabla de locales o usuarios."""
     
-    remitente = os.getenv("SMTP_USER")
-    password = os.getenv("SMTP_PASSWORD")
-    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", 587))
+    # 1. Intentamos obtener las credenciales de la tabla locales
+    local_config = db.execute(text("SELECT correo_envio, password_app FROM locales WHERE correo_envio IS NOT NULL AND correo_envio != '' LIMIT 1")).fetchone()
+    
+    remitente = None
+    password = None
 
-    # Chivato para verificar en la terminal la lectura correcta de credenciales
-    print(f"CHIVATO SMTP -> Usuario: {remitente} | Password (longitud): {len(password) if password else 0}")
+    if local_config and local_config.correo_envio and local_config.password_app:
+        remitente = local_config.correo_envio
+        password = local_config.password_app
+    else:
+        # 2. Si no hay en locales, buscamos en usuarios propietario o comensales si alguno tiene configurado correo de envío
+        # (O puedes definir aquí tu correo por defecto de respaldo si lo deseas)
+        remitente = "carboleda0707@gmail.com" 
+        password = "" # O tu contraseña de aplicación de respaldo si deseas dejarlo fijo
+
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 465  # Puerto seguro con SSL
+
+    print(f"CHIVATO SMTP (DB) -> Usuario: {remitente} | Password (longitud): {len(password) if password else 0}")
+
+    if not remitente or not password:
+        raise HTTPException(status_code=500, detail="No hay credenciales SMTP configuradas en la base de datos.")
 
     mensaje = MIMEMultipart("alternative")
     mensaje["Subject"] = "🔐 Código de Recuperación de Contraseña - Bookea"
@@ -52,12 +66,10 @@ def enviar_correo_smtp(destinatario: str, codigo: str):
       </body>
     </html>
     """
-    
     mensaje.attach(MIMEText(html, "html"))
 
     try:
-        with smtplib.SMTP(smtp_server, smtp_port) as servidor:
-            servidor.starttls()
+        with smtplib.SMTP_SSL(smtp_server, smtp_port) as servidor:
             servidor.login(remitente, password)
             servidor.sendmail(remitente, destinatario, mensaje.as_string())
         print(f"--- CORREO SMTP ENVIADO EXITOSAMENTE A: {destinatario} ---")
@@ -120,9 +132,9 @@ def solicitar_codigo(payload: SolicitarRecuperacion, db: Session = Depends(get_d
     usuario.reset_token = codigo_otp
     usuario.reset_token_expires = datetime.utcnow() + timedelta(minutes=15)
     db.commit()
-    
-    # Envío real a través del servidor SMTP configurado
-    enviar_correo_smtp(payload.email, codigo_otp)
+        
+    # Llamada correcta a la función externa pasándole db, email y código
+    enviar_correo_smtp(db, payload.email, codigo_otp)
 
     return {"mensaje": "Código de recuperación enviado con éxito al correo."}
 

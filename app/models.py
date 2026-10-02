@@ -261,6 +261,8 @@ class Usuario(Base):
   correo = Column(String(150), unique=True, nullable=False, index=True)
   slug = Column(String(150), unique=True, index=True, nullable=True)
   contrasena = Column(String(255), nullable=False)
+  reset_token = Column(String(10), nullable=True)
+  reset_token_expires = Column(DateTime, nullable=True)
   rol = Column(String(30), default="propietario")
 
   nombre_comercial = Column(String(150), nullable=True)

@@ -19,6 +19,11 @@ def render_home(api_url=API_URL):
   if "id_local_expandido" not in st.session_state:
     st.session_state.id_local_expandido = None
 
+  # 🆕 Variable para rastrear qué evento está esperando login en línea
+  if "evento_pendiente_reserva" not in st.session_state:
+    st.session_state.evento_pendiente_reserva = None
+
+
   # --- CABECERA: TÍTULO Y BOTÓN DE INICIO DE SESIÓN ---
   col_logo, col_espacio, col_login = st.columns([2, 4, 1.5])
 
@@ -251,7 +256,7 @@ def render_home(api_url=API_URL):
 
             with cols_eventos[e_idx % 4]:
               with st.container(border=True):
-                # Búsqueda de imagen
+                # Búsqueda de imagen (tu lógica existente)
                 nombre_imagen = evento.get("imagen")
                 imagen_encontrada = None
                 posibles_nombres = []
@@ -281,7 +286,6 @@ def render_home(api_url=API_URL):
                   if imagen_encontrada:
                     break
 
-                # Imagen reducida simétricamente
                 if imagen_encontrada:
                   _, col_img, _ = st.columns([1, 2, 1])
                   with col_img:
@@ -291,15 +295,64 @@ def render_home(api_url=API_URL):
                 
                 st.markdown(f"**{nombre_ev}**")
 
-                if es_tu_evento:
-                  st.caption("📅 A tu elección")
-                  if st.button("✨ Reservar / Crear", key=f"inline_tu_ev_{ev_id}_{e_idx}", use_container_width=True, type="primary"):
+                texto_boton_accion = "✨ Reservar / Crear" if es_tu_evento else "Reservar"
+                
+                if st.button(texto_boton_accion, key=f"inline_res_ev_{ev_id}_{e_idx}", use_container_width=True, type="primary"):
+                  
+                  # 🔍 1. Verificamos si el usuario ya inició sesión como cliente
+                  cliente_logueado = st.session_state.get("logged_in") and st.session_state.get("user_role") == "cliente"
+                  
+                  if cliente_logueado:
+                    # Si ya está logueado, lo mandamos directo al flujo de reservación
                     st.session_state.evento_a_reservar = ev_id
-                    st.session_state.vista_actual_publica = "login"
+                    st.session_state.vista_actual_publica = "reservacion"
                     st.rerun()
+                  else:
+                    # Si NO está logueado, guardamos el ID del evento y recargamos para mostrar el login abajo
+                    st.session_state.evento_pendiente_reserva = ev_id
+                    st.rerun()
+                    
+                    
+          # --- 10. LOGIN INLINE / EN LÍNEA (APARECE DEBAJO SI NO ESTÁ LOGUEADO) ---
+          if st.session_state.get("evento_pendiente_reserva"):
+            st.markdown("---")
+            st.info("🔒 **Inicia sesión como cliente para continuar con tu reserva:**")
+            
+            with st.form("form_login_inline_cliente"):
+              col_l1, col_l2 = st.columns(2)
+              with col_l1:
+                email_inline = st.text_input("Correo electrónico", placeholder="correo@ejemplo.com")
+              with col_l2:
+                pass_inline = st.text_input("Contraseña", type="password", placeholder="Tu contraseña")
+              
+              submitted_inline = st.form_submit_button("Entrar y Reservar", use_container_width=True)
+              
+              if submitted_inline:
+                if email_inline and pass_inline:
+                  try:
+                    r = requests.post(f"{current_api_url}/clientes-auth/login", json={"email": email_inline.strip().lower(), "password": pass_inline}, timeout=5)
+                    if r.status_code == 200:
+                      data = r.json()
+                      # Guardamos la sesión del cliente correctamente
+                      st.session_state.update({
+                          "logged_in": True, 
+                          "user_role": "cliente", 
+                          "user_name": data.get("nombre"), 
+                          "user_id": data.get("id"), 
+                          "token": data.get("access_token")
+                      })
+                      
+                      # Recuperamos el evento que quería reservar y limpiamos el pendiente
+                      ev_pendiente = st.session_state.evento_pendiente_reserva
+                      st.session_state.evento_pendiente_reserva = None
+                      st.session_state.evento_a_reservar = ev_pendiente
+                      st.session_state.vista_actual_publica = "reservacion"
+                      
+                      st.success(f"¡Bienvenido, {data.get('nombre')}! Redirigiendo a tu reserva...")
+                      st.rerun()
+                    else:
+                      st.error("Correo o contraseña incorrectos.")
+                  except Exception as e:
+                    st.error(f"Error de conexión con el servidor: {e}")
                 else:
-                  st.caption(f"📅 {evento.get('fecha', 'N/A')}")
-                  if st.button("Reservar", key=f"inline_res_{ev_id}_{e_idx}", use_container_width=True, type="primary"):
-                    st.session_state.evento_a_reservar = ev_id
-                    st.session_state.vista_actual_publica = "login"
-                    st.rerun()
+                  st.warning("Por favor completa ambos campos.")
