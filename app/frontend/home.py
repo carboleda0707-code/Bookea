@@ -145,91 +145,66 @@ def render_home(api_url=API_URL):
       if tipo_plan == "VIP" or loc.get("es_vip", False):
         destacados.append(loc)
 
-  # --- 8. RENDERIZADO EN 4 COLUMNAS CON EXPANSIÓN EN LÍNEA ---
+
+# --- 8. RENDERIZADO VERTICAL ADAPTADO PARA MÓVILES Y ESCRITORIO ---
   if destacados:
-    num_cols = 4
-    cols_destacados = st.columns(num_cols)
+    # CSS para garantizar que en pantallas móviles la foto y los textos quepan lado a lado sin estorbar
+    st.markdown("""
+        
+    """, unsafe_allow_html=True)
 
-    for idx, venue in enumerate(destacados):
+    for i, venue in enumerate(destacados):
       venue_id = venue.get("id")
-      col_target = cols_destacados[idx % num_cols]
-      
-      with col_target:
-        with st.container(border=True):
-          titulo = venue.get("nombre") or venue.get("nombre_local") or venue.get("titulo") or "Local VIP"
-          tipo_est = venue.get("tipo_establecimiento", "")
-          ubicacion = venue.get("direccion") or venue.get("ubicacion") or "Ubicación"
-          capacidad = venue.get("capacidad", "Consultar")
-          descripcion = venue.get("descripcion", "Espacio exclusivo para tus eventos.")
-          
-          # Obtenemos la URL o ruta de la imagen (ajusta la clave según tu base de datos: 'imagen', 'foto', 'logo', etc.)
-          # --- MOSTRAR IMAGEN CON RUTA RELATIVA AJUSTADA ---
-          # --- OBTENER RUTA DIRECTAMENTE DE LA BASE DE DATOS ---
+      titulo = venue.get("nombre") or venue.get("nombre_local") or venue.get("titulo") or "Local VIP"
+      tipo_est = venue.get("tipo_establecimiento", "")
+      ubicacion = venue.get("direccion") or venue.get("ubicacion") or "Ubicación"
+      capacidad = venue.get("capacidad", "Consultar")
+      descripcion = venue.get("descripcion", "Espacio exclusivo para tus eventos.")
+
+      # Tarjeta optimizada para flujo compacto lado a lado
+      with st.container(border=True):
+        col_img_mini, col_txt_mini = st.columns([0.5, 4])
+        
+        with col_img_mini:
           imagen_path = venue.get("imagen") or venue.get("foto") or venue.get("url_imagen")
-          
+          imagen_encontrada = None
           if imagen_path:
-              # Limpiamos la ruta por si tiene slashes iniciales
-              ruta_limpia = imagen_path.lstrip("/")
-              
-              # Verificamos si existe el archivo físicamente en disco o es una URL externa
-              existe_fisico = os.path.exists(ruta_limpia) or os.path.exists(imagen_path)
+            ruta_limpia = imagen_path.lstrip("/")
+            if os.path.exists(ruta_limpia) or os.path.exists(imagen_path):
+              imagen_encontrada = ruta_limpia if os.path.exists(ruta_limpia) else imagen_path
 
-              if existe_fisico or imagen_path.startswith("http"):
-                  path_final = ruta_limpia if os.path.exists(ruta_limpia) else imagen_path
-                  
-                  # 📐 Tamaño compacto y alineado simétricamente con columnas
-                  _, col_img, _ = st.columns([1, 3, 1])
-                  with col_img:
-                      st.image(
-                          path_final, 
-                          use_container_width=True, 
-                          output_format="JPEG"
-                      )
-              else:
-                  st.warning("⚠️ Imagen no encontrada en disco")
+          if imagen_encontrada:
+            st.image(imagen_encontrada, use_container_width=False)
           else:
-              st.info("📌 Local sin imagen")
-          
-          # Renderizamos el título y al lado el tipo de establecimiento con una etiqueta estilizada
-          st.markdown(f"""📍 {titulo}   {tipo_est} """, unsafe_allow_html=True)
+            st.info("📌 Sin foto")
 
-          st.caption(f"{ubicacion} | 👥 {capacidad}")
+        with col_txt_mini:
+          st.markdown(f"**{titulo}**   `{tipo_est}`", unsafe_allow_html=True)
+          st.caption(f"📍 {ubicacion} | 👥 {capacidad}")
           st.write(descripcion)
-                    
-          # Convertimos ambos a texto para asegurar una comparación exacta
+                  
           esta_expandido = (str(st.session_state.id_local_expandido) == str(venue_id))  
           texto_boton = "Ocultar Cartelera" if esta_expandido else "Consultar Cartelera"
           tipo_btn = "secondary" if esta_expandido else "primary"
-          if st.button(
-              texto_boton,
-              key=f"btn_vip_{venue_id}_{idx}",
-              use_container_width=True,
-              type=tipo_btn
-          ):
+          
+          # Botón pequeño alineado a la izquierda dentro de la columna de texto
+          if st.button(texto_boton, key=f"btn_vip_compacto_{venue_id}_{i}", type=tipo_btn):
             if esta_expandido:
               st.session_state.id_local_expandido = None
             else:
               st.session_state.id_local_expandido = venue_id
             st.rerun()
 
-    # --- 9. CONTENEDOR EXPANDIDO EN LÍNEA (COMPACTO Y SIN ESPACIOS EXTRAS) ---
-    if st.session_state.id_local_expandido:
-      local_activo = next((v for v in destacados if str(v.get("id")) == str(st.session_state.id_local_expandido)), None)
-      
-      if local_activo:
-        nombre_l = local_activo.get("nombre") or local_activo.get("nombre_local") or "Local"
-        ciudad_l = local_activo.get("direccion") or local_activo.get("ubicacion") or "Ciudad"
-        tipo_l = local_activo.get("tipo_establecimiento", "Establecimiento")
+      # --- 9. SI ESTE LOCAL ESTÁ EXPANDIDO, INSERTAR SU CARTELERA EXACTAMENTE AQUÍ ---
+      if str(st.session_state.get("id_local_expandido")) == str(venue_id):
+        st.markdown("---")
+        with st.container(border=True):
+          st.markdown(f"### 🗓️ Cartelera de Eventos - {titulo}")
+          st.caption(f"📍 Ubicación: {ubicacion} | Tipo: {tipo_est} | Explora los eventos disponibles y reserva.")
 
-        # Usamos un contenedor con borde sutil o un bloque directo muy compacto sin separadores gigantes
-        with st.container():
-          st.markdown(f"### 🗓️ Cartelera de Eventos - {nombre_l}")
-          st.caption(f"📍 Ubicación: {ciudad_l} | Tipo: {tipo_l} | Explora los eventos disponibles y reserva iniciando sesión.")
-
-          # Obtener eventos de este local específico
           eventos_a_mostrar = []
           try:
-            resp_l = requests.get(f"{current_api_url}/locales/{st.session_state.id_local_expandido}/eventos", timeout=5)
+            resp_l = requests.get(f"{current_api_url}/locales/{venue_id}/eventos", timeout=5)
             if resp_l.status_code == 200:
               evs_l = resp_l.json()
               if isinstance(evs_l, list):
@@ -246,7 +221,6 @@ def render_home(api_url=API_URL):
                 "artista_orquesta": "A tu elección"
             }]
 
-          # Renderizar eventos en 4 columnas
           cols_eventos = st.columns(4)
           for e_idx, evento in enumerate(eventos_a_mostrar):
             ev_id = evento.get("id")
@@ -256,14 +230,12 @@ def render_home(api_url=API_URL):
 
             with cols_eventos[e_idx % 4]:
               with st.container(border=True):
-                # Búsqueda de imagen (tu lógica existente)
                 nombre_imagen = evento.get("imagen")
-                imagen_encontrada = None
+                imagen_encontrada_ev = None
                 posibles_nombres = []
                 
                 if nombre_imagen:
                   posibles_nombres.append(str(nombre_imagen))
-
                 posibles_nombres.append(f"eventos_{ev_id}.jpg")
                 posibles_nombres.append(f"eventos_{ev_id}.png")
                 
@@ -281,49 +253,39 @@ def render_home(api_url=API_URL):
                   ]
                   for r in rutas_prueba:
                     if os.path.exists(r):
-                      imagen_encontrada = r
+                      imagen_encontrada_ev = r
                       break
-                  if imagen_encontrada:
+                  if imagen_encontrada_ev:
                     break
 
-                if imagen_encontrada:
-                  _, col_img, _ = st.columns([1, 2, 1])
-                  with col_img:
-                    st.image(imagen_encontrada, use_container_width=True)
+                if imagen_encontrada_ev:
+                  st.image(imagen_encontrada_ev, use_container_width=True)
                 else:
-                  st.markdown("🎧 **Experiencia Bookea**", unsafe_allow_html=True)
+                  st.markdown("🎧 **Bookea**")
                 
                 st.markdown(f"**{nombre_ev}**")
-
                 texto_boton_accion = "✨ Reservar / Crear" if es_tu_evento else "Reservar"
                 
-                if st.button(texto_boton_accion, key=f"inline_res_ev_{ev_id}_{e_idx}", use_container_width=True, type="primary"):
-                  
-                  # 🔍 1. Verificamos si el usuario ya inició sesión como cliente
+                if st.button(texto_boton_accion, key=f"compact_ev_{ev_id}_{i}_{e_idx}", use_container_width=True, type="primary"):
                   cliente_logueado = st.session_state.get("logged_in") and st.session_state.get("user_role") == "cliente"
-                  
                   if cliente_logueado:
-                    # Si ya está logueado, lo mandamos directo al flujo de reservación
                     st.session_state.evento_a_reservar = ev_id
                     st.session_state.vista_actual_publica = "reservacion"
                     st.rerun()
                   else:
-                    # Si NO está logueado, guardamos el ID del evento y recargamos para mostrar el login abajo
                     st.session_state.evento_pendiente_reserva = ev_id
                     st.rerun()
                     
-                    
-          # --- 10. LOGIN INLINE / EN LÍNEA (APARECE DEBAJO SI NO ESTÁ LOGUEADO) ---
           if st.session_state.get("evento_pendiente_reserva"):
             st.markdown("---")
             st.info("🔒 **Inicia sesión como cliente para continuar con tu reserva:**")
             
-            with st.form("form_login_inline_cliente"):
+            with st.form(f"form_login_compact_{i}"):
               col_l1, col_l2 = st.columns(2)
               with col_l1:
-                email_inline = st.text_input("Correo electrónico", placeholder="correo@ejemplo.com")
+                email_inline = st.text_input("Correo electrónico", placeholder="correo@ejemplo.com", key=f"email_c_{i}")
               with col_l2:
-                pass_inline = st.text_input("Contraseña", type="password", placeholder="Tu contraseña")
+                pass_inline = st.text_input("Contraseña", type="password", placeholder="Contraseña", key=f"pass_c_{i}")
               
               submitted_inline = st.form_submit_button("Entrar y Reservar", use_container_width=True)
               
@@ -333,7 +295,6 @@ def render_home(api_url=API_URL):
                     r = requests.post(f"{current_api_url}/clientes-auth/login", json={"email": email_inline.strip().lower(), "password": pass_inline}, timeout=5)
                     if r.status_code == 200:
                       data = r.json()
-                      # Guardamos la sesión del cliente correctamente
                       st.session_state.update({
                           "logged_in": True, 
                           "user_role": "cliente", 
@@ -341,18 +302,17 @@ def render_home(api_url=API_URL):
                           "user_id": data.get("id"), 
                           "token": data.get("access_token")
                       })
-                      
-                      # Recuperamos el evento que quería reservar y limpiamos el pendiente
                       ev_pendiente = st.session_state.evento_pendiente_reserva
                       st.session_state.evento_pendiente_reserva = None
                       st.session_state.evento_a_reservar = ev_pendiente
                       st.session_state.vista_actual_publica = "reservacion"
-                      
-                      st.success(f"¡Bienvenido, {data.get('nombre')}! Redirigiendo a tu reserva...")
+                      st.success(f"¡Bienvenido, {data.get('nombre')}! Redirigiendo...")
                       st.rerun()
                     else:
                       st.error("Correo o contraseña incorrectos.")
                   except Exception as e:
-                    st.error(f"Error de conexión con el servidor: {e}")
+                    st.error(f"Error de conexión: {e}")
                 else:
-                  st.warning("Por favor completa ambos campos.")
+                  st.warning("Completa ambos campos.")
+
+        break
