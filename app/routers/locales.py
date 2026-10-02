@@ -98,7 +98,8 @@ def listar_todos_los_locales(
         "likes": loc.likes or 0,
         "tipo_plan": getattr(loc, "tipo_plan", ""),
         "es_vip": getattr(loc, "es_vip", False),
-        "imagen": getattr(loc, "imagen", ""),  # 👈 ¡Asegúrate de incluir esta línea aquí!
+        "imagen": getattr(loc, "imagen", ""),
+        "codigo_ubicacion": getattr(loc, "codigo_ubicacion", ""),  # 👈 ¡Asegúrate de agregar esta línea!
     })
   return resultado
 
@@ -316,7 +317,7 @@ def obtener_local_por_id_o_slug(identificador: str, db: Session = Depends(get_db
       "descripcion": getattr(
           local, "descripcion", "Bienvenidos a nuestra mini web de reservas."
       ),
-      "imagen": getattr(local, "imagen", ""), # <-- ASEGURAR QUE DEVUELVA ESTE CAMPO
+      "imagen": getattr(local, "imagen", ""),
       "slug": local.slug,
       "activo": local.activo,
       "direccion": getattr(local, "direccion", "Dirección no especificada"),
@@ -327,6 +328,7 @@ def obtener_local_por_id_o_slug(identificador: str, db: Session = Depends(get_db
       "ruc_nit": ruc_empresa,
       "ciudad": getattr(local, "ciudad", "Samborondón"),
       "likes": local.likes or 0,
+      "codigo_ubicacion": getattr(local, "codigo_ubicacion", ""),  # 👈 ¡Asegúrate de agregar esta línea aquí también!
   }
 
 
