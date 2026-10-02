@@ -505,7 +505,6 @@ def render_agenda_propietario(api_url):
       except Exception:
         pass
 
-    st.markdown("---")
     st.info(f"✏️ Estás editando el Evento ID: {id_a_editar}")
 
     if evento_actual:

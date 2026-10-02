@@ -1,8 +1,33 @@
 import streamlit as st
 import requests
+import configparser
+import os
 
 def render_mantenimiento(api_url):
     
+    # ============================================================
+    # CARGAR TIPOS DE ESTABLECIMIENTO DESDE EL ARCHIVO .INI
+    # ============================================================
+    tipos_establecimiento = ["Salsoteca / Bar"] # Valor por defecto de respaldo
+    try:
+        config = configparser.ConfigParser()
+        # Ruta relativa hacia frontend/tipo_establecimiento.ini
+        ini_path = os.path.join("app", "frontend", "tipo_establecimiento.ini")
+        if not os.path.exists(ini_path):
+            ini_path = "tipo_establecimiento.ini" # Fallback si se ejecuta desde otra ruta
+            
+        if os.path.exists(ini_path):
+            config.read(ini_path, encoding="utf-8")
+            tipos_opciones = []
+            for section in config.sections():
+                # Obtenemos el nombre legible de cada sección del .ini
+                nombre_tipo = config.get(section, "nombre", fallback=section)
+                tipos_opciones.append(nombre_tipo)
+            if tipos_opciones:
+                tipos_establecimiento = tipos_opciones
+    except Exception as e:
+        print(f"Error cargando tipo_establecimiento.ini: {e}")
+
     # ============================================================
     # ESTILOS CSS OPTIMIZADOS (CAMPOS COMPACTOS Y TÍTULOS VISIBLES)
     # ============================================================
@@ -69,28 +94,32 @@ def render_mantenimiento(api_url):
         if local_data:
             actual_id = local_data.get("id")
             
+            # Determinar índice actual para el selectbox
+            tipo_actual_db = local_data.get("tipo_establecimiento", "")
+            index_tipo = 0
+            if tipo_actual_db in tipos_establecimiento:
+                index_tipo = tipos_establecimiento.index(tipo_actual_db)
+
             with st.form("form_editar_local_real"):
                 col1, col2 = st.columns(2)
                 with col1:
-                    # Campo de nombre comercial actualizado
                     nombre = st.text_input("Nombre Comercial", value=local_data.get("nombre", local_data.get("nombre_local", "")))
                     ruc = st.text_input("RUC / NIT", value=local_data.get("ruc_nit", ""))
                     direccion = st.text_input("Dirección Exacta", value=local_data.get("direccion", ""))
                     ciudad = st.text_input("Ciudad", value=local_data.get("ciudad", ""))
                 with col2:
                     pais = st.text_input("País", value=local_data.get("pais", "Ecuador"))
-                    tipo = st.text_input("Tipo de Establecimiento", value=local_data.get("tipo_establecimiento", ""))
+                    # Selector dinámico cargado desde el .ini
+                    tipo = st.selectbox("Tipo de Establecimiento", options=tipos_establecimiento, index=index_tipo)
                     email = st.text_input("Correo Electrónico de Contacto", value=local_data.get("email_contacto", ""))
                     telefono = st.text_input("Teléfono / WhatsApp", value=local_data.get("telefono_contacto", local_data.get("telefono", "")))
                 
-                # Selector para actualizar la fotografía simultáneamente
                 st.markdown("---")
                 foto_local_subida = st.file_uploader("Actualizar Fotografía del Local", type=["jpg", "jpeg", "png"], key="edit_foto_local")
                     
                 submit_cambios = st.form_submit_button("💾 Guardar Cambios")
                 
                 if submit_cambios:
-                    # 1. Procesar la imagen si se subió una nueva
                     ruta_imagen = local_data.get("imagen")
                     if foto_local_subida is not None:
                         try:
@@ -99,7 +128,6 @@ def render_mantenimiento(api_url):
                         except Exception as img_err:
                             st.warning(f"No se pudo guardar la imagen: {img_err}")
 
-                    # 2. Payload completo incluyendo el nuevo nombre y la ruta de imagen
                     payload = {
                         "nombre": nombre,
                         "nombre_local": nombre,
@@ -115,7 +143,6 @@ def render_mantenimiento(api_url):
                     }
                     
                     try:
-                        # 3. Llamada PUT a la API para actualizar la base de datos
                         resp_put = requests.put(f"{api_url}/locales/{actual_id}", json=payload, timeout=5)
                         if resp_put.status_code in [200, 201]:
                             st.success("¡Nombre y datos del local actualizados correctamente en la base de datos y archivos!")
@@ -142,7 +169,8 @@ def render_mantenimiento(api_url):
             with col_n2:
                 nueva_ciudad = st.text_input("Ciudad", placeholder="Ciudad")
                 nuevo_pais = st.text_input("País", value="Ecuador", placeholder="País")
-                nuevo_tipo = st.text_input("Tipo de Establecimiento", placeholder="Ej. Discoteca, Restaurante...")
+                # Selector dinámico también en el formulario de creación de nuevas sucursales
+                nuevo_tipo = st.selectbox("Tipo de Establecimiento", options=tipos_establecimiento, key="nuevo_tipo_select")
                 nuevo_telefono = st.text_input("Teléfono / WhatsApp de Contacto", placeholder="Teléfono")
 
             submit_crear = st.form_submit_button("🚀 Enviar para Activación")
