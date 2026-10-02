@@ -148,8 +148,15 @@ def render_home(api_url=API_URL):
 
 # --- 8. RENDERIZADO VERTICAL ADAPTADO PARA MÓVILES Y ESCRITORIO ---
   if destacados:
+    
     # CSS para garantizar que en pantallas móviles la foto y los textos quepan lado a lado sin estorbar
     st.markdown("""
+      [data-testid="stImage"] img {
+      width: 80px !important;
+      height: 80px !important;
+      object-fit: cover !important;
+      border-radius: 6px;
+      }
         
     """, unsafe_allow_html=True)
 
