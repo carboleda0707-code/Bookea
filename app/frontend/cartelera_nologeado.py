@@ -110,7 +110,7 @@ def render_cartelera_publica(api_url):
   # ==========================================
   st.markdown(
       f"""
-      ### 🗓️ Cartelera de Eventos - {nombre_local_cal}
+      #### 🗓️ Cartelera de Eventos - {nombre_local_cal}
       📍 **Ubicación:** {ciudad_local_cal} | **Tipo:** {tipo_local_cal}  
       *Explora los eventos disponibles y reserva iniciando sesión.*
       """,
