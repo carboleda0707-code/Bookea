@@ -80,13 +80,14 @@ def render_home(api_url=API_URL):
       locales_data = response.json()
       if isinstance(locales_data, list):
         for loc in locales_data:
-          ubi = loc.get("direccion") or loc.get("ubicacion")
+          # Extraemos la ubicación (ciudad o dirección principal)
+          ubi = loc.get("ciudad") or loc.get("direccion") or loc.get("ubicacion")
           if ubi:
             ubicaciones_disponibles.add(str(ubi).strip())
   except Exception:
     locales_data = []
 
-  # --- 6. FILTROS MINIMALISTAS AGRUPADOS ---
+  # --- 6. FILTROS MINIMALISTAS (CATEGORÍA Y UBICACIÓN) ---
   st.markdown("#### 🌟 Filtrar Establecimientos")
   col_cat_filt, col_ubi_filt, col_espacio = st.columns([1, 1, 3])
 
@@ -95,22 +96,22 @@ def render_home(api_url=API_URL):
         "Categoría", options=list(categorias_agrupadas.keys()), label_visibility="collapsed"
     )
     subcategorias_activas = categorias_agrupadas.get(cat_seleccionada_label, [])
-    # 💡 Definimos la variable aquí para que el título dinámico la reconozca sin errores
     filtro_categoria_activo = "" if "Todas" in cat_seleccionada_label else cat_seleccionada_label
 
   with col_ubi_filt:
+    # 📍 Lista desplegable dinámica de ubicaciones extraídas de la API
     lista_ubis = ["🌐 Todas las ubicaciones"] + sorted(list(ubicaciones_disponibles))
     ubi_seleccionada = st.selectbox(
         "Ubicación", options=lista_ubis, label_visibility="collapsed"
     )
     filtro_ubicacion_activo = "" if ubi_seleccionada == "🌐 Todas las ubicaciones" else ubi_seleccionada
  
-  # Título dinámico de la sección
+  # Título dinámico adaptado con la ubicación seleccionada
   titulo_seccion = "🔥 Lugares Destacados (VIP)"
   if filtro_categoria_activo:
     titulo_seccion += f" - {filtro_categoria_activo}"
   if filtro_ubicacion_activo:
-    titulo_seccion += f" ({filtro_ubicacion_activo})"
+    titulo_seccion += f" en {filtro_ubicacion_activo}"
   st.markdown(f"##### {titulo_seccion}")
 
   # --- 7. APLICAR FILTROS A LOS LOCALES VIP ---
@@ -121,16 +122,15 @@ def render_home(api_url=API_URL):
           loc.get("tipo_plan", loc.get("plan", loc.get("propietario_plan", "")))
       ).strip().upper()
       
-      # Obtenemos estrictamente el tipo_establecimiento de la tabla locales
       tipo_est = str(loc.get("tipo_establecimiento", "")).strip().lower()
-      ubicacion_loc = str(loc.get("direccion") or loc.get("ubicacion") or "").strip()
       
-      # --- VALIDACIÓN DIRECTA CONTRA LOCALES ---
+      # Obtenemos los campos de ubicación del local actual
+      ciudad_loc = str(loc.get("ciudad", "")).strip()
+      direccion_loc = str(loc.get("direccion") or loc.get("ubicacion", "")).strip()
+      
       cumple_categoria = True
       if subcategorias_activas:
         subcategorias_normalizadas = [s.strip().lower() for s in subcategorias_activas]
-        
-        # Comprobamos si alguna subcategoría coincide con el tipo de establecimiento del local
         cumple_categoria = any(
             sub in tipo_est or tipo_est in sub 
             for sub in subcategorias_normalizadas
@@ -139,8 +139,14 @@ def render_home(api_url=API_URL):
       if not cumple_categoria:
         continue
         
-      if filtro_ubicacion_activo and filtro_ubicacion_activo.lower() not in ubicacion_loc.lower():
-        continue
+      # 📍 Validación estricta del filtro de ubicación seleccionado
+      if filtro_ubicacion_activo:
+        coincide_ubicacion = (
+            filtro_ubicacion_activo.lower() in ciudad_loc.lower() or
+            filtro_ubicacion_activo.lower() in direccion_loc.lower()
+        )
+        if not coincide_ubicacion:
+          continue
         
       if tipo_plan == "VIP" or loc.get("es_vip", False):
         destacados.append(loc)

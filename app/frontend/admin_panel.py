@@ -140,8 +140,8 @@ def render_admin_panel(API_URL):
                                 plan_actual = local_actual.get("tipo_plan") if local_actual.get("tipo_plan") in planes_opciones else "Normal"
                                 nuevo_tipo_plan = st.selectbox("Tipo de Plan", planes_opciones, index=planes_opciones.index(plan_actual))
                                 
-                                tipo_est_opciones = ["Salsoteca / Bar", "Restaurante", "Discoteca", "Cafetería", "Hotel", "Otro"]
-                                est_actual = local_actual.get("tipo_establecimiento") if local_actual.get("tipo_establecimiento") in tipo_est_opciones else "Salsoteca / Bar"
+                                tipo_est_opciones = ["Salsoteca", "Restaurante", "Discoteca", "Cafetería", "Hotel", "Otro"]
+                                est_actual = local_actual.get("tipo_establecimiento") if local_actual.get("tipo_establecimiento") in tipo_est_opciones else "Salsoteca"
                                 nuevo_tipo_est = st.selectbox("Tipo de Establecimiento", tipo_est_opciones, index=tipo_est_opciones.index(est_actual))
                                 
                                 nuevo_correo_envio = st.text_input("Correo Envío (SMTP)", value=local_actual.get("correo_envio") or "")

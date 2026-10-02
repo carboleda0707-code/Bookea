@@ -5,7 +5,6 @@ import os
 import requests
 import streamlit as st
 
-
 def render_cartelera_publica(api_url):
   """Renderiza la cartelera de eventos de un local específico para usuarios
 
