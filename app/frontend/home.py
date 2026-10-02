@@ -153,8 +153,8 @@ def render_home(api_url=API_URL):
     st.markdown("""
       <style>
         [data-testid="stImage"] img {
-        width: 80px !important;
-        height: 110px !important;
+        width: 110px !important;
+        height: 140px !important;
         object-fit: cover !important;
         border-radius: 6px;
         }
