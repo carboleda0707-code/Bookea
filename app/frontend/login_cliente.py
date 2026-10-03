@@ -1,203 +1,129 @@
-import streamlit as st
 import requests
+import streamlit as st
 
-FUCSIA, AZUL = "#ff1493", "#2196f3"
+FUCSIA = "#ff1493"
+
 
 def mostrar_error(r, default):
-    try:
-        detalle = r.json().get("detail", default)
-        st.error(f"Error [{r.status_code}]: {detalle}")
-    except Exception:
-        st.error(f"Error [{r.status_code}]: {default}")
+  try:
+    detalle = r.json().get("detail", default)
+    st.error(f"Error [{r.status_code}]: {detalle}")
+  except Exception:
+    st.error(f"Error [{r.status_code}]: {default}")
+
 
 def etiqueta(t, c):
-    st.markdown(f'{t}', unsafe_allow_html=True)
+  st.markdown(f"{t}", unsafe_allow_html=True)
+
 
 def campo_texto(t, key, color, tipo=None, placeholder=None):
-    etiqueta(t, color)
-    return st.text_input(t, key=key, type=tipo or "default", placeholder=placeholder, label_visibility="collapsed")
+  etiqueta(t, color)
+  return st.text_input(
+      t,
+      key=key,
+      type=tipo or "default",
+      placeholder=placeholder,
+      label_visibility="collapsed",
+  )
 
-def render_bienvenida(API_URL):
+
+def render_login_cliente(API_URL):
+  # --- CSS PARA REDUCIR TAMAÑO DE INPUTS Y BOTONES ---
+  st.markdown(
+      """
     
-    st.markdown(f"""
-        <style>
-        .block-container {{ max-width: 550px; padding: 1rem 0 2rem 0; font-family: "Segoe UI", Arial, sans-serif; }}
-        .block-container, p, label, span, div, button[data-baseweb="tab"], button[data-baseweb="tab"] * {{ text-shadow: none !important; }}
-        .bookea-titulo {{ text-align: center; font-size: 2rem; font-weight: 500; margin: 0.3rem 0 0.15rem 0; }}
-        .bookea-subtitulo {{ text-align: center; font-size: 1rem; margin-bottom: 1rem; opacity: 0.9; }}
-        .campo-label {{ font-size: 0.90rem; margin: 0.65rem 0 0.25rem 0; }}
-        div[data-testid="stTextInput"] input {{ border-radius: 8px; min-height: 42px; }}
-        
-        /* --- FOCOS DINÁMICOS INDEPENDIENTES POR SECCIÓN --- */
-        .tab-cliente div[data-testid="stTextInput"] input:focus {{ box-shadow: 0 0 0 1px {FUCSIA} !important; border-color: {FUCSIA} !important; }}
-        .tab-propietario div[data-testid="stTextInput"] input:focus {{ box-shadow: 0 0 0 1px {AZUL} !important; border-color: {AZUL} !important; }}
+    """,
+      unsafe_allow_html=True,
+  )
 
-        /* --- CORRECCIÓN DE BOTONES Y FORMULARIOS --- */
-        div.stButton > button, div[data-testid="stFormSubmitButton"] button {{ 
-            background-color: #141625 !important; 
-            color: #ffffff !important;
-            border: 1px solid rgba(150, 55, 255, 0.35) !important;
-            border-radius: 8px; 
-            font-weight: 700; 
-            min-height: 42px; 
-            box-shadow: none !important; 
-        }}
-        
-        /* --- ESTADOS HOVER / FOCUS / ACTIVE --- */
-        div.stButton > button:hover, div.stButton > button:focus, div.stButton > button:active,
-        div[data-testid="stFormSubmitButton"] button:hover, div[data-testid="stFormSubmitButton"] button:focus, div[data-testid="stFormSubmitButton"] button:active {{
-            background-color: #1f2238 !important;
-            color: #ffffff !important;
-            border-color: #00cfff !important;
-            box-shadow: none !important;
-        }}
+  if "accion_cli" not in st.session_state:
+    st.session_state.accion_cli = "Iniciar Sesión"
 
-        div[data-testid="stSelectbox"] > div > div {{ border-radius: 8px; }}
-        button[data-baseweb="tab"] {{ font-size: 1rem; font-weight: 500; }}
-        div[data-baseweb="tab-list"] > button:nth-child(1), div[data-baseweb="tab-list"] > button:nth-child(1) * {{ color: {FUCSIA} !important; }}
-        div[data-baseweb="tab-list"] > button:nth-child(2), div[data-baseweb="tab-list"] > button:nth-child(2) * {{ color: {AZUL} !important; }}
-        div[data-testid="stSelectbox"] [data-baseweb="select"] > div, div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"], li[role="option"] {{ background-color: #080912 !important; color: #ffffff !important; }}
-        div[data-testid="stSelectbox"] [data-baseweb="select"] > div {{ border: 1px solid #252936 !important; }}
-        div[data-testid="stSelectbox"] [data-baseweb="select"] *, div[data-testid="stSelectbox"] [data-baseweb="select"] svg {{ color: #ffffff !important; fill: #ffffff !important; }}
-        ul[role="listbox"] {{ border: 1px solid #252936 !important; }}
-        li[role="option"]:hover, li[role="option"][aria-selected="true"] {{ background-color: #20232d !important; }}
-        .titulo-cliente, .titulo-propietario {{ font-size: 1.35rem; font-weight: 500; text-align: center; margin: 0.5rem 0 1rem 0; }}
-        .titulo-cliente {{ color: {FUCSIA}; }} .titulo-propietario {{ color: {AZUL}; }}
-        </style>
-    """, unsafe_allow_html=True)  
-    
-    if "accion_cli" not in st.session_state:
-        st.session_state.accion_cli = "Iniciar Sesión"
-    if "accion_prop" not in st.session_state:
-        st.session_state.accion_prop = "Iniciar Sesión"
-    if "paso_rec_cli" not in st.session_state:
-        st.session_state.paso_rec_cli = "correo"
-    if "paso_recuperacion_prop" not in st.session_state:
-        st.session_state.paso_recuperacion_prop = "solicitar_correo"
+  _, col_center, _ = st.columns([1, 2.5, 1], vertical_alignment="top")
+  with col_center:
+    st.markdown("⭐ ¡Bienvenido a Bookea!", unsafe_allow_html=True)
+    st.markdown(
+        "Registrate - Crea tus eventos y reserva al instante.",
+        unsafe_allow_html=True,
+    )
 
-    _, col_center, _ = st.columns([1, 2.5, 1], vertical_alignment="top")
-    with col_center:
-        st.markdown('⭐ ¡Bienvenido a Bookea!', unsafe_allow_html=True)
-        st.markdown('Crea tus eventos y reserva al instante.', unsafe_allow_html=True)
+  st.markdown("---")
 
+  # --- CONTENEDOR MÁS ESTRECHO ---
+  _, c_form, _ = st.columns([2, 1.5, 2])
+  with c_form:
+    st.markdown("🔐 Iniciar Sesión - Cliente", unsafe_allow_html=True)
 
-    tab_cli, tab_prop = st.tabs(["👤 Cliente", "🏢 Propietario"])
+    email = campo_texto(
+        "Correo electrónico",
+        "l_cli_email",
+        FUCSIA,
+        placeholder="Correo electrónico",
+    )
+    password = campo_texto(
+        "Contraseña",
+        "l_cli_pass",
+        FUCSIA,
+        tipo="password",
+        placeholder="Contraseña",
+    )
 
-    with tab_cli:
-        st.markdown('    ', unsafe_allow_html=True)
-        accion_cli = st.session_state.accion_cli
+    st.markdown("  ", unsafe_allow_html=True)
 
-        if accion_cli == "Iniciar Sesión":
-            st.markdown(f'  🔐 Iniciar Sesión - Cliente  ', unsafe_allow_html=True)
-            with st.form("form_login_cliente"):
-                _, c_in, _ = st.columns([0.2, 2.6, 0.2])
-                with c_in:
-                    email = campo_texto("Correo electrónico", "l_cli_email", FUCSIA, placeholder="Correo electrónico")
-                    password = campo_texto("Contraseña", "l_cli_pass", FUCSIA, tipo="password", placeholder="Contraseña")
+    col1, col2 = st.columns(2)
+    with col1:
+      btn_retornar = st.button("⬅️ Retornar", use_container_width=True)
+    with col2:
+      btn_entrar = st.button("Entrar 🚪", use_container_width=True)
 
-                    col_b1, col_b2, col_b3 = st.columns(3)
-                    submit = col_b1.form_submit_button("Entrar", use_container_width=True)
-                    reg_btn = col_b2.form_submit_button("Registrarse", use_container_width=True)
-                    olv_btn = col_b3.form_submit_button("Olvidé Contraseña", use_container_width=True)
+    if btn_retornar:
+      # Si venía del menú general, limpiamos la bandera y volvemos al home
+      st.session_state.pop("origen_login", None)
+      st.session_state.vista_actual_publica = "home"
+      st.rerun()
 
-                if submit:
-                    if email and password:
-                        try:
-                            r = requests.post(f"{API_URL}/clientes-auth/login", json={"email": email.strip().lower(), "password": password}, timeout=5)
-                            if r.status_code == 200:
-                                data = r.json()
-                                st.session_state.update({"logged_in": True, "user_role": "cliente", "user_name": data.get("nombre"), "user_id": data.get("id"), "token": data.get("access_token")})
-                                st.success(f"¡Bienvenido, {data.get('nombre')}!")
-                                st.rerun()
-                            else: mostrar_error(r, "Credenciales incorrectas.")
-                        except requests.RequestException as e: st.error(f"Error de conexión: {e}")
-                    else: st.warning("Completa todos los campos.")
-                elif reg_btn:
-                    st.session_state.accion_cli = "Registrarse"
-                    st.rerun()
-                elif olv_btn:
-                    st.session_state.accion_cli = "Olvide Contraseña"
-                    st.rerun()
+    if btn_entrar:
+      if email and password:
+        try:
+          r = requests.post(
+              f"{API_URL}/clientes-auth/login",
+              json={
+                  "email": email.strip().lower(),
+                  "password": password,
+              },
+              timeout=5,
+          )
+          if r.status_code == 200:
+            data = r.json()
+            st.session_state.update({
+                "logged_in": True,
+                "user_role": "cliente",
+                "user_name": data.get("nombre"),
+                "user_id": data.get("id"),
+                "token": data.get("access_token"),
+            })
+            st.success(f"¡Bienvenido, {data.get('nombre')}!")
 
-        elif accion_cli == "Registrarse":
-            st.markdown(f'📝 Registro - Cliente', unsafe_allow_html=True)
-            with st.form("form_registro_cliente"):
-                _, c_in, _ = st.columns([0.2, 2.6, 0.2])
-                with c_in:
-                    nombre = campo_texto("Nombre completo", "r_cli_nom", FUCSIA, placeholder="Nombre completo")
-                    email = campo_texto("Correo electrónico", "r_cli_mail", FUCSIA, placeholder="Correo electrónico")
-                    telefono = campo_texto("Teléfono", "r_cli_tel", FUCSIA, placeholder="Teléfono o celular")
-                    password = campo_texto("Contraseña", "r_cli_pass_reg", FUCSIA, tipo="password", placeholder="Contraseña")
+            # Verificamos si entró por el menú general o si hay un local previo guardado
+            origen = st.session_state.get("origen_login")
+            local_previo = st.session_state.get("vista_previa_login")
 
-                    col_r1, col_r2 = st.columns(2)
-                    submit_reg = col_r1.form_submit_button("Registrarse", use_container_width=True)
-                    volver_btn = col_r2.form_submit_button("Volver al Login", use_container_width=True)
+            if origen == "menu_general":
+              # Limpiamos la bandera y lo mandamos al home limpio ya logueado
+              st.session_state.pop("origen_login", None)
+              st.session_state.vista_actual_publica = "home"
+            elif local_previo:
+              # Si estaba explorando un local específico, lo restauramos
+              st.session_state.id_local_expandido = local_previo
+              st.session_state.vista_actual_publica = "home"
+            else:
+              # Por defecto al home
+              st.session_state.vista_actual_publica = "home"
 
-                if submit_reg:
-                    if nombre and email and password:
-                        try:
-                            r = requests.post(f"{API_URL}/clientes-auth/registro", json={"nombre": nombre, "email": email.strip().lower(), "telefono": telefono, "password": password}, timeout=5)
-                            if r.status_code == 200: st.success("¡Registro exitoso! Ya puedes iniciar sesión.")
-                            else: mostrar_error(r, "Error en el registro.")
-                        except requests.RequestException as e: st.error(f"Error de conexión: {e}")
-                    else: st.warning("Completa los campos obligatorios.")
-                elif volver_btn:
-                    st.session_state.accion_cli = "Iniciar Sesión"
-                    st.rerun()
-
-        elif accion_cli == "Olvide Contraseña":
-            st.markdown(f'🔑 Recuperar Contraseña', unsafe_allow_html=True)
-            if "paso_rec_cli" not in st.session_state: st.session_state.paso_rec_cli = "correo"
-
-            if st.session_state.paso_rec_cli == "correo":
-                with st.form("form_rec_cli"):
-                    _, c_in, _ = st.columns([0.2, 2.6, 0.2])
-                    with c_in:
-                        rec_email = campo_texto("Correo electrónico", "rec_e_cli", FUCSIA, placeholder="Correo registrado")
-                        col_b1, col_b2 = st.columns(2)
-                        btn_enviar = col_b1.form_submit_button("Enviar Código OTP", use_container_width=True)
-                        btn_vol = col_b2.form_submit_button("Volver", use_container_width=True)
-
-                        if btn_enviar:
-                            if rec_email:
-                                try:
-                                    res = requests.post(f"{API_URL}/auth-recuperacion/solicitar-codigo", json={"email": rec_email.strip().lower()}, timeout=5)
-                                    if res.status_code == 200:
-                                        st.success("¡Código enviado!")
-                                        st.session_state.update({"mail_cli": rec_email.strip().lower(), "paso_rec_cli": "codigo"})
-                                        st.rerun()
-                                    else: mostrar_error(res, "Error al solicitar el código.")
-                                except requests.RequestException as e: st.error(f"Error de conexión: {e}")
-                            else: st.warning("Ingresa un correo.")
-                        elif btn_vol:
-                            st.session_state.accion_cli = "Iniciar Sesión"
-                            st.rerun()
-
-        elif st.session_state.paso_rec_cli == "codigo":
-            st.info(f"Código enviado a: **{st.session_state.get('mail_cli')}**")
-            with st.form("form_code_cli"):
-                _, c_in, _ = st.columns([0.2, 2.6, 0.2])
-                with c_in:
-                    codigo = campo_texto("Código de 6 dígitos", "cod_c", FUCSIA, placeholder="Código OTP")
-                    nueva_pass = campo_texto("Nueva Contraseña", "np_c", FUCSIA, tipo="password", placeholder="Nueva contraseña")
-                    col_1, col_2 = st.columns(2)
-                    btn_act = col_1.form_submit_button("Actualizar", use_container_width=True)
-                    btn_can = col_2.form_submit_button("Cancelar", use_container_width=True)
-                if btn_act:
-                    if codigo and nueva_pass:
-                        try:
-                            res2 = requests.post(f"{API_URL}/auth-recuperacion/cambiar-password", json={"email": st.session_state.mail_cli, "codigo": codigo.strip(), "nueva_password": nueva_pass}, timeout=5)
-                            if res2.status_code == 200:
-                                st.success("¡Contraseña actualizada!")
-                                st.session_state.update({"paso_rec_cli": "correo", "accion_cli": "Iniciar Sesión"})
-                                st.session_state.pop("mail_cli", None)
-                                st.rerun()
-                            else: mostrar_error(res2, "No se pudo actualizar.")
-                        except requests.RequestException as e: st.error(f"Error de conexión: {e}")
-                    else: st.warning("Completa todos los campos.")
-                if btn_can:
-                    st.session_state.update({"paso_rec_cli": "correo", "accion_cli": "Iniciar Sesión"})
-                    st.session_state.pop("mail_cli", None)
-                    st.rerun()
-
-    
+            st.rerun()
+          else:
+            mostrar_error(r, "Credenciales incorrectas.")
+        except requests.RequestException as e:
+          st.error(f"Error de conexión: {e}")
+      else:
+        st.warning("Completa todos los campos.")

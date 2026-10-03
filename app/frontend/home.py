@@ -43,9 +43,12 @@ def render_home(api_url=API_URL):
       # Menú de cuenta: Entrar / Registrarse / Olvidé contraseña
       with st.popover("⋮", use_container_width=True):
           st.markdown("**Mi cuenta**")
-
+              
+          #st.session_state.vista_actual_publica = "login"
+                            
           if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
-              st.session_state.vista_actual_publica = "login"
+              st.session_state.origen_login = "menu_general"
+              st.session_state.vista_actual_publica = "login_cliente"
               st.rerun()
 
           if st.button("Registrarse", key="menu_cuenta_registrarse", use_container_width=True):
@@ -309,16 +312,20 @@ def render_home(api_url=API_URL):
                     
           if st.session_state.get("evento_pendiente_reserva"):
             st.markdown("---")
-            st.info("🔒 **Inicia sesión como cliente para continuar con tu reserva:**")
             
+            # 🌟 Contenedor centrado y más estrecho para reducir el tamaño visual drásticamente
+            _, col_form, _ = st.columns([2, 1.5, 2])
+            with col_form:
+              with st.container(border=True):
+                st.markdown("🔒 Inicia sesión para continuar", unsafe_allow_html=True)             
+
             with st.form(f"form_login_compact_{i}"):
-              col_l1, col_l2 = st.columns(2)
-              with col_l1:
-                email_inline = st.text_input("Correo electrónico", placeholder="correo@ejemplo.com", key=f"email_c_{i}")
-              with col_l2:
-                pass_inline = st.text_input("Contraseña", type="password", placeholder="Contraseña", key=f"pass_c_{i}")
+              email_inline = st.text_input("Correo electrónico", placeholder="correo@ejemplo.com", key=f"email_c_{i}")
+              pass_inline = st.text_input("Contraseña", type="password", placeholder="Contraseña", key=f"pass_c_{i}")
               
-              submitted_inline = st.form_submit_button("Entrar y Reservar", use_container_width=True)
+              _, col_btn_centro, _ = st.columns([1, 2, 1])
+              with col_btn_centro:
+                submitted_inline = st.form_submit_button("Entrar", use_container_width=True)
               
               if submitted_inline:
                 if email_inline and pass_inline:
@@ -333,11 +340,13 @@ def render_home(api_url=API_URL):
                           "user_id": data.get("id"), 
                           "token": data.get("access_token")
                       })
+                      
+                      st.session_state.id_local_expandido = venue_id
                       ev_pendiente = st.session_state.evento_pendiente_reserva
                       st.session_state.evento_pendiente_reserva = None
                       st.session_state.evento_a_reservar = ev_pendiente
                       st.session_state.vista_actual_publica = "reservacion"
-                      st.success(f"¡Bienvenido, {data.get('nombre')}! Redirigiendo...")
+                      
                       st.rerun()
                     else:
                       st.error("Correo o contraseña incorrectos.")
@@ -347,3 +356,4 @@ def render_home(api_url=API_URL):
                   st.warning("Completa ambos campos.")
 
         break
+      

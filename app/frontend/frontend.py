@@ -10,6 +10,7 @@ import streamlit as st
 
 
 from app.frontend.home import render_home
+from app.frontend.login_cliente import render_login_cliente
 from app.frontend.admin_panel import render_admin_panel
 from app.frontend.agenda_propietario import render_agenda_propietario
 from app.frontend.asignar_mesas import render_asignar_mesas
@@ -221,35 +222,48 @@ if slug_vip and not st.session_state.get("logged_in", False):
     )
     st.stop()
 
-
 # --- 2. VISTA DE BIENVENIDA (NO LOGEADO) ---
-if not st.session_state.get("logged_in", False):
-    if st.session_state.get("vista_actual_publica") == "login":
-        render_bienvenida(API_URL)  # Aquí se mantiene solo si vas a usar el login antiguo
-    else:
-        render_home(API_URL)
     
-    render_pie_pagina()
-    st.stop()
+if not st.session_state.get("logged_in", False):
+  vista_publica = st.session_state.get("vista_actual_publica", "home")
+
+  if vista_publica == "login_cliente":
+    render_login_cliente(API_URL)
+  elif vista_publica == "login":
+    render_bienvenida(API_URL)
+  else:
+    render_home(API_URL)
+
+  render_pie_pagina()
+  st.stop()
+
+else:
+  # Condición: Si está logueado pero la bandera indica que vino del menú general del home
+  if st.session_state.get("origen_login") == "menu_general":
+    st.session_state.pop("origen_login", None)
+    st.session_state.vista_actual_publica = "home"
+    st.rerun()
+    
+    
     # ============================================================
     # ZONA LOGUEADA: EVALUACIÓN ESTRICTA DE ROLES
     # ============================================================
-    rol_actual = str(st.session_state.get("user_role", "propietario")).strip().lower()
+rol_actual = str(st.session_state.get("user_role", "propietario")).strip().lower()
 
     # 1. SUPERADMIN
-    if rol_actual == "superadmin":
+if rol_actual == "superadmin":
         st.markdown("### 🛠️ Panel Global - SuperAdmin")
         # ... tu código de superadmin ...
         render_pie_pagina()
         #st.stop()
 
     # 2. PROPIETARIO (¡LO PONEMOS ANTES DEL CLIENTE PARA QUE NUNCA SE CRUCE!)
-    elif rol_actual == "propietario":
+elif rol_actual == "propietario":
         # ... TODO EL CÓDIGO DEL PROPIETARIO (agenda, locales, menús, etc.) ...
         render_pie_pagina()
         
     # 3. CLIENTE (AL FINAL DE TODO)
-    else:
+else:
         nombre_usuario = st.session_state.get("user_name", "Cliente")
         # ... todo el código del cliente (catálogo, mis reservas, etc.) ...
         render_pie_pagina()
@@ -257,7 +271,7 @@ if not st.session_state.get("logged_in", False):
     # ============================================================
     # BOOKEA — CORRECCIÓN VISUAL SOLO PARA USUARIOS LOGUEADOS
     # ============================================================
-    st.markdown(
+st.markdown(
       """
     <style>
     [data-testid="stButton"] > button,
@@ -445,7 +459,19 @@ elif rol_actual == "propietario":
   # --- ROL: CLIENTE ---
   # ==========================================
 elif rol_actual == "cliente":
-        nombre_usuario = st.session_state.get("user_name", "Cliente")
+    
+    # 🌟 Si se logueó desde el menú superior del home, NO lo mandamos a la cartelera 
+    # ni mostramos el menú forzado de cliente; regresamos directamente al Home ya logueado.
+    if st.session_state.get("origen_login") == "menu_general":
+        # Nota: NO hacemos pop aquí para que la bandera no se "encere" si la necesitamos, 
+        # o la dejamos activa hasta que el usuario decida navegar a otra sección.
+        render_home(API_URL)
+        render_pie_pagina()
+        st.stop()
+
+    # De lo contrario (si viene de una mini-web o reserva directa), 
+    # sí mostramos su menú compacto de cliente:
+    nombre_usuario = st.session_state.get("user_name", "Cliente")
 
       # Estilo específico para compactar y centrar el selectbox del cliente
 st.markdown(
@@ -474,23 +500,34 @@ with col_centro_cliente:
       )
       
     opciones_cliente = [
-      "Catálogo de Eventos",
-      "🔍 Buscar Locales",
-      "Mis Reservas",
-      "Actualizar Datos",
-      "Cerrar Sesión",
+        "Mis Reservas",
+        "Actualizar Datos",
+        "Cerrar Sesión",
     ]
 
-    # Selectbox nativo y limpio para el cliente
     opcion = st.selectbox(
-      "Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal"
+        "Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal"
     )
 
     if opcion == "Cerrar Sesión":
-      st.session_state.logged_in = False
-      st.session_state.user_role = None
-      st.query_params.clear()
-      st.rerun()
+        st.session_state.logged_in = False
+        st.session_state.user_role = None
+        st.session_state.pop("origen_login", None)
+        st.query_params.clear()
+        st.rerun()
+
+    if opcion == "Mis Reservas":
+        render_mis_reservas(API_URL, st.session_state.get("user_id"))
+        render_pie_pagina()
+        st.stop()
+
+    elif opcion == "Actualizar Datos":
+        render_mantenimiento_cliente(API_URL)
+        render_pie_pagina()
+        st.stop()
+
+        render_pie_pagina()
+        st.stop()
 
     # Flujo exclusivo del cliente
     if opcion == "Catálogo de Eventos":
