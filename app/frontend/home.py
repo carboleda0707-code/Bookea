@@ -24,21 +24,37 @@ def render_home(api_url=API_URL):
     st.session_state.evento_pendiente_reserva = None
 
 
-  # --- CABECERA: TÍTULO Y BOTÓN DE INICIO DE SESIÓN ---
-  col_logo, col_espacio, col_login = st.columns([2, 4, 1.5])
+  # --- CABECERA / INICIO DE SECCIÓN ---
+  # Título y subtítulo en una misma línea, con el menú de cuenta a la derecha.
+  col_titulo, col_cuenta = st.columns([6, 1])
 
-  with col_logo:
-      st.markdown("## 🎟️ Bookea")
+  with col_titulo:
+      st.markdown(
+          """
+          <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:8px;">
+              <span style="font-size:1.65rem; font-weight:700;">🎟️ Bookea</span>
+              <span style="font-size:1rem; opacity:0.72;">Selecciona Local - Crea Tu Evento - Reserva en segundos.</span>
+          </div>
+          """,
+          unsafe_allow_html=True
+      )
 
-  with col_login:
-      # Aquí va tu botón de iniciar sesión actual
-      if st.button("Iniciar sesión", use_container_width=True):
-          st.session_state.vista_actual_publica = "login"
-          st.rerun()
+  with col_cuenta:
+      # Menú de cuenta: Entrar / Registrarse / Olvidé contraseña
+      with st.popover("⋮", use_container_width=True):
+          st.markdown("**Mi cuenta**")
 
-  # --- 2. SECCIÓN HERO ---
-  st.markdown("Encuentra el lugar perfecto para tu evento")
-  st.markdown("Reservaciones en segundos.")
+          if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
+              st.session_state.vista_actual_publica = "login"
+              st.rerun()
+
+          if st.button("Registrarse", key="menu_cuenta_registrarse", use_container_width=True):
+              st.session_state.vista_actual_publica = "registro"
+              st.rerun()
+
+          if st.button("Olvidé contraseña", key="menu_cuenta_olvido", use_container_width=True):
+              st.session_state.vista_actual_publica = "recuperar_password"
+              st.rerun()
 
   # --- 3. BUSCADOR PRINCIPAL ---
   col_search, col_space = st.columns([2, 3])
