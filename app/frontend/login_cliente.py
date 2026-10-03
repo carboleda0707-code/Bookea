@@ -47,9 +47,7 @@ def render_login_cliente(API_URL):
         unsafe_allow_html=True,
     )
 
-  st.markdown("---")
-
-  # --- CONTENEDOR MÁS ESTRECHO ---
+   # --- CONTENEDOR MÁS ESTRECHO ---
   _, c_form, _ = st.columns([2, 1.5, 2])
   with c_form:
     st.markdown("🔐 Iniciar Sesión - Cliente", unsafe_allow_html=True)

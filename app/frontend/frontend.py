@@ -38,6 +38,9 @@ from app.frontend.reserva_mesa import render_seleccion_mesas
 from app.frontend.truco_java import configurar_puente_html
 from app.frontend.validaciones_cliente import render_mantenimiento_cliente
 from app.frontend.filtro_locales import render_filtro_locales
+from app.frontend.registro_clientes import render_registro_clientes
+from app.frontend.recuperar_contrasena import render_recuperar_contrasena
+
 
 # Configuración PWA mediante inyección segura de texto plano
 pwa_html = chr(60) + 'link rel="manifest" href="/static/manifest.json"' + chr(62)
@@ -230,11 +233,13 @@ if not st.session_state.get("logged_in", False):
 
   if vista_publica == "login_cliente":
     render_login_cliente(API_URL)
-  elif vista_publica == "login":
-    render_bienvenida(API_URL)
+  elif vista_publica == "registro_clientes":  # 👈 AGREGA ESTA LÍNEA
+    render_registro_clientes(API_URL)     # 👈 Y ESTA OTRA
+  elif vista_publica == "recuperar_contrasena":
+    render_recuperar_contrasena(API_URL)
   else:
     render_home(API_URL)
-
+    
   render_pie_pagina()
   st.stop()
 

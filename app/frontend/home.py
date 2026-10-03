@@ -2,6 +2,8 @@ import configparser
 import os
 import requests
 import streamlit as st
+from .registro_clientes import render_registro_clientes
+from .recuperar_contrasena import render_recuperar_contrasena
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
@@ -42,20 +44,19 @@ def render_home(api_url=API_URL):
   with col_cuenta:
       # Menú de cuenta: Entrar / Registrarse / Olvidé contraseña
       with st.popover("Mi cuenta ⋮", use_container_width=True):
-                       
-          #st.session_state.vista_actual_publica = "login"
                             
           if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
               st.session_state.origen_login = "menu_general"
               st.session_state.vista_actual_publica = "login_cliente"
               st.rerun()
 
+          # 🌟 Aquí llamamos a la vista independiente de registro de clientes
           if st.button("Registrarse", key="menu_cuenta_registrarse", use_container_width=True):
-              st.session_state.vista_actual_publica = "registro"
+              st.session_state.vista_actual_publica = "registro_clientes"
               st.rerun()
 
           if st.button("Olvidé contraseña", key="menu_cuenta_olvido", use_container_width=True):
-              st.session_state.vista_actual_publica = "recuperar_password"
+              st.session_state.vista_actual_publica = "recuperar_contrasena"
               st.rerun()
 
   # --- 3. BUSCADOR PRINCIPAL ---
