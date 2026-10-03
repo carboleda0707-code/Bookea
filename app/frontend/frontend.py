@@ -60,7 +60,8 @@ API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(page_title="Bookea - Sistema de Reservas", layout="wide")
 
-st.markdown(   """<style>
+st.markdown(   """
+<style>
             
 /* ============================================================
    BOOKEA — ESTILOS GLOBALES Y CORRECCIÓN DE CONTRASTE
@@ -80,8 +81,8 @@ header[data-testid="stHeader"] {
 [data-testid="stMain"],
 [data-testid="stMainBlockContainer"],
 .block-container {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
+    padding-top: -8rem !important;
+    margin-top: -60px !important;
 }
 
 html, body, [data-testid="stAppViewContainer"],
@@ -252,7 +253,7 @@ rol_actual = str(st.session_state.get("user_role", "propietario")).strip().lower
 
     # 1. SUPERADMIN
 if rol_actual == "superadmin":
-        st.markdown("### 🛠️ Panel Global - SuperAdmin")
+        st.markdown("##### 🛠️ Panel Global - SuperAdmin")
         # ... tu código de superadmin ...
         render_pie_pagina()
         #st.stop()
@@ -266,13 +267,11 @@ elif rol_actual == "propietario":
 else:
         nombre_usuario = st.session_state.get("user_name", "Cliente")
         # ... todo el código del cliente (catálogo, mis reservas, etc.) ...
-        render_pie_pagina()
         #st.stop()
     # ============================================================
     # BOOKEA — CORRECCIÓN VISUAL SOLO PARA USUARIOS LOGUEADOS
     # ============================================================
-st.markdown(
-      """
+st.markdown( """
     <style>
     [data-testid="stButton"] > button,
     [data-testid="stButton"] > button:hover,
@@ -315,7 +314,7 @@ if not rol_actual or rol_actual == "none":
 
 # --- ROL: SUPERADMIN ---
 if rol_actual == "superadmin":
-    st.markdown("### 🛠️ Panel Global - SuperAdmin")
+    st.markdown("##### 🛠️ Panel Global - SuperAdmin")
   
     if "menu_superadmin_actual" not in st.session_state:
         st.session_state.menu_superadmin_actual = "Panel Global"
@@ -466,7 +465,6 @@ elif rol_actual == "cliente":
         # Nota: NO hacemos pop aquí para que la bandera no se "encere" si la necesitamos, 
         # o la dejamos activa hasta que el usuario decida navegar a otra sección.
         render_home(API_URL)
-        render_pie_pagina()
         st.stop()
 
     # De lo contrario (si viene de una mini-web o reserva directa), 
@@ -500,34 +498,23 @@ with col_centro_cliente:
       )
       
     opciones_cliente = [
-        "Mis Reservas",
-        "Actualizar Datos",
-        "Cerrar Sesión",
+      "Catálogo de Eventos",
+      "🔍 Buscar Locales",
+      "Mis Reservas",
+      "Actualizar Datos",
+      "Cerrar Sesión",
     ]
 
+    # Selectbox nativo y limpio para el cliente
     opcion = st.selectbox(
-        "Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal"
+      "Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal"
     )
 
     if opcion == "Cerrar Sesión":
-        st.session_state.logged_in = False
-        st.session_state.user_role = None
-        st.session_state.pop("origen_login", None)
-        st.query_params.clear()
-        st.rerun()
-
-    if opcion == "Mis Reservas":
-        render_mis_reservas(API_URL, st.session_state.get("user_id"))
-        render_pie_pagina()
-        st.stop()
-
-    elif opcion == "Actualizar Datos":
-        render_mantenimiento_cliente(API_URL)
-        render_pie_pagina()
-        st.stop()
-
-        render_pie_pagina()
-        st.stop()
+      st.session_state.logged_in = False
+      st.session_state.user_role = None
+      st.query_params.clear()
+      st.rerun()
 
     # Flujo exclusivo del cliente
     if opcion == "Catálogo de Eventos":
@@ -574,8 +561,7 @@ with col_centro_cliente:
       # ==========================================
       # ESTILOS CSS PARA DISEÑO COMPACTO Y RESPONSIVE
       # ==========================================
-    st.markdown(
-          """
+    st.markdown( """
           <style>
           .centered-header-container {
               display: flex;
@@ -601,8 +587,7 @@ with col_centro_cliente:
           unsafe_allow_html=True,
       )
 
-    st.markdown(
-          f"""
+    st.markdown(f"""
               <div style="display: flex; justify-content: center; width: 100%;">
                   <div style="background: rgba(16, 14, 36, 0.85); border: 1px solid rgba(150, 55, 255, 0.35); padding: 10px 20px; border-radius: 12px; margin-bottom: 16px; display: inline-block; text-align: center;">
                       <span style="font-size: 14px; font-weight: 600; color: #f7f7ff;">
@@ -667,5 +652,5 @@ with col_centro_cliente:
     funcion_a_renderizar(API_URL)
 
   # --- PIE DE PÁGINA GLOBAL ---
-render_pie_pagina()
+#render_pie_pagina()
 st.stop()

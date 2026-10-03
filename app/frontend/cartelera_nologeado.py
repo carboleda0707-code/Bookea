@@ -7,9 +7,7 @@ import streamlit as st
 
 def render_cartelera_publica(api_url):
   """Renderiza la cartelera de eventos de un local específico para usuarios
-
-  NO logueados (Vista Pública). Mantiene la estructura en 4 columnas y
-  redirige al login al intentar reservar.
+  NO logueados (Vista Pública). 
   """
   
   # ==========================================
@@ -109,17 +107,15 @@ def render_cartelera_publica(api_url):
   # ==========================================
   st.markdown(
       f"""
-      #### 🗓️ Cartelera de Eventos - {nombre_local_cal}
-      📍 **Ubicación:** {ciudad_local_cal} | **Tipo:** {tipo_local_cal}  
-      *Explora los eventos disponibles y reserva iniciando sesión.*
-      """,
-      unsafe_allow_html=True,
-  )
+      ##### 🗓️ Cartelera de Eventos - {nombre_local_cal}
+      #📍 **Ubicación:** {ciudad_local_cal} | **Tipo:** {tipo_local_cal}  
+      *Explora Eventos o Crea el tuyo - reserva iniciando sesión.*
+      """, unsafe_allow_html=True, )
   
   # ==========================================
   # 3. DISTRIBUCIÓN EN 4 COLUMNAS DE TARJETAS
   # ==========================================
-  num_columnas = 4
+  num_columnas = 3
   cols = st.columns(num_columnas)
 
   for i, evento in enumerate(eventos_a_mostrar):

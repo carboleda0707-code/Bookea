@@ -33,7 +33,7 @@ def render_home(api_url=API_URL):
           """
           <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:8px;">
               <span style="font-size:1.65rem; font-weight:700;">🎟️ Bookea</span>
-              <span style="font-size:1rem; opacity:0.72;">Selecciona Local - Crea Tu Evento - Reserva en segundos.</span>
+              <span style="font-size:1rem; opacity:0.72;">Reserva Tu Evento en segundos.</span>
           </div>
           """,
           unsafe_allow_html=True
@@ -41,9 +41,8 @@ def render_home(api_url=API_URL):
 
   with col_cuenta:
       # Menú de cuenta: Entrar / Registrarse / Olvidé contraseña
-      with st.popover("⋮", use_container_width=True):
-          st.markdown("**Mi cuenta**")
-              
+      with st.popover("Mi cuenta ⋮", use_container_width=True):
+                       
           #st.session_state.vista_actual_publica = "login"
                             
           if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
@@ -107,7 +106,7 @@ def render_home(api_url=API_URL):
     locales_data = []
 
   # --- 6. FILTROS MINIMALISTAS (CATEGORÍA Y UBICACIÓN) ---
-  st.markdown("#### 🌟 Filtrar Establecimientos")
+  st.markdown("##### 🌟 Filtrar Establecimientos")
   col_cat_filt, col_ubi_filt, col_espacio = st.columns([1, 1, 3])
 
   with col_cat_filt:
@@ -131,7 +130,7 @@ def render_home(api_url=API_URL):
     titulo_seccion += f" - {filtro_categoria_activo}"
   if filtro_ubicacion_activo:
     titulo_seccion += f" en {filtro_ubicacion_activo}"
-  st.markdown(f"##### {titulo_seccion}")
+  st.markdown(f"###### {titulo_seccion}")
 
   # --- 7. APLICAR FILTROS A LOS LOCALES VIP ---
   destacados = []
@@ -231,10 +230,10 @@ def render_home(api_url=API_URL):
 
       # --- 9. SI ESTE LOCAL ESTÁ EXPANDIDO, INSERTAR SU CARTELERA EXACTAMENTE AQUÍ ---
       if str(st.session_state.get("id_local_expandido")) == str(venue_id):
-        st.markdown("---")
+        
         with st.container(border=True):
-          st.markdown(f"### 🗓️ Cartelera de Eventos - {titulo}")
-          st.caption(f"📍 Ubicación: {ubicacion} | Tipo: {tipo_est} | Explora los eventos disponibles y reserva.")
+          st.markdown(f"##### 🗓️ Cartelera de Eventos - {titulo}")
+          st.caption(f" Explora Eventos y Reserva Registrandote.")
 
           eventos_a_mostrar = []
           try:
@@ -255,14 +254,14 @@ def render_home(api_url=API_URL):
                 "artista_orquesta": "A tu elección"
             }]
 
-          cols_eventos = st.columns(4)
+          cols_eventos = st.columns(5)
           for e_idx, evento in enumerate(eventos_a_mostrar):
             ev_id = evento.get("id")
             nombre_ev = evento.get("titulo") or evento.get("nombre_evento", "Sin nombre")
             estado_ev = str(evento.get("estado", "")).strip().lower()
             es_tu_evento = (estado_ev == "plantilla" or str(nombre_ev).strip().lower() == "tu evento")
 
-            with cols_eventos[e_idx % 4]:
+            with cols_eventos[e_idx % 5]:
               with st.container(border=True):
                 nombre_imagen = evento.get("imagen")
                 imagen_encontrada_ev = None
@@ -311,49 +310,54 @@ def render_home(api_url=API_URL):
                     st.rerun()
                     
           if st.session_state.get("evento_pendiente_reserva"):
-            st.markdown("---")
+                        
+            # 🌟 Estilos CSS para reducir la altura de los inputs y botones de este formulario
+            st.markdown(
+                """
+                
+                """,
+                unsafe_allow_html=True,
+            )
             
             # 🌟 Contenedor centrado y más estrecho para reducir el tamaño visual drásticamente
             _, col_form, _ = st.columns([2, 1.5, 2])
             with col_form:
               with st.container(border=True):
-                st.markdown("🔒 Inicia sesión para continuar", unsafe_allow_html=True)             
+                st.markdown("🔒 Inicia sesión para continuar", unsafe_allow_html=True)            
 
-            with st.form(f"form_login_compact_{i}"):
-              email_inline = st.text_input("Correo electrónico", placeholder="correo@ejemplo.com", key=f"email_c_{i}")
-              pass_inline = st.text_input("Contraseña", type="password", placeholder="Contraseña", key=f"pass_c_{i}")
-              
-              _, col_btn_centro, _ = st.columns([1, 2, 1])
-              with col_btn_centro:
-                submitted_inline = st.form_submit_button("Entrar", use_container_width=True)
-              
-              if submitted_inline:
-                if email_inline and pass_inline:
-                  try:
-                    r = requests.post(f"{current_api_url}/clientes-auth/login", json={"email": email_inline.strip().lower(), "password": pass_inline}, timeout=5)
-                    if r.status_code == 200:
-                      data = r.json()
-                      st.session_state.update({
-                          "logged_in": True, 
-                          "user_role": "cliente", 
-                          "user_name": data.get("nombre"), 
-                          "user_id": data.get("id"), 
-                          "token": data.get("access_token")
-                      })
-                      
-                      st.session_state.id_local_expandido = venue_id
-                      ev_pendiente = st.session_state.evento_pendiente_reserva
-                      st.session_state.evento_pendiente_reserva = None
-                      st.session_state.evento_a_reservar = ev_pendiente
-                      st.session_state.vista_actual_publica = "reservacion"
-                      
-                      st.rerun()
+                with st.form(f"form_login_compact_{i}"):
+                  email_inline = st.text_input("Correo electrónico", placeholder="correo@ejemplo.com", key=f"email_c_{i}")
+                  pass_inline = st.text_input("Contraseña", type="password", placeholder="Contraseña", key=f"pass_c_{i}")
+                  
+                  _, col_btn_centro, _ = st.columns([1, 2, 1])
+                  with col_btn_centro:
+                    submitted_inline = st.form_submit_button("Entrar", use_container_width=True)
+                  
+                  if submitted_inline:
+                    if email_inline and pass_inline:
+                      try:
+                        r = requests.post(f"{current_api_url}/clientes-auth/login", json={"email": email_inline.strip().lower(), "password": pass_inline}, timeout=5)
+                        if r.status_code == 200:
+                          data = r.json()
+                          st.session_state.update({
+                              "logged_in": True, 
+                              "user_role": "cliente", 
+                              "user_name": data.get("nombre"), 
+                              "user_id": data.get("id"), 
+                              "token": data.get("access_token")
+                          })
+                          st.session_state.id_local_expandido = venue_id
+                          ev_pendiente = st.session_state.evento_pendiente_reserva
+                          st.session_state.evento_pendiente_reserva = None
+                          st.session_state.evento_a_reservar = ev_pendiente
+                          st.session_state.vista_actual_publica = "reservacion"
+                          st.rerun()
+                        else:
+                          st.error("Correo o contraseña incorrectos.")
+                      except Exception as e:
+                        st.error(f"Error de conexión: {e}")
                     else:
-                      st.error("Correo o contraseña incorrectos.")
-                  except Exception as e:
-                    st.error(f"Error de conexión: {e}")
-                else:
-                  st.warning("Completa ambos campos.")
+                      st.warning("Completa ambos campos.")
 
         break
       
