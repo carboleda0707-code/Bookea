@@ -27,32 +27,63 @@ def render_home(api_url=API_URL):
 
 
   # --- CABECERA / INICIO DE SECCIÓN ---
-  # Presentación compacta: Bookea + subtítulo + menú ⋮ en una sola línea.
-  # Solo se modifica la presentación; la lógica del menú permanece intacta.
+  # Presentación responsive: Bookea + menú ⋮ en la MISMA línea.
+  # El subtítulo queda debajo de Bookea. No se modifica la lógica del menú.
   st.markdown("""
       <style>
-        /* Cabecera compacta */
-        .bookea-header-row {
+        /* CABECERA BOOKEA - PC + MÓVIL */
+        .st-key-bookea_header [data-testid="stHorizontalBlock"] {
+          display: flex !important;
+          flex-wrap: nowrap !important;
+          align-items: center !important;
+          width: 100% !important;
+          gap: 0 !important;
+        }
+
+        .st-key-bookea_header [data-testid="column"] {
+          min-width: 0 !important;
+          padding: 0 !important;
+        }
+
+        .bookea-brand {
           display: flex;
-          align-items: center;
-          gap: 8px;
-          margin: 0 0 8px 0;
-          min-height: 34px;
+          flex-direction: column;
+          justify-content: center;
+          min-width: 0;
+          padding: 0 !important;
+          margin: 0 !important;
         }
 
-        /* El popover debe verse integrado al fondo, sin tarjeta blanca */
-        [data-testid="stPopoverBody"],
-        [data-testid="stPopoverBody"] > div {
-          background: #080914 !important;
-          border: 1px solid rgba(255,255,255,0.08) !important;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+        .bookea-title {
+          font-size: 1.65rem;
+          font-weight: 700;
+          line-height: 1.05;
+          white-space: nowrap;
+          margin: 0 !important;
+          padding: 0 !important;
         }
 
-        /* Quita destellos/fondos blancos del botón del menú */
-        [data-testid="stPopover"] button,
-        [data-testid="stPopover"] button:hover,
-        [data-testid="stPopover"] button:focus,
-        [data-testid="stPopover"] button:active {
+        .bookea-subtitle {
+          font-size: 0.85rem;
+          line-height: 1.15;
+          opacity: 0.72;
+          white-space: nowrap;
+          margin: 3px 0 0 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Menú ⋮ siempre a la derecha y en la misma fila */
+        .st-key-bookea_header [data-testid="stPopover"] {
+          display: flex !important;
+          justify-content: flex-end !important;
+          align-items: center !important;
+          width: 100% !important;
+        }
+
+        .st-key-bookea_header [data-testid="stPopover"] button,
+        .st-key-bookea_header [data-testid="stPopover"] button:hover,
+        .st-key-bookea_header [data-testid="stPopover"] button:focus,
+        .st-key-bookea_header [data-testid="stPopover"] button:active {
           background: transparent !important;
           background-color: transparent !important;
           box-shadow: none !important;
@@ -60,75 +91,92 @@ def render_home(api_url=API_URL):
           border-color: transparent !important;
         }
 
-        /* Menú ⋮ pequeño y limpio */
-        [data-testid="stPopover"] button {
-          min-height: 25px !important;
-          width: 25px !important;
+        .st-key-bookea_header [data-testid="stPopover"] button {
+          min-height: 28px !important;
+          width: 28px !important;
+          min-width: 28px !important;
           padding: 0 !important;
+          margin: 0 !important;
           border-radius: 8px !important;
           color: rgba(255,255,255,0.92) !important;
-          font-size: 5px !important;
-          line-height: 0.5 !important;
+          font-size: 16px !important;
+          line-height: 1 !important;
         }
 
-        /* Botones internos del menú conservan el estilo oscuro */
-        [data-testid="stPopoverBody"] button {
-          background: #151225 !important;
-          color: #ffffff !important;
-          border: 1px solid #43207d !important;
-          box-shadow: none !important;
+        /* Menú desplegable oscuro, sin efecto blanco */
+        [data-testid="stPopoverBody"],
+        [data-testid="stPopoverBody"] > div {
+          background: #080914 !important;
+          border: 1px solid rgba(255,255,255,0.08) !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
         }
 
+        [data-testid="stPopoverBody"] button,
         [data-testid="stPopoverBody"] button:hover,
         [data-testid="stPopoverBody"] button:focus,
         [data-testid="stPopoverBody"] button:active {
           background: #151225 !important;
           color: #ffffff !important;
-          border-color: #43207d !important;
+          border: 1px solid #43207d !important;
           box-shadow: none !important;
           outline: none !important;
         }
 
         @media (max-width: 600px) {
-          .bookea-header-row {
-            gap: 6px;
-            margin-bottom: 6px;
+          .st-key-bookea_header [data-testid="stHorizontalBlock"] {
+            flex-wrap: nowrap !important;
+          }
+
+          .bookea-title {
+            font-size: 1.45rem;
+          }
+
+          .bookea-subtitle {
+            font-size: 0.78rem;
+            margin-top: 3px !important;
+          }
+
+          .st-key-bookea_header [data-testid="stPopover"] button {
+            width: 26px !important;
+            min-width: 26px !important;
+            min-height: 26px !important;
+            font-size: 16px !important;
           }
         }
       </style>
   """, unsafe_allow_html=True)
 
-  col_titulo, col_subtitulo, col_cuenta = st.columns([1.25, 2.35, 6.35], gap="small")
+  # Fila única: Bookea a la izquierda y ⋮ a la derecha.
+  # El subtítulo queda debajo del título.
+  with st.container(key="bookea_header"):
+      col_marca, col_menu = st.columns([9, 1], gap="small", vertical_alignment="center")
 
-  with col_titulo:
-      st.markdown(
-          '<div class="bookea-header-row"><span style="font-size:1.65rem;font-weight:700;white-space:nowrap;">🎟️ Bookea</span></div>',
-          unsafe_allow_html=True
-      )
+      with col_marca:
+          st.markdown(
+              """<div class="bookea-brand">
+                <div class="bookea-title">🎟️ Bookea</div>
+                <div class="bookea-subtitle">Reservaciones en segundos.</div>
+              </div>""",
+              unsafe_allow_html=True
+          )
 
-  with col_subtitulo:
-      st.markdown(
-          '<div class="bookea-header-row"><span style="font-size:0.85rem;opacity:0.72;white-space:nowrap;">Reservaciones en segundos.</span></div>',
-          unsafe_allow_html=True
-      )
+      with col_menu:
+          # Menú de cuenta: solo se muestra el icono ⋮
+          with st.popover("⋮", use_container_width=False):
 
-  with col_cuenta:
-      # Menú de cuenta: solo se muestra el icono ⋮
-      with st.popover("⋮", use_container_width=False):
+              if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
+                  st.session_state.origen_login = "menu_general"
+                  st.session_state.vista_actual_publica = "login_cliente"
+                  st.rerun()
 
-          if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
-              st.session_state.origen_login = "menu_general"
-              st.session_state.vista_actual_publica = "login_cliente"
-              st.rerun()
+              # 🌟 Aquí llamamos a la vista independiente de registro de clientes
+              if st.button("Registrarse", key="menu_cuenta_registrarse", use_container_width=True):
+                  st.session_state.vista_actual_publica = "registro_clientes"
+                  st.rerun()
 
-          # 🌟 Aquí llamamos a la vista independiente de registro de clientes
-          if st.button("Registrarse", key="menu_cuenta_registrarse", use_container_width=True):
-              st.session_state.vista_actual_publica = "registro_clientes"
-              st.rerun()
-
-          if st.button("Olvidé contraseña", key="menu_cuenta_olvido", use_container_width=True):
-              st.session_state.vista_actual_publica = "recuperar_contrasena"
-              st.rerun()
+              if st.button("Olvidé contraseña", key="menu_cuenta_olvido", use_container_width=True):
+                  st.session_state.vista_actual_publica = "recuperar_contrasena"
+                  st.rerun()
 
   # --- 3. BUSCADOR PRINCIPAL ---
   col_search, col_space = st.columns([2, 8])
