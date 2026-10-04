@@ -27,24 +27,95 @@ def render_home(api_url=API_URL):
 
 
   # --- CABECERA / INICIO DE SECCIÓN ---
-  # Título y subtítulo en una misma línea, con el menú de cuenta a la derecha.
-  col_titulo, col_cuenta = st.columns([6, 1])
+  # Presentación compacta: Bookea + subtítulo + menú ⋮ en una sola línea.
+  # Solo se modifica la presentación; la lógica del menú permanece intacta.
+  st.markdown("""
+      <style>
+        /* Cabecera compacta */
+        .bookea-header-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0 0 8px 0;
+          min-height: 34px;
+        }
+
+        /* El popover debe verse integrado al fondo, sin tarjeta blanca */
+        [data-testid="stPopoverBody"],
+        [data-testid="stPopoverBody"] > div {
+          background: #080914 !important;
+          border: 1px solid rgba(255,255,255,0.08) !important;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.35) !important;
+        }
+
+        /* Quita destellos/fondos blancos del botón del menú */
+        [data-testid="stPopover"] button,
+        [data-testid="stPopover"] button:hover,
+        [data-testid="stPopover"] button:focus,
+        [data-testid="stPopover"] button:active {
+          background: transparent !important;
+          background-color: transparent !important;
+          box-shadow: none !important;
+          outline: none !important;
+          border-color: transparent !important;
+        }
+
+        /* Menú ⋮ pequeño y limpio */
+        [data-testid="stPopover"] button {
+          min-height: 25px !important;
+          width: 25px !important;
+          padding: 0 !important;
+          border-radius: 8px !important;
+          color: rgba(255,255,255,0.92) !important;
+          font-size: 5px !important;
+          line-height: 0.5 !important;
+        }
+
+        /* Botones internos del menú conservan el estilo oscuro */
+        [data-testid="stPopoverBody"] button {
+          background: #151225 !important;
+          color: #ffffff !important;
+          border: 1px solid #43207d !important;
+          box-shadow: none !important;
+        }
+
+        [data-testid="stPopoverBody"] button:hover,
+        [data-testid="stPopoverBody"] button:focus,
+        [data-testid="stPopoverBody"] button:active {
+          background: #151225 !important;
+          color: #ffffff !important;
+          border-color: #43207d !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+
+        @media (max-width: 600px) {
+          .bookea-header-row {
+            gap: 6px;
+            margin-bottom: 6px;
+          }
+        }
+      </style>
+  """, unsafe_allow_html=True)
+
+  col_titulo, col_subtitulo, col_cuenta = st.columns([1.25, 2.35, 6.35], gap="small")
 
   with col_titulo:
       st.markdown(
-          """
-          <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:8px;">
-              <span style="font-size:1.65rem; font-weight:700;">🎟️ Bookea</span>
-              <span style="font-size:1rem; opacity:0.72;">Reserva Tu Evento en segundos.</span>
-          </div>
-          """,
+          '<div class="bookea-header-row"><span style="font-size:1.65rem;font-weight:700;white-space:nowrap;">🎟️ Bookea</span></div>',
+          unsafe_allow_html=True
+      )
+
+  with col_subtitulo:
+      st.markdown(
+          '<div class="bookea-header-row"><span style="font-size:0.85rem;opacity:0.72;white-space:nowrap;">Reservaciones en segundos.</span></div>',
           unsafe_allow_html=True
       )
 
   with col_cuenta:
-      # Menú de cuenta: Entrar / Registrarse / Olvidé contraseña
-      with st.popover("Mi cuenta ⋮", use_container_width=True):
-                            
+      # Menú de cuenta: solo se muestra el icono ⋮
+      with st.popover("⋮", use_container_width=False):
+
           if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
               st.session_state.origen_login = "menu_general"
               st.session_state.vista_actual_publica = "login_cliente"
@@ -107,7 +178,7 @@ def render_home(api_url=API_URL):
     locales_data = []
 
   # --- 6. FILTROS MINIMALISTAS (CATEGORÍA Y UBICACIÓN) ---
-  st.markdown("##### 🌟 Filtrar Establecimientos")
+  st.markdown("###### 🌟 Filtrar Establecimientos")
   col_cat_filt, col_ubi_filt, col_espacio = st.columns([1, 1, 3])
 
   with col_cat_filt:
@@ -233,7 +304,7 @@ def render_home(api_url=API_URL):
       if str(st.session_state.get("id_local_expandido")) == str(venue_id):
         
         with st.container(border=True):
-          st.markdown(f"##### 🗓️ Cartelera de Eventos - {titulo}")
+          st.markdown(f"###### 🗓️ Cartelera de Eventos - {titulo}")
           st.caption(f" Explora Eventos y Reserva Registrandote.")
 
           eventos_a_mostrar = []
