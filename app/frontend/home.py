@@ -31,7 +31,7 @@ def render_home(api_url=API_URL):
   # El subtítulo queda debajo de Bookea. No se modifica la lógica del menú.
   st.markdown("""
       <style>
-        /* CABECERA BOOKEA - PC + MÓVIL */
+        /* CABECERA BOOKEA — PC + MÓVIL */
         .st-key-bookea_header [data-testid="stHorizontalBlock"] {
           display: flex !important;
           flex-wrap: nowrap !important;
@@ -72,7 +72,7 @@ def render_home(api_url=API_URL):
           padding: 0 !important;
         }
 
-        /* Menú ⋮ siempre a la derecha y en la misma fila */
+        /* BOTÓN ⋮ — SIN DESTELLO BLANCO */
         .st-key-bookea_header [data-testid="stPopover"] {
           display: flex !important;
           justify-content: flex-end !important;
@@ -83,41 +83,117 @@ def render_home(api_url=API_URL):
         .st-key-bookea_header [data-testid="stPopover"] button,
         .st-key-bookea_header [data-testid="stPopover"] button:hover,
         .st-key-bookea_header [data-testid="stPopover"] button:focus,
-        .st-key-bookea_header [data-testid="stPopover"] button:active {
+        .st-key-bookea_header [data-testid="stPopover"] button:active,
+        .st-key-bookea_header [data-testid="stPopover"] button:focus-visible {
           background: transparent !important;
           background-color: transparent !important;
+          color: rgba(255,255,255,0.92) !important;
+          border: none !important;
+          border-color: transparent !important;
           box-shadow: none !important;
           outline: none !important;
-          border-color: transparent !important;
+          text-decoration: none !important;
         }
 
         .st-key-bookea_header [data-testid="stPopover"] button {
           min-height: 28px !important;
+          height: 28px !important;
           width: 28px !important;
           min-width: 28px !important;
           padding: 0 !important;
           margin: 0 !important;
           border-radius: 8px !important;
-          color: rgba(255,255,255,0.92) !important;
           font-size: 16px !important;
           line-height: 1 !important;
         }
 
-        /* Menú desplegable oscuro, sin efecto blanco */
-        [data-testid="stPopoverBody"],
-        [data-testid="stPopoverBody"] > div {
-          background: #080914 !important;
-          border: 1px solid rgba(255,255,255,0.08) !important;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+        .st-key-bookea_header [data-testid="stPopover"] button *,
+        .st-key-bookea_header [data-testid="stPopover"] button::before,
+        .st-key-bookea_header [data-testid="stPopover"] button::after {
+          background: transparent !important;
+          box-shadow: none !important;
         }
 
+        /* MENÚ — COMPACTO Y SIN SALTOS */
+        [data-testid="stPopoverBody"] {
+          background: #080914 !important;
+          background-color: #080914 !important;
+          border: none !important;
+          border-width: 0 !important;
+          border-radius: 10px !important;
+          box-shadow: 0 8px 28px rgba(0,0,0,0.45) !important;
+          padding: 4px !important;
+        }
+
+        [data-testid="stPopoverBody"] > div,
+        [data-testid="stPopoverBody"] [data-baseweb="popover"] {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+        /* Elimina el espacio automático entre los st.button() */
+        [data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
+          gap: 0 !important;
+          row-gap: 0 !important;
+          column-gap: 0 !important;
+        }
+
+        [data-testid="stPopoverBody"] [data-testid="stElementContainer"] {
+          margin: 0 !important;
+          padding: 0 !important;
+          min-height: 0 !important;
+        }
+
+        /* BOTONES DEL MENÚ — SIN DESTELLO BLANCO */
         [data-testid="stPopoverBody"] button,
         [data-testid="stPopoverBody"] button:hover,
         [data-testid="stPopoverBody"] button:focus,
+        [data-testid="stPopoverBody"] button:active,
+        [data-testid="stPopoverBody"] button:focus-visible {
+          background: transparent !important;
+          background-color: transparent !important;
+          color: rgba(255,255,255,0.92) !important;
+          border: none !important;
+          border-width: 0 !important;
+          border-color: transparent !important;
+          box-shadow: none !important;
+          outline: none !important;
+          width: 100% !important;
+          min-height: 32px !important;
+          height: 32px !important;
+          margin: 0 !important;
+          padding: 0 12px !important;
+          border-radius: 6px !important;
+          font-size: 0.88rem !important;
+          font-weight: 400 !important;
+          line-height: 1 !important;
+          text-align: left !important;
+          transition: background-color 0.12s ease !important;
+        }
+
+        /* Único efecto permitido: hover oscuro, nunca blanco */
+        [data-testid="stPopoverBody"] button:hover,
+        [data-testid="stPopoverBody"] button:focus,
         [data-testid="stPopoverBody"] button:active {
-          background: #151225 !important;
+          background: rgba(255,255,255,0.07) !important;
+          background-color: rgba(255,255,255,0.07) !important;
           color: #ffffff !important;
-          border: 1px solid #43207d !important;
+        }
+
+        [data-testid="stPopoverBody"] p {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Evita fondos blancos de capas BaseWeb */
+        [data-testid="stPopoverBody"] [data-baseweb="button"],
+        [data-testid="stPopoverBody"] [data-baseweb="button"]:hover,
+        [data-testid="stPopoverBody"] [data-baseweb="button"]:focus,
+        [data-testid="stPopoverBody"] [data-baseweb="button"]:active {
+          background: transparent !important;
+          background-color: transparent !important;
+          border: none !important;
           box-shadow: none !important;
           outline: none !important;
         }
@@ -125,6 +201,7 @@ def render_home(api_url=API_URL):
         @media (max-width: 600px) {
           .st-key-bookea_header [data-testid="stHorizontalBlock"] {
             flex-wrap: nowrap !important;
+            gap: 0 !important;
           }
 
           .bookea-title {
@@ -140,7 +217,33 @@ def render_home(api_url=API_URL):
             width: 26px !important;
             min-width: 26px !important;
             min-height: 26px !important;
+            height: 26px !important;
             font-size: 16px !important;
+          }
+
+          [data-testid="stPopoverBody"] {
+            padding: 4px !important;
+          }
+
+          [data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
+            gap: 0 !important;
+            row-gap: 0 !important;
+          }
+
+          [data-testid="stPopoverBody"] [data-testid="stElementContainer"] {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          [data-testid="stPopoverBody"] button,
+          [data-testid="stPopoverBody"] button:hover,
+          [data-testid="stPopoverBody"] button:focus,
+          [data-testid="stPopoverBody"] button:active {
+            min-height: 30px !important;
+            height: 30px !important;
+            margin: 0 !important;
+            padding: 0 11px !important;
+            font-size: 0.84rem !important;
           }
         }
       </style>
@@ -162,7 +265,7 @@ def render_home(api_url=API_URL):
 
       with col_menu:
           # Menú de cuenta: solo se muestra el icono ⋮
-          with st.popover("⋮", use_container_width=False):
+          with st.popover("⠇", use_container_width=False):
 
               if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
                   st.session_state.origen_login = "menu_general"
@@ -178,14 +281,16 @@ def render_home(api_url=API_URL):
                   st.session_state.vista_actual_publica = "recuperar_contrasena"
                   st.rerun()
 
+  st.markdown("", unsafe_allow_html=True)
   # --- 3. BUSCADOR PRINCIPAL ---
-  col_search, col_space = st.columns([2, 8])
-  with col_search:
-    busqueda_query = st.text_input(
-        "🔍 Buscar",
-        placeholder="🔍 Ej. Locales con Música en Vivo...",
-        label_visibility="collapsed",
-    )
+  #col_search, col_space = st.columns([2, 8])
+  #with col_search:
+  #  busqueda_query = st.text_input(
+  #      "🔍 Buscar",
+  #      placeholder="🔍 Ej. Locales con Música en Vivo...",
+  #      label_visibility="collapsed",
+  #  )
+  
   
   # --- 4. CARGAR MEGACATEGORÍAS DESDE tipo_establecimiento.ini ---
   base_dir = os.path.dirname(os.path.abspath(__file__))
