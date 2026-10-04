@@ -45,7 +45,7 @@ def render_home(api_url=API_URL):
         [data-testid="stPopoverBody"] > div {
           background: #080914 !important;
           border: 1px solid rgba(255,255,255,0.08) !important;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.35) !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
         }
 
         /* Quita destellos/fondos blancos del botón del menú */
@@ -131,7 +131,7 @@ def render_home(api_url=API_URL):
               st.rerun()
 
   # --- 3. BUSCADOR PRINCIPAL ---
-  col_search, col_space = st.columns([2, 3])
+  col_search, col_space = st.columns([2, 8])
   with col_search:
     busqueda_query = st.text_input(
         "🔍 Buscar",
