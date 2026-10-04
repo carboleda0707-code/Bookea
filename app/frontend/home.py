@@ -132,7 +132,7 @@ def render_home(api_url=API_URL):
 
       with col_menu:
           # Menú de cuenta: solo se muestra el icono ⋮
-          with st.popover("⠇", use_container_width=False):
+          with st.popover("⠇⠇", use_container_width=False):
 
               if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
                   st.session_state.origen_login = "menu_general"
