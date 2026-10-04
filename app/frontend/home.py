@@ -27,226 +27,93 @@ def render_home(api_url=API_URL):
 
 
   # --- CABECERA / INICIO DE SECCIÓN ---
-  # Presentación responsive: Bookea + menú ⋮ en la MISMA línea.
-  # El subtítulo queda debajo de Bookea. No se modifica la lógica del menú.
+  # CSS único de presentación. No modifica lógica ni flujo.
   st.markdown("""
-      <style>
-        /* CABECERA BOOKEA — PC + MÓVIL */
-        .st-key-bookea_header [data-testid="stHorizontalBlock"] {
-          display: flex !important;
-          flex-wrap: nowrap !important;
-          align-items: center !important;
-          width: 100% !important;
-          gap: 0 !important;
-        }
+  <style>
+    /* ===== BOOKEA HEADER ===== */
+    .st-key-bookea_header [data-testid="stHorizontalBlock"] {
+      display:flex !important; flex-wrap:nowrap !important; align-items:center !important; gap:0 !important;
+    }
+    .st-key-bookea_header [data-testid="column"] { min-width:0 !important; padding:0 !important; }
+    .bookea-brand { display:flex; flex-direction:column; min-width:0; margin:0 !important; padding:0 !important; }
+    .bookea-title { font-size:1.65rem; font-weight:700; line-height:1.05; white-space:nowrap; margin:0 !important; padding:0 !important; }
+    .bookea-subtitle { font-size:.85rem; line-height:1.15; opacity:.72; white-space:nowrap; margin:3px 0 0 !important; padding:0 !important; }
+    .st-key-bookea_header [data-testid="stPopover"] { display:flex !important; justify-content:flex-end !important; align-items:center !important; width:100% !important; }
+    .st-key-bookea_header [data-testid="stPopover"] > button,
+    .st-key-bookea_header [data-testid="stPopover"] > button:hover,
+    .st-key-bookea_header [data-testid="stPopover"] > button:focus,
+    .st-key-bookea_header [data-testid="stPopover"] > button:active {
+      background:transparent !important; background-color:transparent !important; border:0 !important; outline:0 !important; box-shadow:none !important;
+      color:rgba(255,255,255,.92) !important;
+    }
+    .st-key-bookea_header [data-testid="stPopover"] > button { width:28px !important; min-width:28px !important; height:28px !important; min-height:28px !important; padding:0 !important; margin:0 !important; }
 
-        .st-key-bookea_header [data-testid="column"] {
-          min-width: 0 !important;
-          padding: 0 !important;
-        }
+    /* ===== DESTELLO / RIPPLE DE STREAMLIT ===== */
+    /* Se elimina la capa visual que aparece al hacer click o enfocar cualquier botón. */
+    button,
+    button:hover, button:focus, button:focus-visible, button:active,
+    [data-testid="stButton"] button,
+    [data-testid="stButton"] button:hover, [data-testid="stButton"] button:focus,
+    [data-testid="stButton"] button:focus-visible, [data-testid="stButton"] button:active,
+    [data-testid="stFormSubmitButton"] button,
+    [data-testid="stFormSubmitButton"] button:hover, [data-testid="stFormSubmitButton"] button:focus,
+    [data-testid="stFormSubmitButton"] button:focus-visible, [data-testid="stFormSubmitButton"] button:active {
+      outline:none !important; box-shadow:none !important;
+      -webkit-tap-highlight-color:transparent !important;
+      transition:none !important;
+    }
+    button::before, button::after,
+    [data-testid="stButton"] button::before, [data-testid="stButton"] button::after,
+    [data-testid="stFormSubmitButton"] button::before, [data-testid="stFormSubmitButton"] button::after {
+      content:none !important; display:none !important; background:transparent !important; box-shadow:none !important;
+    }
+    /* Evita la animación/ripple de BaseWeb. */
+    [data-baseweb="button"]::before, [data-baseweb="button"]::after,
+    [data-baseweb="button"] *, [data-baseweb="button"] {
+      animation:none !important;
+    }
 
-        .bookea-brand {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          min-width: 0;
-          padding: 0 !important;
-          margin: 0 !important;
-        }
+    /* ===== SELECTORES ===== */
+    [data-baseweb="select"] > div,
+    [data-baseweb="select"] > div:hover,
+    [data-baseweb="select"] > div:focus,
+    [data-baseweb="select"] > div:focus-within,
+    [data-baseweb="select"] > div:active {
+      outline:none !important; box-shadow:none !important;
+      -webkit-tap-highlight-color:transparent !important;
+    }
+    [role="option"], [role="option"]:hover, [role="option"]:focus, [role="option"]:focus-visible, [role="option"]:active {
+      outline:none !important; box-shadow:none !important;
+    }
 
-        .bookea-title {
-          font-size: 1.65rem;
-          font-weight: 700;
-          line-height: 1.05;
-          white-space: nowrap;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
+    /* ===== POPOVER ===== */
+    [data-testid="stPopoverBody"] { background:#080914 !important; border:0 !important; border-radius:10px !important; padding:4px !important; box-shadow:0 8px 28px rgba(0,0,0,.45) !important; }
+    [data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] { gap:0 !important; row-gap:0 !important; }
+    [data-testid="stPopoverBody"] [data-testid="stElementContainer"] { margin:0 !important; padding:0 !important; min-height:0 !important; }
+    [data-testid="stPopoverBody"] button,
+    [data-testid="stPopoverBody"] button:hover, [data-testid="stPopoverBody"] button:focus,
+    [data-testid="stPopoverBody"] button:focus-visible, [data-testid="stPopoverBody"] button:active {
+      background:transparent !important; background-color:transparent !important; color:rgba(255,255,255,.92) !important;
+      border:0 !important; outline:0 !important; box-shadow:none !important; transition:none !important;
+      min-height:32px !important; height:32px !important; margin:0 !important; padding:0 12px !important; border-radius:6px !important;
+      text-align:left !important;
+    }
+    [data-testid="stPopoverBody"] button:hover { background:rgba(255,255,255,.07) !important; color:#fff !important; }
 
-        .bookea-subtitle {
-          font-size: 0.85rem;
-          line-height: 1.15;
-          opacity: 0.72;
-          white-space: nowrap;
-          margin: 3px 0 0 0 !important;
-          padding: 0 !important;
-        }
+    /* ===== IMÁGENES ===== */
+    [data-testid="stImage"] img { width:110px !important; height:140px !important; object-fit:cover !important; border-radius:6px; }
 
-        /* BOTÓN ⋮ — SIN DESTELLO BLANCO */
-        .st-key-bookea_header [data-testid="stPopover"] {
-          display: flex !important;
-          justify-content: flex-end !important;
-          align-items: center !important;
-          width: 100% !important;
-        }
+    /* ===== LOGIN INLINE ===== */
+    .bookea-login-title { font-size:1rem; font-weight:700; text-align:left; margin-bottom:12px; }
+    .bookea-input-label { font-size:.88rem; font-weight:700; color:#fff; margin:6px 0 3px; text-align:left; }
 
-        .st-key-bookea_header [data-testid="stPopover"] button,
-        .st-key-bookea_header [data-testid="stPopover"] button:hover,
-        .st-key-bookea_header [data-testid="stPopover"] button:focus,
-        .st-key-bookea_header [data-testid="stPopover"] button:active,
-        .st-key-bookea_header [data-testid="stPopover"] button:focus-visible {
-          background: transparent !important;
-          background-color: transparent !important;
-          color: rgba(255,255,255,0.92) !important;
-          border: none !important;
-          border-color: transparent !important;
-          box-shadow: none !important;
-          outline: none !important;
-          text-decoration: none !important;
-        }
-
-        .st-key-bookea_header [data-testid="stPopover"] button {
-          min-height: 28px !important;
-          height: 28px !important;
-          width: 28px !important;
-          min-width: 28px !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          border-radius: 8px !important;
-          font-size: 16px !important;
-          line-height: 1 !important;
-        }
-
-        .st-key-bookea_header [data-testid="stPopover"] button *,
-        .st-key-bookea_header [data-testid="stPopover"] button::before,
-        .st-key-bookea_header [data-testid="stPopover"] button::after {
-          background: transparent !important;
-          box-shadow: none !important;
-        }
-
-        /* MENÚ — COMPACTO Y SIN SALTOS */
-        [data-testid="stPopoverBody"] {
-          background: #080914 !important;
-          background-color: #080914 !important;
-          border: none !important;
-          border-width: 0 !important;
-          border-radius: 10px !important;
-          box-shadow: 0 8px 28px rgba(0,0,0,0.45) !important;
-          padding: 4px !important;
-        }
-
-        [data-testid="stPopoverBody"] > div,
-        [data-testid="stPopoverBody"] [data-baseweb="popover"] {
-          background: transparent !important;
-          border: none !important;
-          box-shadow: none !important;
-        }
-
-        /* Elimina el espacio automático entre los st.button() */
-        [data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
-          gap: 0 !important;
-          row-gap: 0 !important;
-          column-gap: 0 !important;
-        }
-
-        [data-testid="stPopoverBody"] [data-testid="stElementContainer"] {
-          margin: 0 !important;
-          padding: 0 !important;
-          min-height: 0 !important;
-        }
-
-        /* BOTONES DEL MENÚ — SIN DESTELLO BLANCO */
-        [data-testid="stPopoverBody"] button,
-        [data-testid="stPopoverBody"] button:hover,
-        [data-testid="stPopoverBody"] button:focus,
-        [data-testid="stPopoverBody"] button:active,
-        [data-testid="stPopoverBody"] button:focus-visible {
-          background: transparent !important;
-          background-color: transparent !important;
-          color: rgba(255,255,255,0.92) !important;
-          border: none !important;
-          border-width: 0 !important;
-          border-color: transparent !important;
-          box-shadow: none !important;
-          outline: none !important;
-          width: 100% !important;
-          min-height: 32px !important;
-          height: 32px !important;
-          margin: 0 !important;
-          padding: 0 12px !important;
-          border-radius: 6px !important;
-          font-size: 0.88rem !important;
-          font-weight: 400 !important;
-          line-height: 1 !important;
-          text-align: left !important;
-          transition: background-color 0.12s ease !important;
-        }
-
-        /* Único efecto permitido: hover oscuro, nunca blanco */
-        [data-testid="stPopoverBody"] button:hover,
-        [data-testid="stPopoverBody"] button:focus,
-        [data-testid="stPopoverBody"] button:active {
-          background: rgba(255,255,255,0.07) !important;
-          background-color: rgba(255,255,255,0.07) !important;
-          color: #ffffff !important;
-        }
-
-        [data-testid="stPopoverBody"] p {
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-
-        /* Evita fondos blancos de capas BaseWeb */
-        [data-testid="stPopoverBody"] [data-baseweb="button"],
-        [data-testid="stPopoverBody"] [data-baseweb="button"]:hover,
-        [data-testid="stPopoverBody"] [data-baseweb="button"]:focus,
-        [data-testid="stPopoverBody"] [data-baseweb="button"]:active {
-          background: transparent !important;
-          background-color: transparent !important;
-          border: none !important;
-          box-shadow: none !important;
-          outline: none !important;
-        }
-
-        @media (max-width: 600px) {
-          .st-key-bookea_header [data-testid="stHorizontalBlock"] {
-            flex-wrap: nowrap !important;
-            gap: 0 !important;
-          }
-
-          .bookea-title {
-            font-size: 1.45rem;
-          }
-
-          .bookea-subtitle {
-            font-size: 0.78rem;
-            margin-top: 3px !important;
-          }
-
-          .st-key-bookea_header [data-testid="stPopover"] button {
-            width: 26px !important;
-            min-width: 26px !important;
-            min-height: 26px !important;
-            height: 26px !important;
-            font-size: 16px !important;
-          }
-
-          [data-testid="stPopoverBody"] {
-            padding: 4px !important;
-          }
-
-          [data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
-            gap: 0 !important;
-            row-gap: 0 !important;
-          }
-
-          [data-testid="stPopoverBody"] [data-testid="stElementContainer"] {
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-
-          [data-testid="stPopoverBody"] button,
-          [data-testid="stPopoverBody"] button:hover,
-          [data-testid="stPopoverBody"] button:focus,
-          [data-testid="stPopoverBody"] button:active {
-            min-height: 30px !important;
-            height: 30px !important;
-            margin: 0 !important;
-            padding: 0 11px !important;
-            font-size: 0.84rem !important;
-          }
-        }
-      </style>
+    @media (max-width:600px) {
+      .bookea-title { font-size:1.45rem; }
+      .bookea-subtitle { font-size:.78rem; }
+      .st-key-bookea_header [data-testid="stPopover"] > button { width:26px !important; min-width:26px !important; height:26px !important; min-height:26px !important; }
+      [data-testid="stPopoverBody"] button { min-height:30px !important; height:30px !important; padding:0 11px !important; font-size:.84rem !important; }
+    }
+  </style>
   """, unsafe_allow_html=True)
 
   # Fila única: Bookea a la izquierda y ⋮ a la derecha.
@@ -282,15 +149,15 @@ def render_home(api_url=API_URL):
                   st.rerun()
 
   st.markdown("", unsafe_allow_html=True)
-  # --- 3. BUSCADOR PRINCIPAL ---
-  #col_search, col_space = st.columns([2, 8])
-  #with col_search:
-  #  busqueda_query = st.text_input(
-  #      "🔍 Buscar",
-  #      placeholder="🔍 Ej. Locales con Música en Vivo...",
-  #      label_visibility="collapsed",
-  #  )
   
+  # --- 3. BUSCADOR PRINCIPAL ---
+  col_search, col_space = st.columns([2, 8])
+  with col_search:
+    busqueda_query = st.text_input(
+        "🔍 Buscar",
+        placeholder="🔍 Ej. Locales con Música en Vivo...",
+        label_visibility="collapsed",
+    )
   
   # --- 4. CARGAR MEGACATEGORÍAS DESDE tipo_establecimiento.ini ---
   base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -537,26 +404,46 @@ def render_home(api_url=API_URL):
           if st.session_state.get("evento_pendiente_reserva"):
                         
             # 🌟 Estilos CSS para reducir la altura de los inputs y botones de este formulario
-            st.markdown(
-                """
-                
-                """,
-                unsafe_allow_html=True,
-            )
-            
             # 🌟 Contenedor centrado y más estrecho para reducir el tamaño visual drásticamente
-            _, col_form, _ = st.columns([2, 1.5, 2])
+            _, col_form, _ = st.columns([0.8, 2.8, 6.8])
             with col_form:
               with st.container(border=True):
-                st.markdown("🔒 Inicia sesión para continuar", unsafe_allow_html=True)            
+                
+                st.markdown("""
+                <style>
+                  .bookea-login-title {
+                    font-size: 1rem;
+                    font-weight: 700;
+                    text-align: left;
+                    margin-bottom: 12px;
+                  }
+                  .bookea-input-label {
+                    font-size: 0.88rem;
+                    font-weight: 700;
+                    color: #ffffff;
+                    margin: 6px 0 3px 0;
+                    text-align: left;
+                  }
+                </style>
+                """, unsafe_allow_html=True)
+                st.markdown('<div class="bookea-login-title">🔒 Inicia sesión para continuar</div>', unsafe_allow_html=True)            
 
                 with st.form(f"form_login_compact_{i}"):
-                  email_inline = st.text_input("Correo electrónico", placeholder="correo@ejemplo.com", key=f"email_c_{i}")
-                  pass_inline = st.text_input("Contraseña", type="password", placeholder="Contraseña", key=f"pass_c_{i}")
+                  st.markdown('<div class="bookea-input-label">Correo electrónico</div>', unsafe_allow_html=True)
+                  email_inline = st.text_input("", placeholder="correo@ejemplo.com", key=f"email_c_{i}", label_visibility="collapsed")
+                  st.markdown('<div class="bookea-input-label">Contraseña</div>', unsafe_allow_html=True)
+                  pass_inline = st.text_input("", type="password", placeholder="Contraseña", key=f"pass_c_{i}", label_visibility="collapsed")
                   
-                  _, col_btn_centro, _ = st.columns([1, 2, 1])
-                  with col_btn_centro:
+                  _, col_btn_entrar, col_btn_cerrar, _ = st.columns([0.8, 1.4, 1.4, 0.8])
+                  with col_btn_entrar:
                     submitted_inline = st.form_submit_button("Entrar", use_container_width=True)
+                  with col_btn_cerrar:
+                    cerrar_inline = st.form_submit_button("Cerrar", use_container_width=True)
+                  
+                  if cerrar_inline:
+                    # Solo cierra este login en línea y vuelve al punto donde se solicitó.
+                    st.session_state.evento_pendiente_reserva = None
+                    st.rerun()
                   
                   if submitted_inline:
                     if email_inline and pass_inline:
