@@ -4,11 +4,15 @@ import requests
 import streamlit as st
 from .registro_clientes import render_registro_clientes
 from .recuperar_contrasena import render_recuperar_contrasena
+from sesion_local import inicializar_gestion_local, obtener_local_actual, fijar_local_actual
+
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 
 def render_home(api_url=API_URL):
+  # Inicializar la gestión del local compartido
+  inicializar_gestion_local()
   """Renderiza la Landing Page principal de Bookea (Vista Pública).
 
   Incluye selectores de filtros y un sistema de expansión en línea (accordion)
@@ -136,15 +140,22 @@ def render_home(api_url=API_URL):
 
               if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
                   st.session_state.origen_login = "menu_general"
+                  # 🌟 Aseguramos que si hay un local expandido, se fije antes de ir al login
+                  if st.session_state.get("id_local_expandido"):
+                      fijar_local_actual(st.session_state.id_local_expandido)
                   st.session_state.vista_actual_publica = "login_cliente"
                   st.rerun()
 
-              # 🌟 Aquí llamamos a la vista independiente de registro de clientes
+              # 🌟 Vista independiente de registro de clientes
               if st.button("Registrarse", key="menu_cuenta_registrarse", use_container_width=True):
+                  if st.session_state.get("id_local_expandido"):
+                      fijar_local_actual(st.session_state.id_local_expandido)
                   st.session_state.vista_actual_publica = "registro_clientes"
                   st.rerun()
 
               if st.button("Olvidé contraseña", key="menu_cuenta_olvido", use_container_width=True):
+                  if st.session_state.get("id_local_expandido"):
+                      fijar_local_actual(st.session_state.id_local_expandido)
                   st.session_state.vista_actual_publica = "recuperar_contrasena"
                   st.rerun()
 
@@ -318,6 +329,8 @@ def render_home(api_url=API_URL):
               st.session_state.id_local_expandido = None
             else:
               st.session_state.id_local_expandido = venue_id
+              # 🌟 AQUÍ FIJAMOS EL LOCAL COMPARTIDO DE FORMA TRANSVERSAL
+              fijar_local_actual(venue_id)
             st.rerun()
 
       # --- 9. SI ESTE LOCAL ESTÁ EXPANDIDO, INSERTAR SU CARTELERA EXACTAMENTE AQUÍ ---

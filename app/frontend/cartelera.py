@@ -294,18 +294,15 @@ def render_cartelera(api_url, cliente_id=None):
     }]
 
   # ==========================================
-  # 0.3. DETECCIÓN DEL LOCAL INICIAL
+  # 0.3. DETECCIÓN DEL LOCAL INICIAL (OPTIMIZADO)
   # ==========================================
-  local_inicial = None
-  id_local_guardado = st.session_state.get("id_local_actual")
-  if id_local_guardado:
-    for l in locales:
-      if str(l.get("id")) == str(id_local_guardado):
-        local_inicial = l
-        break
+  from sesion_local import obtener_local_actual, fijar_local_actual
+  
+  # 🌟 Utilizamos nuestro gestor transversal para recuperar el local actual de forma limpia
+  local_inicial = obtener_local_actual(locales)
 
-  if not local_inicial:
-    local_inicial = locales[0]
+  if not local_inicial and locales:
+    local_inicial = locales[0]  # Respaldo por defecto si la lista no está vacía
 
   def_pais = str(local_inicial.get("pais", "Ecuador")).strip().title()
   def_ciudad = str(local_inicial.get("ciudad", "Guayaquil")).strip()
@@ -320,7 +317,6 @@ def render_cartelera(api_url, cliente_id=None):
   # ==========================================
   # 1. VERIFICACIÓN CONDICIONAL DE BÚSQUEDA / FILTROS
   # ==========================================
-  # Buscamos en todas las posibles claves que Streamlit u otro script usen para el menú
   menu_cliente_actual = (
       st.session_state.get("menu_cliente_actual") 
       or st.session_state.get("menu_cliente") 
@@ -330,18 +326,15 @@ def render_cartelera(api_url, cliente_id=None):
   
   busqueda_evento = st.session_state.get("busqueda_evento", "")
   
-  # Si el texto del menú contiene "Buscar" o "Local", ejecutamos los filtros
   if "buscar" in menu_cliente_actual.lower() or "local" in menu_cliente_actual.lower():
       info_local_actual, busqueda_evento, _ = render_filtro_locales(api_url)
       id_local_actual = info_local_actual.get("id")
+      # 🌟 Actualizamos la sesión global de forma transversal
+      fijar_local_actual(id_local_actual)
   else:
       id_local_actual = local_inicial.get("id")
       info_local_actual = local_inicial
 
-  
-  
-    
-  id_local_actual = info_local_actual.get("id")
   st.session_state["id_local_actual"] = id_local_actual
 
   # ==========================================
