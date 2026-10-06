@@ -10,7 +10,9 @@ import streamlit as st
 
 
 from app.frontend.home import render_home
+from app.frontend.home_propietario import render_home_propietario
 from app.frontend.login_cliente import render_login_cliente
+
 from app.frontend.admin_panel import render_admin_panel
 from app.frontend.agenda_propietario import render_agenda_propietario
 from app.frontend.asignar_mesas import render_asignar_mesas
@@ -188,153 +190,53 @@ if st.session_state.get("redirigir_a_agenda", False):
   st.session_state.redirigir_a_agenda = False
   st.rerun()
 
-# --- INTERCEPTOR DE RUTA / SLUG VIP ---
+# --- INTERCEPTOR DE SLUG VIP ---
 slug_vip = query_params.get("local_vip") or query_params.get("local")
-
-if not slug_vip:
-  try:
-    keys = list(query_params.keys())
-    if keys:
-      posible_slug = keys[0]
-      if posible_slug and posible_slug.lower() not in [
-          "logged_in",
-          "user_role",
-          "embed",
-          "click_id",
-          "logged",
-          "role",
-          "menu",
-          "local_id",
-          "evento_id",
-          "zona",
-      ]:
-        slug_vip = posible_slug
-  except Exception:
-    pass
-
 if slug_vip:
-  st.session_state.local_actual = slug_vip
+    st.session_state.local_actual = slug_vip
+    if not st.session_state.get("logged_in", False):
+        encontrado = render_mini_web_vip(API_URL, slug_vip)
+        if encontrado:
+            st.stop()
+        else:
+            st.error(f"⚠️ El establecimiento '{slug_vip}' no se encuentra disponible.")
+            st.stop()
 
-if slug_vip and not st.session_state.get("logged_in", False):
-  encontrado = render_mini_web_vip(API_URL, slug_vip)
-  if encontrado:
-    st.stop()
-  else:
-    st.error(
-        f"⚠️ El establecimiento '{slug_vip}' no se encuentra disponible o no"
-        " existe."
-    )
-    st.stop()
-
-# --- 2. VISTA DE BIENVENIDA (NO LOGEADO) ---
-    
+# --- VISTA PÚBLICA (NO LOGUEADO) ---
 if not st.session_state.get("logged_in", False):
-  vista_publica = st.session_state.get("vista_actual_publica", "home")
+    vista_publica = st.session_state.get("vista_actual_publica", "home")
 
-  if vista_publica == "login_cliente":
-    render_login_cliente(API_URL)
-  elif vista_publica == "registro_clientes":  # 👈 AGREGA ESTA LÍNEA
-    render_registro_clientes(API_URL)     # 👈 Y ESTA OTRA
-  elif vista_publica == "recuperar_contrasena":
-    render_recuperar_contrasena(API_URL)
-  else:
-    render_home(API_URL)
-    
-  render_pie_pagina()
-  st.stop()
-
-else:
-  # Condición: Si está logueado pero la bandera indica que vino del menú general del home
-  if st.session_state.get("origen_login") == "menu_general":
-    st.session_state.pop("origen_login", None)
-    st.session_state.vista_actual_publica = "home"
-    st.rerun()
-    
-    
-    # ============================================================
-    # ZONA LOGUEADA: EVALUACIÓN ESTRICTA DE ROLES
-    # ============================================================
-rol_actual = str(st.session_state.get("user_role", "propietario")).strip().lower()
-
-    # 1. SUPERADMIN
-if rol_actual == "superadmin":
-        st.markdown("##### 🛠️ Panel Global - SuperAdmin")
-        # ... tu código de superadmin ...
-        render_pie_pagina()
-        #st.stop()
-
-    # 2. PROPIETARIO (¡LO PONEMOS ANTES DEL CLIENTE PARA QUE NUNCA SE CRUCE!)
-elif rol_actual == "propietario":
-        # ... TODO EL CÓDIGO DEL PROPIETARIO (agenda, locales, menús, etc.) ...
-        render_pie_pagina()
+    if vista_publica == "login_cliente":
+        render_login_cliente(API_URL)
+    elif vista_publica == "registro_clientes":
+        render_registro_clientes(API_URL)     
+    elif vista_publica == "recuperar_contrasena":
+        render_recuperar_contrasena(API_URL)
+    elif vista_publica == "home_propietario":               
+        render_home_propietario(API_URL)                      
+    else:
+        render_home(API_URL)
         
-    # 3. CLIENTE (AL FINAL DE TODO)
-else:
-        nombre_usuario = st.session_state.get("user_name", "Cliente")
-        # ... todo el código del cliente (catálogo, mis reservas, etc.) ...
-        #st.stop()
-    # ============================================================
-    # BOOKEA — CORRECCIÓN VISUAL SOLO PARA USUARIOS LOGUEADOS
-    # ============================================================
-st.markdown( """
-    <style>
-    [data-testid="stButton"] > button,
-    [data-testid="stButton"] > button:hover,
-    [data-testid="stButton"] > button:focus,
-    [data-testid="stButton"] > button:focus-visible,
-    [data-testid="stButton"] > button:active {
-        background-color: #080912 !important;
-        background: #080912 !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
-    [data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover,
-    [data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus,
-    [data-testid="stSelectbox"] div[data-baseweb="select"] > div:active {
-        background-color: #080912 !important;
-        background: #080912 !important;
-        box-shadow: none !important;
-    }
-    div[role="listbox"] li[role="option"]:hover,
-    div[role="listbox"] li[role="option"]:focus,
-    div[role="listbox"] li[role="option"][aria-selected="true"] {
-        background-color: #20232d !important;
-        color: #ffffff !important;
-        box-shadow: none !important;
-    }
-    </style>
-    """,
-      unsafe_allow_html=True,
-    )
+    render_pie_pagina()
+    st.stop()
 
-    # ==========================================
-    # --- ROL: SUPERADMIN ---
-    # ============================================================
-# ZONA LOGUEADA: EVALUACIÓN ESTRICTA DE ROLES
+# ============================================================
+# ZONA LOGUEADA: EVALUACIÓN ÚNICA Y ESTRICTA DE ROLES
 # ============================================================
 rol_actual = str(st.session_state.get("user_role", "propietario")).strip().lower()
-
 if not rol_actual or rol_actual == "none":
     rol_actual = "propietario"
 
 # --- ROL: SUPERADMIN ---
 if rol_actual == "superadmin":
     st.markdown("##### 🛠️ Panel Global - SuperAdmin")
-  
     if "menu_superadmin_actual" not in st.session_state:
         st.session_state.menu_superadmin_actual = "Panel Global"
 
-    opciones_superadmin = ["Panel Global", "Cerrar Sesión"]
-    opcion_sa = st.selectbox(
-        "Navegación Principal:",
-        opciones_superadmin,
-        key="menu_superadmin_actual",
-    )
-
+    opcion_sa = st.selectbox("Navegación Principal:", ["Panel Global", "Cerrar Sesión"], key="menu_superadmin_actual")
     if opcion_sa == "Cerrar Sesión":
         st.session_state.logged_in = False
         st.session_state.user_role = None
-        st.session_state.pop("menu_superadmin_actual", None)
         st.query_params.clear()
         st.rerun()
     else:
@@ -344,19 +246,8 @@ if rol_actual == "superadmin":
 
 # --- ROL: PROPIETARIO ---
 elif rol_actual == "propietario":
-    user_id = (
-        st.session_state.get("user_id")
-        or st.session_state.get("propietario_id")
-        or st.session_state.get("id")
-    )
-
-    local_id_url = st.query_params.get("local_id")
-    local_id_actual = (
-        local_id_url
-        or st.session_state.get("local_id_actual")
-        or st.session_state.get("local_id")
-        or st.session_state.get("local_activo_id")
-    )
+    user_id = st.session_state.get("user_id") or st.session_state.get("propietario_id") or st.session_state.get("id")
+    local_id_actual = st.query_params.get("local_id") or st.session_state.get("local_id_actual") or 1
 
     locales_propietario = []
     try:
@@ -364,52 +255,18 @@ elif rol_actual == "propietario":
             res_api = requests.get(f"{API_URL}/locales/?propietario_id={user_id}")
             if res_api.status_code != 200:
                 res_api = requests.get(f"{API_URL}/locales/usuario/{user_id}", timeout=5)
-
             if res_api.status_code == 200:
                 data_locales = res_api.json()
-                locales_propietario = (
-                    data_locales if isinstance(data_locales, list) else [data_locales]
-                )
+                locales_propietario = data_locales if isinstance(data_locales, list) else [data_locales]
     except Exception:
         locales_propietario = []
 
     opciones_locales = {}
-    if locales_propietario:
-        for loc in locales_propietario:
-            lid = loc.get("id") or loc.get("local_id") or 1
-            nombre = loc.get(
-                "nombre", loc.get("nombre_local", loc.get("nombre_comercial", "Local"))
-            )
-            etiqueta_loc = f"ID {lid} - {nombre}"
-            opciones_locales[etiqueta_loc] = lid
+    for loc in locales_propietario:
+        lid = loc.get("id") or loc.get("local_id") or 1
+        nombre = loc.get("nombre", loc.get("nombre_local", "Local"))
+        opciones_locales[f"ID {lid} - {nombre}"] = lid
 
-        nombres_opciones = list(opciones_locales.keys())
-
-        valido = False
-        for etiqueta_loc, lid in opciones_locales.items():
-            if str(lid) == str(local_id_actual):
-                local_id_actual = lid
-                valido = True
-                break
-
-        if not valido and nombres_opciones:
-            local_id_actual = opciones_locales[nombres_opciones[0]]
-    else:
-        opciones_locales = {}
-        nombres_opciones = []
-        local_id_actual = 1
-
-    st.session_state["local_id_actual"] = int(local_id_actual)
-    st.session_state["local_id"] = int(local_id_actual)
-    st.session_state["local_activo_id"] = int(local_id_actual)
-
-    st.query_params["logged"] = "true"
-    st.query_params["role"] = rol_actual
-    st.query_params["local_id"] = str(local_id_actual)
-
-    # ==========================================
-    # SELECTORES Y MENÚ DE PROPIETARIO
-    # ==========================================
     vistas_mapeo = {
         "Agenda de Eventos": render_agenda_propietario,
         "Crear Eventos": render_crear_eventos,
@@ -424,104 +281,42 @@ elif rol_actual == "propietario":
     }
 
     opciones_menu = list(vistas_mapeo.keys()) + ["🚪 Cerrar Sesión"]
-
-    menu_url = query_params.get("menu")
-    if (
-        "menu_propietario_activo" not in st.session_state
-        or st.session_state.menu_propietario_activo not in opciones_menu
-    ):
-        if menu_url and menu_url in opciones_menu:
-            st.session_state.menu_propietario_activo = menu_url
-        else:
-            st.session_state.menu_propietario_activo = "Agenda de Eventos"
-
-    opcion_seleccionada = st.selectbox(
-        "📌 Menú de Gestión", opciones_menu, key="menu_propietario_activo"
-    )
-
-    if opcion_seleccionada != "🚪 Cerrar Sesión":
-        st.query_params["menu"] = opcion_seleccionada
+    opcion_seleccionada = st.selectbox("📌 Menú de Gestión", opciones_menu, key="menu_propietario_activo")
 
     if opcion_seleccionada == "🚪 Cerrar Sesión":
         st.session_state.logged_in = False
         st.session_state.user_role = None
-        st.session_state.pop("menu_propietario_activo", None)
         st.query_params.clear()
         st.rerun()
 
-    # Renderizar la vista seleccionada del propietario
-    funcion_a_renderizar = vistas_mapeo.get(
-        opcion_seleccionada, render_agenda_propietario
-    )
-    funcion_a_renderizar(API_URL)
-
-    # 🛑 ¡FUNDAMENTAL! El stop aquí asegura que pinte el pie de página y detenga el script
+    vistas_mapeo.get(opcion_seleccionada, render_agenda_propietario)(API_URL)
     render_pie_pagina()
     st.stop()
-                           
-  # ==========================================
-  # --- ROL: CLIENTE ---
-  # ==========================================
-elif rol_actual == "cliente":
-    
-    # 🌟 Si se logueó desde el menú superior del home, NO lo mandamos a la cartelera 
-    # ni mostramos el menú forzado de cliente; regresamos directamente al Home ya logueado.
-    if st.session_state.get("origen_login") == "menu_general":
-        # Nota: NO hacemos pop aquí para que la bandera no se "encere" si la necesitamos, 
-        # o la dejamos activa hasta que el usuario decida navegar a otra sección.
-        render_home(API_URL)
-        st.stop()
 
-    # De lo contrario (si viene de una mini-web o reserva directa), 
-    # sí mostramos su menú compacto de cliente:
+# --- ROL: CLIENTE ---
+elif rol_actual == "cliente":
     nombre_usuario = st.session_state.get("user_name", "Cliente")
 
-      # Estilo específico para compactar y centrar el selectbox del cliente
-st.markdown(
-          """
-          <style>
-          /* Contenedor y selectbox del cliente más angosto y compacto */
-          div[data-testid="stSelectbox"] {
-              max-width: 280px !important;
-              margin: 0 auto !important;
-          }
-          div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
-              min-height: 32px !important;
-              padding-top: 0px !important;
-              padding-bottom: 0px !important;
-          }
-          </style>        """,        unsafe_allow_html=True,    )
+    col_esp_izq, col_centro_cliente, col_esp_der = st.columns([1, 2.5, 1])
+    with col_centro_cliente:
+        st.markdown(f"👋 Hola, {nombre_usuario} 🌟 Bookea Tu Evento", unsafe_allow_html=True)
 
-col_esp_izq, col_centro_cliente, col_esp_der = st.columns([1, 2.5, 1])
-
-with col_centro_cliente:
-    st.markdown(
-          f"""<div style='text-align: center; margin-bottom: 6px;'>
-              👋 <b>Hola, {nombre_usuario}</b> 🌟 Bookea Tu Evento
-          </div>""",
-          unsafe_allow_html=True,
-      )
-      
     opciones_cliente = [
-      "Catálogo de Eventos",
-      "🔍 Buscar Locales",
-      "Mis Reservas",
-      "Actualizar Datos",
-      "Cerrar Sesión",
+        "Catálogo de Eventos",
+        "🔍 Buscar Locales",
+        "Mis Reservas",
+        "Actualizar Datos",
+        "Cerrar Sesión",
     ]
 
-    # Selectbox nativo y limpio para el cliente
-    opcion = st.selectbox(
-      "Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal"
-    )
+    opcion = st.selectbox("Mi Cuenta", opciones_cliente, label_visibility="collapsed", key="menu_cliente_principal")
 
     if opcion == "Cerrar Sesión":
-      st.session_state.logged_in = False
-      st.session_state.user_role = None
-      st.query_params.clear()
-      st.rerun()
+        st.session_state.logged_in = False
+        st.session_state.user_role = None
+        st.query_params.clear()
+        st.rerun()
 
-    # Flujo exclusivo del cliente
     if opcion == "Catálogo de Eventos":
         if "paso_reserva" not in st.session_state:
             st.session_state.paso_reserva = "catalogo"
@@ -532,130 +327,18 @@ with col_centro_cliente:
             if st.button("⬅️ Volver a la cartelera"):
                 st.session_state.paso_reserva = "catalogo"
                 st.rerun()
-            render_seleccion_mesas(
-                API_URL,
-                st.session_state.evento_a_reservar,
-                st.session_state.get("user_id"),
-            )
-        elif st.session_state.paso_reserva == "crear_celebracion":
-            if st.button("⬅️ Volver a la cartelera"):
-                st.session_state.paso_reserva = "catalogo"
-                st.rerun()
-            render_crear_reserva_personalizada(
-                API_URL, st.session_state.get("user_id")
-            )
-        st.stop()  # <--- ¡Este stop detiene el flujo aquí!
+            render_seleccion_mesas(API_URL, st.session_state.get("evento_a_reservar"), st.session_state.get("user_id"))
+        st.stop()
 
     elif opcion == "🔍 Buscar Locales":
         render_filtro_locales(API_URL)
         st.stop()
-        
     elif opcion == "Mis Reservas":
         render_mis_reservas(API_URL, st.session_state.get("user_id"))
         st.stop()
-        
-    elif opcion == "📅 Calendario del Mes":
-        st.session_state["modo_vista_cartelera"] = "🗓️ Calendario del Mes"
-        render_catalogo_clientes(API_URL)
-        st.stop()  # <--- ¡Y aquí también!
-
     elif opcion == "Actualizar Datos":
         render_mantenimiento_cliente(API_URL)
         st.stop()
 
-      # ==========================================
-      # ESTILOS CSS PARA DISEÑO COMPACTO Y RESPONSIVE
-      # ==========================================
-    st.markdown( """
-          <style>
-          .centered-header-container {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              width: 100%;
-              text-align: center;
-              margin-bottom: 20px;
-          }
-          div[data-testid="stSelectbox"] {
-              max-width: 440px;
-              margin: 0 auto !important;
-          }
-          div[data-testid="stSelectbox"] label p {
-              color: #ffffff !important;
-              font-weight: 600 !important;
-              font-size: 14px !important;
-              text-align: center !important;
-          }
-          </style>
-          """,
-          unsafe_allow_html=True,
-      )
-
-    st.markdown(f"""
-              <div style="display: flex; justify-content: center; width: 100%;">
-                  <div style="background: rgba(16, 14, 36, 0.85); border: 1px solid rgba(150, 55, 255, 0.35); padding: 10px 20px; border-radius: 12px; margin-bottom: 16px; display: inline-block; text-align: center;">
-                      <span style="font-size: 14px; font-weight: 600; color: #f7f7ff;">
-                          Agenda Bookea ⭐ <span style="color: #ffffff;">{st.session_state.get('user_name', 'Usuario')}</span> 
-                          ⭐
-                      </span>
-                  </div>
-              </div>
-          """,
-          unsafe_allow_html=True,
-      )
-
-      # ==========================================
-      # SELECTORES CENTRADOS EN LA PARTE SUPERIOR
-      # ==========================================
-    vistas_mapeo = {
-            "Agenda de Eventos": render_agenda_propietario,
-            "Crear Eventos": render_crear_eventos,
-            "Crear Zonas": render_crear_zonas,
-            "Crear Mesas": render_crear_mesas,
-            "Asignar Mesas": render_asignar_mesas,
-            "Control de Reservas": render_control_reservas,
-            "Control de Puerta": render_control_puerta,
-            "Mapa de Mesas": render_mapa_mesas,
-            "Historial de Asistencia": render_historial_asistencia,
-            "Mantenimiento": render_mantenimiento,
-            }
-
-    opciones_menu = list(vistas_mapeo.keys()) + ["🚪 Cerrar Sesión"]
-
-        # Recuperar menú activo desde la URL si existe para persistencia absoluta
-    menu_url = query_params.get("menu")
-    if (
-            "menu_propietario_activo" not in st.session_state
-            or st.session_state.menu_propietario_activo not in opciones_menu
-        ):
-          if menu_url and menu_url in opciones_menu:
-            st.session_state.menu_propietario_activo = menu_url
-          else:
-            st.session_state.menu_propietario_activo = "Agenda de Eventos"
-
-    opcion_seleccionada = st.selectbox(
-            "📌 Menú de Gestión", opciones_menu, key="menu_propietario_activo"
-        )
-
-        # Actualizar el menú actual en la URL
-    if opcion_seleccionada != "🚪 Cerrar Sesión":
-          st.query_params["menu"] = opcion_seleccionada
-
-      # Evaluar si se seleccionó Cerrar Sesión
-    if opcion_seleccionada == "🚪 Cerrar Sesión":
-        st.session_state.logged_in = False
-        st.session_state.user_role = None
-        st.session_state.pop("menu_propietario_activo", None)
-        st.query_params.clear()
-        st.rerun()
-
-      # Renderizado dinámico fluido de la vista seleccionada
-    funcion_a_renderizar = vistas_mapeo.get(
-          opcion_seleccionada, render_agenda_propietario
-      )
-    funcion_a_renderizar(API_URL)
-
-  # --- PIE DE PÁGINA GLOBAL ---
-#render_pie_pagina()
+render_pie_pagina()
 st.stop()
