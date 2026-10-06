@@ -259,7 +259,7 @@ class Usuario(Base):
   )
   nombre = Column(String(100), nullable=False)
   correo = Column(String(150), unique=True, nullable=False, index=True)
-  slug = Column(String(150), unique=True, index=True, nullable=True)
+  #slug = Column(String(150), unique=True, index=True, nullable=True)
   contrasena = Column(String(255), nullable=False)
   reset_token = Column(String(10), nullable=True)
   reset_token_expires = Column(DateTime, nullable=True)

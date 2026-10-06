@@ -10,8 +10,13 @@ import streamlit as st
 
 
 from app.frontend.home import render_home
-from app.frontend.home_propietario import render_home_propietario
 from app.frontend.login_cliente import render_login_cliente
+from app.frontend.registro_clientes import render_registro_clientes
+from app.frontend.recuperar_contrasena import render_recuperar_contrasena
+from app.frontend.home_propietario import render_home_propietario
+from app.frontend.login_propietario import render_login_propietario
+from app.frontend.registro_propietario import render_registro_propietario
+
 
 from app.frontend.admin_panel import render_admin_panel
 from app.frontend.agenda_propietario import render_agenda_propietario
@@ -40,8 +45,7 @@ from app.frontend.reserva_mesa import render_seleccion_mesas
 from app.frontend.truco_java import configurar_puente_html
 from app.frontend.validaciones_cliente import render_mantenimiento_cliente
 from app.frontend.filtro_locales import render_filtro_locales
-from app.frontend.registro_clientes import render_registro_clientes
-from app.frontend.recuperar_contrasena import render_recuperar_contrasena
+
 
 
 # Configuración PWA mediante inyección segura de texto plano
@@ -86,7 +90,8 @@ header[data-testid="stHeader"] {
 [data-testid="stMain"],
 [data-testid="stMainBlockContainer"],
 .block-container {
-    padding-top: -8rem !important;
+    padding-top: 3rem !important;
+    max-width: 100% !important;
     margin-top: -60px !important;
 }
 
@@ -205,20 +210,35 @@ if slug_vip:
 # --- VISTA PÚBLICA (NO LOGUEADO) ---
 if not st.session_state.get("logged_in", False):
     vista_publica = st.session_state.get("vista_actual_publica", "home")
-
+    
     if vista_publica == "login_cliente":
         render_login_cliente(API_URL)
+        render_pie_pagina()
+        st.stop()
     elif vista_publica == "registro_clientes":
         render_registro_clientes(API_URL)     
+        render_pie_pagina()
+        st.stop()
     elif vista_publica == "recuperar_contrasena":
         render_recuperar_contrasena(API_URL)
+        render_pie_pagina()
+        st.stop()
     elif vista_publica == "home_propietario":               
         render_home_propietario(API_URL)                      
+        render_pie_pagina()
+        st.stop()
+    elif vista_publica == "login_propietario":               
+        render_login_propietario(API_URL)                     
+        render_pie_pagina()
+        st.stop()                     
+    elif vista_publica == "registro_propietario":            
+        render_registro_propietario(API_URL)                  
+        render_pie_pagina()
+        st.stop()
     else:
         render_home(API_URL)
-        
-    render_pie_pagina()
-    st.stop()
+        render_pie_pagina()
+        st.stop()
 
 # ============================================================
 # ZONA LOGUEADA: EVALUACIÓN ÚNICA Y ESTRICTA DE ROLES
