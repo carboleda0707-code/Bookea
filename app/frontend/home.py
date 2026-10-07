@@ -216,16 +216,14 @@ def render_home(api_url=API_URL):
           st.caption(f"📍 {ubicacion}")
           
           # Extraer datos de contacto y enlace
-          telefono_contacto = venue.get("telefono_contacto") or ""
+          telefono_contacto = venue.get("telefono") or venue.get("whatsapp") or venue.get("celular") or ""
           slug_local = venue.get("slug") or venue.get("local_slug") or venue.get("id")
           
           # Generar elementos juntos en una sola línea o bloque compacto
           elementos_contacto = []
           if telefono_contacto:
               num_limpio = ''.join(filter(str.isdigit, str(telefono_contacto)))
-              # Formato internacional para Ecuador (+593) removiendo el 0 inicial si lo tiene
-              num_whatsapp = f"593{num_limpio.lstrip('0')}" if len(num_limpio) >= 9 else num_limpio
-              elementos_contacto.append(f"📱 [WhatsApp](https://wa.me/{num_whatsapp})")
+              elementos_contacto.append(f"📱 [WhatsApp](https://wa.me/{num_limpio})")
           else:
               elementos_contacto.append("📱 *Sin WhatsApp*")
               
