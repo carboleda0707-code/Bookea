@@ -10,7 +10,7 @@ from pie_pagina import render_pie_pagina
 def render_cartelera(api_url, cliente_id=None):
   
   # ============================================================
-  # ESTILOS GLOBALES: IMÁGENES A 350PX Y BOTONES AL 100% DE LA TARJETA
+  # ESTILOS GLOBALES: TARJETAS UNIFORMES Y BOTONES AL 100%
   # ============================================================
   st.markdown("""
   <style>
@@ -98,7 +98,6 @@ def render_cartelera(api_url, cliente_id=None):
       outline: none !important;
   }
 
-  /* Eliminar el destello blanco al hacer clic o mantener el foco */
   div[data-testid="stPopover"] > button:focus,
   div[data-testid="stPopover"] > button:active,
   div[data-testid="stPopover"] > button:focus-visible {
@@ -125,16 +124,17 @@ def render_cartelera(api_url, cliente_id=None):
       border: 1px solid rgba(255, 255, 255, 0.15) !important;
       color: #ffffff !important;
       font-size: 12px !important;
-      padding: 5px 14px !important;
+      padding: 6px 14px !important;
       border-radius: 6px !important;
-      min-height: 32px !important;
+      min-height: 34px !important;
       width: auto !important;
       max-width: 100% !important;
   }
 
-  /* Forzar que los botones dentro de las tarjetas midan exactamente el ancho de la tarjeta (240px) */
+  /* Forzar que los botones dentro de las tarjetas midan exactamente el ancho de la tarjeta */
   div[data-testid="stVerticalBlockBorderWrapper"] div.stButton > button {
       width: 100% !important;
+      margin-top: auto !important;
   }
 
   div.stButton > button:hover {
@@ -183,12 +183,13 @@ def render_cartelera(api_url, cliente_id=None):
   }
 
   /* ============================================================
-     6. TARJETAS CON IMÁGENES A 350PX Y ALINEACIÓN FLEXBOX
+     6. TARJETAS CON IMÁGENES A 350PX Y ALINEACIÓN FLEXBOX ESTRICTA
      ============================================================ */
   div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlockBorderWrapper"] {
-      padding: 10px !important;
+      padding: 12px !important;
       width: 340px !important;
       max-width: 340px !important;
+      min-height: 490px !important;
       margin: 0 !important;
       background-color: #121620 !important;
       border: 1px solid rgba(150, 55, 255, 0.25) !important;
@@ -207,7 +208,7 @@ def render_cartelera(api_url, cliente_id=None):
 
   [data-testid="stImage"] img {
       width: 100% !important;
-      height: 350px !important;
+      height: 330px !important;
       object-fit: cover !important;
       border-radius: 6px !important;
       margin: 0 auto !important;
@@ -215,7 +216,7 @@ def render_cartelera(api_url, cliente_id=None):
   }
 
   .card-title {
-      font-size: 12px !important;
+      font-size: 13px !important;
       font-weight: 700 !important;
       color: #ffffff !important;
       margin: 10px 0 4px 0 !important;
@@ -240,7 +241,7 @@ def render_cartelera(api_url, cliente_id=None):
       border-radius: 6px;
       text-align: center;
       padding: 10px 4px;
-      height: 350px;
+      height: 330px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -298,11 +299,10 @@ def render_cartelera(api_url, cliente_id=None):
   # ==========================================
   from sesion_local import obtener_local_actual, fijar_local_actual
   
-  # 🌟 Utilizamos nuestro gestor transversal para recuperar el local actual de forma limpia
   local_inicial = obtener_local_actual(locales)
 
   if not local_inicial and locales:
-    local_inicial = locales[0]  # Respaldo por defecto si la lista no está vacía
+    local_inicial = locales[0]
 
   def_pais = str(local_inicial.get("pais", "Ecuador")).strip().title()
   def_ciudad = str(local_inicial.get("ciudad", "Guayaquil")).strip()
@@ -329,7 +329,6 @@ def render_cartelera(api_url, cliente_id=None):
   if "buscar" in menu_cliente_actual.lower() or "local" in menu_cliente_actual.lower():
       info_local_actual, busqueda_evento, _ = render_filtro_locales(api_url)
       id_local_actual = info_local_actual.get("id")
-      # 🌟 Actualizamos la sesión global de forma transversal
       fijar_local_actual(id_local_actual)
   else:
       id_local_actual = local_inicial.get("id")
@@ -471,7 +470,6 @@ def render_cartelera(api_url, cliente_id=None):
       or "S/D"
   )
 
-  # Cálculo del ancho del bloque en función de la cantidad de eventos
   num_evs = len(eventos_a_mostrar)
   if num_evs == 1:
     MAX_COLS = 1
@@ -644,7 +642,6 @@ def render_cartelera(api_url, cliente_id=None):
         "Entra a Catálogo de Eventos y busca tu local preferido"
     )
   else:
-    # Iteramos en bloques de MAX_COLS
     for i_lote in range(0, len(elementos_render), MAX_COLS):
       lote_actual = elementos_render[i_lote:i_lote + MAX_COLS]
       cols = st.columns(MAX_COLS)
@@ -756,9 +753,8 @@ def render_cartelera(api_url, cliente_id=None):
                   st.session_state.paso_reserva = "seleccionar_mesa"
                   st.rerun()
           else:
-            # Tarjeta fantasma con la clase para ocultarse automáticamente en móvil
             st.markdown(
-                '<div class="columna-fantasma" style="width: 240px; min-height: 480px; visibility: hidden; pointer-events: none;"></div>',
+                '<div class="columna-fantasma" style="width: 240px; min-height: 490px; visibility: hidden; pointer-events: none;"></div>',
                 unsafe_allow_html=True
             )
 
