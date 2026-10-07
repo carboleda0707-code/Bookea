@@ -2,6 +2,8 @@ import configparser
 import os
 import requests
 import streamlit as st
+from .registro_clientes import render_registro_clientes
+from .recuperar_contrasena import render_recuperar_contrasena
 from sesion_local import inicializar_gestion_local, obtener_local_actual, fijar_local_actual
 from header_global import render_header
 
@@ -56,19 +58,6 @@ def render_home(api_url=API_URL):
 
     .bookea-login-title { font-size: 1rem; font-weight: 700; text-align: left; margin-bottom: 12px; }
     .bookea-input-label { font-size: .88rem; font-weight: 700; color: #fff; margin: 6px 0 3px; text-align: left; }
-
-    /* Forzar que las columnas de la tarjeta VIP permanezcan lado a lado en móvil */
-    @media (max-width: 640px) {
-      div[data-testid="stVerticalBlock"] div[data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-      }
-      div[data-testid="stVerticalBlock"] div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
-        width: auto !important;
-        flex: 1 1 auto !important;
-        min-width: unset !important;
-      }
-    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -194,6 +183,8 @@ def render_home(api_url=API_URL):
       titulo = venue.get("nombre") or venue.get("nombre_local") or venue.get("titulo") or "Local VIP"
       tipo_est = venue.get("tipo_establecimiento", "")
       ubicacion = venue.get("direccion") or venue.get("ubicacion") or "Ubicación"
+      capacidad = venue.get("capacidad", "Consultar")
+      descripcion = venue.get("descripcion", "Espacio exclusivo para tus eventos.")
 
       with st.container(border=True):
         col_img_mini, col_txt_mini = st.columns([0.5, 4])
@@ -213,29 +204,8 @@ def render_home(api_url=API_URL):
 
         with col_txt_mini:
           st.markdown(f"**{titulo}** &nbsp;&nbsp;`{tipo_est}`", unsafe_allow_html=True)
-          st.caption(f"📍 {ubicacion}")
-          
-          # Extraer datos de contacto y enlace
-          telefono_contacto = venue.get("telefono_contacto") or ""
-          slug_local = venue.get("slug") or venue.get("local_slug") or venue.get("id")
-          
-          # Generar elementos juntos en una sola línea o bloque compacto
-          elementos_contacto = []
-          if telefono_contacto:
-              num_limpio = ''.join(filter(str.isdigit, str(telefono_contacto)))
-              # Formato internacional para Ecuador (+593) removiendo el 0 inicial si lo tiene
-              num_whatsapp = f"593{num_limpio.lstrip('0')}" if len(num_limpio) >= 9 else num_limpio
-              elementos_contacto.append(f"📱 [WhatsApp](https://wa.me/{num_whatsapp})")
-          else:
-              elementos_contacto.append("📱 *Sin WhatsApp*")
-              
-          if slug_local:
-              elementos_contacto.append(f"🌐 [Mini Web](?local={slug_local})")
-              
-          # Renderizar ambos juntos en línea
-          st.markdown(" &nbsp;&nbsp;&nbsp;&nbsp; ".join(elementos_contacto), unsafe_allow_html=True)
-          
-          st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+          st.caption(f"📍 {ubicacion} | 👥 {capacidad}")
+          st.write(descripcion)
                   
           esta_expandido = (str(st.session_state.id_local_expandido) == str(venue_id))  
           texto_boton = "Ocultar Cartelera" if esta_expandido else "Consultar Cartelera"
@@ -392,3 +362,4 @@ def render_home(api_url=API_URL):
                         st.error(f"Error de conexión: {e}")
                     else:
                       st.warning("Completa ambos campos.")
+
