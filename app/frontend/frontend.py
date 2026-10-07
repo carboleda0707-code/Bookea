@@ -3,8 +3,9 @@ import os
 import sys
 
 sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 )
+
 import requests
 import streamlit as st
 
@@ -40,7 +41,6 @@ from app.frontend.crear_zonas import render_crear_zonas
 from app.frontend.historial_asistencia import render_historial_asistencia
 from app.frontend.mantenimiento import render_mantenimiento
 from app.frontend.mini_web import render_mini_web_vip
-from app.frontend.pie_pagina import render_pie_pagina
 from app.frontend.reserva_mesa import render_seleccion_mesas
 from app.frontend.truco_java import configurar_puente_html
 from app.frontend.validaciones_cliente import render_mantenimiento_cliente
@@ -56,11 +56,6 @@ pwa_html += chr(60) + 'script' + chr(62) + "if('serviceWorker' in navigator){nav
 
 
 st.markdown(pwa_html, unsafe_allow_html=True)
-
-#try:
-#  from app.frontend.filtro_cartelera import render_sidebar_filtros
-#except ImportError:
-#  from filtro_cartelera import render_sidebar_filtros
 
 configurar_puente_html()
 
@@ -81,6 +76,12 @@ header[data-testid="stHeader"] {
     display: none !important;
     height: 0 !important;
     min-height: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Ocultar pie de página nativo y de aplicación */
+footer {
+    display: none !important;
     visibility: hidden !important;
 }
 
@@ -176,7 +177,6 @@ div[role="listbox"] li[role="option"][aria-selected="true"] {
 query_params = st.query_params
 
 if "logged_in" not in st.session_state:
-  # Intentar recuperar sesión si viene en URL
   st.session_state.logged_in = (
       True if query_params.get("logged") == "true" else False
   )
@@ -213,32 +213,26 @@ if not st.session_state.get("logged_in", False):
     
     if vista_publica == "login_cliente":
         render_login_cliente(API_URL)
-        render_pie_pagina()
         st.stop()
     elif vista_publica == "registro_clientes":
         render_registro_clientes(API_URL)     
-        render_pie_pagina()
         st.stop()
     elif vista_publica == "recuperar_contrasena":
         render_recuperar_contrasena(API_URL)
-        render_pie_pagina()
         st.stop()
     elif vista_publica == "home_propietario":               
         render_home_propietario(API_URL)                      
-        render_pie_pagina()
         st.stop()
     elif vista_publica == "login_propietario":               
         render_login_propietario(API_URL)                     
-        render_pie_pagina()
         st.stop()                     
     elif vista_publica == "registro_propietario":            
         render_registro_propietario(API_URL)                  
-        render_pie_pagina()
         st.stop()
     else:
         render_home(API_URL)
-        render_pie_pagina()
         st.stop()
+
 
 # ============================================================
 # ZONA LOGUEADA: EVALUACIÓN ÚNICA Y ESTRICTA DE ROLES
@@ -261,7 +255,6 @@ if rol_actual == "superadmin":
         st.rerun()
     else:
         render_admin_panel(API_URL)
-        render_pie_pagina()
         st.stop()
 
 # --- ROL: PROPIETARIO ---
@@ -310,7 +303,6 @@ elif rol_actual == "propietario":
         st.rerun()
 
     vistas_mapeo.get(opcion_seleccionada, render_agenda_propietario)(API_URL)
-    render_pie_pagina()
     st.stop()
 
 # --- ROL: CLIENTE ---
@@ -360,5 +352,4 @@ elif rol_actual == "cliente":
         render_mantenimiento_cliente(API_URL)
         st.stop()
 
-render_pie_pagina()
 st.stop()

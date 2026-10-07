@@ -1,4 +1,5 @@
 import streamlit as st
+from header_global import render_header
 
 
 def cambiar_vista(nueva_vista):
@@ -13,31 +14,12 @@ def cambiar_vista(nueva_vista):
 def render_home_propietario(api_url):
   """BOOKEA PROPIETARIOS — Landing responsiva, limpia y minimalista."""
 
-  # ============================================================
-  # BARRA SUPERIOR + MENÚ DE 3 PUNTOS (MISMA LÍNEA)
-  # ============================================================
-  col_brand, col_menu = st.columns([6, 1], vertical_alignment="center")
+  # Indicar que estamos en el portal de propietarios para el menú global
+  st.session_state["tipo_portal"] = "propietario"
 
-  with col_brand:
-    st.markdown("""B Bookea Propietarios """, unsafe_allow_html=True)
+  # --- RENDERIZAR CABECERA GLOBAL ---
+  render_header(subtitulo="Soluciones para propietarios")
 
-  with col_menu:
-    with st.popover("⋮"):
-      st.markdown("ACCESO PROPIETARIOS", unsafe_allow_html=True)
-
-      if st.button("🔐 Iniciar Sesión", key="min_menu_login_prop", use_container_width=True):
-        st.session_state["vista_actual_publica"] = "login_propietario"
-        st.rerun()
-
-      if st.button("✨ Registrarse", key="min_menu_reg_prop", use_container_width=True):
-        st.session_state["vista_actual_publica"] = "registro_propietario"
-        st.rerun()
-
-      if st.button("🔑 Olvidé mi clave", key="min_menu_rec_prop", use_container_width=True):
-        st.session_state["vista_actual_publica"] = "recuperar_contrasena_propietario"
-        st.rerun()
-
-      
   st.markdown("", unsafe_allow_html=True)
 
   # ============================================================

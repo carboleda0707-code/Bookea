@@ -5,498 +5,27 @@ import streamlit as st
 from .registro_clientes import render_registro_clientes
 from .recuperar_contrasena import render_recuperar_contrasena
 from sesion_local import inicializar_gestion_local, obtener_local_actual, fijar_local_actual
+from header_global import render_header
 
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 
 def render_home(api_url=API_URL):
-  # Inicializar la gestión del local compartido
   inicializar_gestion_local()
-  """Renderiza la Landing Page principal de Bookea (Vista Pública).
-
-  Incluye selectores de filtros y un sistema de expansión en línea (accordion)
-  para consultar la cartelera de eventos de cada local VIP sin salir de la
-  página.
-  """
+  """Renderiza la Landing Page principal de Bookea (Vista Pública)."""
+  
   # ============================================================
-    # BOOKEA PROPIETARIOS — LANDING RESPONSIVE
-    # ============================================================
+  # ESTILOS ESPECÍFICOS DEL CUERPO Y TARJETAS DE HOME
+  # ============================================================
   st.markdown("""
     <style>
-    /* ---------- CONTENEDOR GENERAL ---------- */
     .block-container {
         padding-top: 3.25rem !important;
         padding-bottom: 1.5rem !important;
         max-width: 1180px !important;
     }
 
-    .bp-page {
-        width: 100%;
-        max-width: 980px;
-        margin: 0 auto;
-        color: #f7f7ff;
-        font-family: Inter, "Segoe UI", Arial, sans-serif;
-    }
-
-    /* ---------- BARRA SUPERIOR ---------- */
-    .bp-topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        min-height: 48px;
-        margin-bottom: 8px;
-        padding: 4px 2px;
-    }
-
-    .bp-brand {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        font-weight: 800;
-        font-size: 20px;
-        letter-spacing: -0.4px;
-    }
-
-    .bp-logo {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #00cfff, #9637ff);
-        color: #ffffff;
-        font-size: 17px;
-        box-shadow: 0 5px 18px rgba(0, 207, 255, 0.18);
-    }
-
-    .bp-brand-text span {
-        color: #00cfff;
-    }
-
-    .bp-owner-label {
-        color: #9ea2b5;
-        font-size: 11px;
-        font-weight: 500;
-        margin-top: 1px;
-    }
-
-    /* ---------- HERO ---------- */
-    .bp-hero {
-        position: relative;
-        overflow: hidden;
-        border: 1px solid rgba(0, 207, 255, 0.15);
-        border-radius: 22px;
-        padding: 42px 28px 34px;
-        background:
-            radial-gradient(circle at 80% 10%, rgba(150,55,255,.18), transparent 35%),
-            radial-gradient(circle at 10% 90%, rgba(0,207,255,.12), transparent 35%),
-            linear-gradient(145deg, #0b0d1a, #101326 55%, #0a0b15);
-        box-shadow: 0 18px 55px rgba(0,0,0,.28);
-        text-align: center;
-    }
-
-    .bp-kicker {
-        display: inline-block;
-        padding: 6px 11px;
-        border-radius: 999px;
-        border: 1px solid rgba(0,207,255,.25);
-        background: rgba(0,207,255,.07);
-        color: #67ddff;
-        font-size: 11px;
-        font-weight: 700;
-        margin-bottom: 15px;
-    }
-
-    .bp-hero h1 {
-        margin: 0 auto 12px;
-        max-width: 760px;
-        color: #ffffff;
-        font-size: clamp(28px, 5vw, 48px);
-        line-height: 1.08;
-        letter-spacing: -1.4px;
-    }
-
-    .bp-hero h1 span {
-        background: linear-gradient(90deg, #00cfff, #a66bff);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-
-    .bp-hero p {
-        max-width: 680px;
-        margin: 0 auto;
-        color: #b9bdcc;
-        font-size: 15px;
-        line-height: 1.6;
-    }
-
-    /* ---------- BLOQUE DE VALOR ---------- */
-    .bp-section-title {
-        text-align: center;
-        margin: 27px 0 14px;
-    }
-
-    .bp-section-title h2 {
-        margin: 0 0 5px;
-        color: #ffffff;
-        font-size: 21px;
-    }
-
-    .bp-section-title p {
-        margin: 0;
-        color: #85899d;
-        font-size: 12px;
-    }
-
-    .bp-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-    }
-
-    .bp-card {
-        min-height: 145px;
-        padding: 18px 15px;
-        border-radius: 15px;
-        border: 1px solid rgba(150,55,255,.17);
-        background: rgba(18, 20, 34, .82);
-    }
-
-    .bp-card-icon {
-        font-size: 23px;
-        margin-bottom: 9px;
-    }
-
-    .bp-card h3 {
-        margin: 0 0 6px;
-        color: #ffffff;
-        font-size: 14px;
-    }
-
-    .bp-card p {
-        margin: 0;
-        color: #9297aa;
-        font-size: 11.5px;
-        line-height: 1.55;
-    }
-
-    /* ---------- COMO FUNCIONA ---------- */
-    .bp-steps {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-top: 12px;
-    }
-
-    .bp-step {
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-        padding: 14px;
-        border-radius: 13px;
-        background: rgba(255,255,255,.025);
-        border: 1px solid rgba(255,255,255,.06);
-    }
-
-    .bp-number {
-        flex: 0 0 25px;
-        width: 25px;
-        height: 25px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0,207,255,.12);
-        border: 1px solid rgba(0,207,255,.28);
-        color: #00cfff;
-        font-size: 11px;
-        font-weight: 800;
-    }
-
-    .bp-step strong {
-        display: block;
-        color: #ffffff;
-        font-size: 12px;
-        margin-bottom: 3px;
-    }
-
-    .bp-step span {
-        color: #85899d;
-        font-size: 10.5px;
-        line-height: 1.45;
-    }
-
-    /* ---------- CTA ---------- */
-    .bp-cta {
-        margin-top: 26px;
-        padding: 23px 18px;
-        text-align: center;
-        border-radius: 18px;
-        border: 1px solid rgba(0,207,255,.18);
-        background: linear-gradient(135deg, rgba(0,207,255,.07), rgba(150,55,255,.09));
-    }
-
-    .bp-cta h2 {
-        margin: 0 0 6px;
-        font-size: 20px;
-        color: #ffffff;
-    }
-
-    .bp-cta p {
-        margin: 0 auto 13px;
-        max-width: 580px;
-        color: #a7abbb;
-        font-size: 12px;
-        line-height: 1.5;
-    }
-
-    /* ---------- PIE ---------- */
-    .bp-footer {
-        text-align: center;
-        padding: 22px 5px 5px;
-        color: #666b7e;
-        font-size: 10px;
-    }
-
-    .bp-footer b {
-        color: #00cfff;
-    }
-
-    /* ---------- BOTONES STREAMLIT ---------- */
-    .bp-menu-button [data-testid="stPopover"] > button {
-        width: 42px !important;
-        height: 42px !important;
-        min-height: 42px !important;
-        border-radius: 50% !important;
-        padding: 0 !important;
-        background: #111321 !important;
-        border: 1px solid rgba(255,255,255,.08) !important;
-        color: #ffffff !important;
-        box-shadow: none !important;
-    }
-
-    .bp-menu-button [data-testid="stPopover"] > button:hover,
-    .bp-menu-button [data-testid="stPopover"] > button:focus,
-    .bp-menu-button [data-testid="stPopover"] > button:active {
-        background: #111321 !important;
-        border-color: rgba(0,207,255,.35) !important;
-        box-shadow: none !important;
-    }
-
-    .bp-menu-button [data-testid="stPopover"] > button p,
-    .bp-menu-button [data-testid="stPopover"] > button span {
-        color: #ffffff !important;
-        font-size: 19px !important;
-    }
-
-    .bp-menu-option button {
-        width: 100% !important;
-        min-height: 38px !important;
-        background: #141625 !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(150,55,255,.20) !important;
-        box-shadow: none !important;
-    }
-
-    .bp-menu-option button:hover,
-    .bp-menu-option button:focus,
-    .bp-menu-option button:active {
-        background: #1b1e31 !important;
-        color: #ffffff !important;
-        border-color: rgba(0,207,255,.35) !important;
-        box-shadow: none !important;
-    }
-
-    .bp-menu-option button p {
-        color: #ffffff !important;
-        font-size: 12px !important;
-    }
-
-    .bp-main-action button {
-        width: 100% !important;
-        min-height: 42px !important;
-        border-radius: 11px !important;
-        background: linear-gradient(90deg, #00bfe8, #7c4dff) !important;
-        border: none !important;
-        color: #ffffff !important;
-        font-weight: 800 !important;
-        box-shadow: none !important;
-    }
-
-    .bp-main-action button:hover,
-    .bp-main-action button:focus,
-    .bp-main-action button:active {
-        background: linear-gradient(90deg, #00bfe8, #7c4dff) !important;
-        color: #ffffff !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-    /* ---------- MÓVIL ---------- */
-    @media (max-width: 700px) {
-        .block-container {
-            padding-left: 11px !important;
-            padding-right: 11px !important;
-            padding-top: 0.15rem !important;
-        }
-
-        .bp-topbar {
-            min-height: 44px;
-            margin-bottom: 5px;
-        }
-
-        .bp-brand {
-            font-size: 18px;
-        }
-
-        .bp-logo {
-            width: 31px;
-            height: 31px;
-            font-size: 15px;
-            border-radius: 9px;
-        }
-
-        .bp-owner-label {
-            font-size: 9px;
-        }
-
-        .bp-hero {
-            padding: 29px 17px 25px;
-            border-radius: 17px;
-        }
-
-        .bp-kicker {
-            font-size: 9px;
-            padding: 5px 9px;
-            margin-bottom: 12px;
-        }
-
-        .bp-hero h1 {
-            font-size: 29px;
-            line-height: 1.08;
-            letter-spacing: -0.8px;
-        }
-
-        .bp-hero p {
-            font-size: 12px;
-            line-height: 1.55;
-        }
-
-        .bp-section-title {
-            margin-top: 22px;
-        }
-
-        .bp-section-title h2 {
-            font-size: 18px;
-        }
-
-        .bp-section-title p {
-            font-size: 10px;
-        }
-
-        .bp-grid {
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-
-        .bp-card {
-            min-height: auto;
-            padding: 14px;
-            display: grid;
-            grid-template-columns: 34px 1fr;
-            column-gap: 8px;
-        }
-
-        .bp-card-icon {
-            grid-row: 1 / span 2;
-            margin: 0;
-            font-size: 21px;
-        }
-
-        .bp-card h3 {
-            font-size: 12.5px;
-            margin-bottom: 3px;
-        }
-
-        .bp-card p {
-            font-size: 10.5px;
-        }
-
-        .bp-steps {
-            grid-template-columns: 1fr;
-            gap: 7px;
-        }
-
-        .bp-step {
-            padding: 11px;
-        }
-
-        .bp-cta {
-            margin-top: 20px;
-            padding: 19px 14px;
-            border-radius: 15px;
-        }
-
-        .bp-cta h2 {
-            font-size: 17px;
-        }
-
-        .bp-cta p {
-            font-size: 10.5px;
-        }
-
-        .bp-footer {
-            font-size: 9px;
-            padding-top: 18px;
-        }
-
-        .bp-menu-button [data-testid="stPopover"] > button {
-            width: 38px !important;
-            height: 38px !important;
-            min-height: 38px !important;
-        }
-    }
-    </style>
-    """, unsafe_allow_html=True)
-  current_api_url = api_url or API_URL
-
-  # --- INICIALIZAR ESTADO DE LOCAL EXPANDIDO ---
-  if "id_local_expandido" not in st.session_state:
-    st.session_state.id_local_expandido = None
-
-  # 🆕 Variable para rastrear qué evento está esperando login en línea
-  if "evento_pendiente_reserva" not in st.session_state:
-    st.session_state.evento_pendiente_reserva = None
-
-
-  # --- CABECERA / INICIO DE SECCIÓN ---
-  # CSS único de presentación. No modifica lógica ni flujo.
-  st.markdown("""
-  <style>
-    /* ===== BOOKEA HEADER ===== */
-    .st-key-bookea_header [data-testid="stHorizontalBlock"] {
-      display:flex !important; flex-wrap:nowrap !important; align-items:center !important; gap:0 !important;
-    }
-    .st-key-bookea_header [data-testid="column"] { min-width:0 !important; padding:0 !important; }
-    .bookea-brand { display:flex; flex-direction:column; min-width:0; margin:0 !important; padding:0 !important; }
-    .bookea-title { font-size:1.65rem; font-weight:700; line-height:1.05; white-space:nowrap; margin:0 !important; padding:0 !important; }
-    .bookea-subtitle { font-size:.85rem; line-height:1.15; opacity:.72; white-space:nowrap; margin:3px 0 0 !important; padding:0 !important; }
-    .st-key-bookea_header [data-testid="stPopover"] { display:flex !important; justify-content:flex-end !important; align-items:center !important; width:100% !important; }
-    .st-key-bookea_header [data-testid="stPopover"] > button,
-    .st-key-bookea_header [data-testid="stPopover"] > button:hover,
-    .st-key-bookea_header [data-testid="stPopover"] > button:focus,
-    .st-key-bookea_header [data-testid="stPopover"] > button:active {
-      background:transparent !important; background-color:transparent !important; border:0 !important; outline:0 !important; box-shadow:none !important;
-      color:rgba(255,255,255,.92) !important;
-    }
-    .st-key-bookea_header [data-testid="stPopover"] > button { width:28px !important; min-width:28px !important; height:28px !important; min-height:28px !important; padding:0 !important; margin:0 !important; }
-
-    /* ===== DESTELLO / RIPPLE DE STREAMLIT ===== */
-    /* Se elimina la capa visual que aparece al hacer click o enfocar cualquier botón. */
     button,
     button:hover, button:focus, button:focus-visible, button:active,
     [data-testid="stButton"] button,
@@ -505,104 +34,43 @@ def render_home(api_url=API_URL):
     [data-testid="stFormSubmitButton"] button,
     [data-testid="stFormSubmitButton"] button:hover, [data-testid="stFormSubmitButton"] button:focus,
     [data-testid="stFormSubmitButton"] button:focus-visible, [data-testid="stFormSubmitButton"] button:active {
-      outline:none !important; box-shadow:none !important;
-      -webkit-tap-highlight-color:transparent !important;
-      transition:none !important;
+      outline: none !important; box-shadow: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      transition: none !important;
     }
     button::before, button::after,
     [data-testid="stButton"] button::before, [data-testid="stButton"] button::after,
     [data-testid="stFormSubmitButton"] button::before, [data-testid="stFormSubmitButton"] button::after {
-      content:none !important; display:none !important; background:transparent !important; box-shadow:none !important;
-    }
-    /* Evita la animación/ripple de BaseWeb. */
-    [data-baseweb="button"]::before, [data-baseweb="button"]::after,
-    [data-baseweb="button"] *, [data-baseweb="button"] {
-      animation:none !important;
+      content: none !important; display: none !important; background: transparent !important; box-shadow: none !important;
     }
 
-    /* ===== SELECTORES ===== */
     [data-baseweb="select"] > div,
     [data-baseweb="select"] > div:hover,
     [data-baseweb="select"] > div:focus,
     [data-baseweb="select"] > div:focus-within,
     [data-baseweb="select"] > div:active {
-      outline:none !important; box-shadow:none !important;
-      -webkit-tap-highlight-color:transparent !important;
-    }
-    [role="option"], [role="option"]:hover, [role="option"]:focus, [role="option"]:focus-visible, [role="option"]:active {
-      outline:none !important; box-shadow:none !important;
+      outline: none !important; box-shadow: none !important;
+      -webkit-tap-highlight-color: transparent !important;
     }
 
-    /* ===== POPOVER ===== */
-    [data-testid="stPopoverBody"] { background:#080914 !important; border:0 !important; border-radius:10px !important; padding:4px !important; box-shadow:0 8px 28px rgba(0,0,0,.45) !important; }
-    [data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] { gap:0 !important; row-gap:0 !important; }
-    [data-testid="stPopoverBody"] [data-testid="stElementContainer"] { margin:0 !important; padding:0 !important; min-height:0 !important; }
-    [data-testid="stPopoverBody"] button,
-    [data-testid="stPopoverBody"] button:hover, [data-testid="stPopoverBody"] button:focus,
-    [data-testid="stPopoverBody"] button:focus-visible, [data-testid="stPopoverBody"] button:active {
-      background:transparent !important; background-color:transparent !important; color:rgba(255,255,255,.92) !important;
-      border:0 !important; outline:0 !important; box-shadow:none !important; transition:none !important;
-      min-height:32px !important; height:32px !important; margin:0 !important; padding:0 12px !important; border-radius:6px !important;
-      text-align:left !important;
-    }
-    [data-testid="stPopoverBody"] button:hover { background:rgba(255,255,255,.07) !important; color:#fff !important; }
+    /* Tamaño optimizado para imágenes de locales y eventos */
+    [data-testid="stImage"] img { width: 100px !important; height: 120px !important; object-fit: cover !important; border-radius: 6px; }
 
-    /* ===== IMÁGENES ===== */
-    [data-testid="stImage"] img { width:110px !important; height:140px !important; object-fit:cover !important; border-radius:6px; }
+    .bookea-login-title { font-size: 1rem; font-weight: 700; text-align: left; margin-bottom: 12px; }
+    .bookea-input-label { font-size: .88rem; font-weight: 700; color: #fff; margin: 6px 0 3px; text-align: left; }
+    </style>
+    """, unsafe_allow_html=True)
+    
+  current_api_url = api_url or API_URL
 
-    /* ===== LOGIN INLINE ===== */
-    .bookea-login-title { font-size:1rem; font-weight:700; text-align:left; margin-bottom:12px; }
-    .bookea-input-label { font-size:.88rem; font-weight:700; color:#fff; margin:6px 0 3px; text-align:left; }
+  if "id_local_expandido" not in st.session_state:
+    st.session_state.id_local_expandido = None
 
-    @media (max-width:600px) {
-      .bookea-title { font-size:1.45rem; }
-      .bookea-subtitle { font-size:.78rem; }
-      .st-key-bookea_header [data-testid="stPopover"] > button { width:26px !important; min-width:26px !important; height:26px !important; min-height:26px !important; }
-      [data-testid="stPopoverBody"] button { min-height:30px !important; height:30px !important; padding:0 11px !important; font-size:.84rem !important; }
-    }
-  </style>
-  """, unsafe_allow_html=True)
+  if "evento_pendiente_reserva" not in st.session_state:
+    st.session_state.evento_pendiente_reserva = None
 
-  # Fila única: Bookea a la izquierda y ⋮ a la derecha.
-  # El subtítulo queda debajo del título.
-  with st.container(key="bookea_header"):
-      col_marca, col_menu = st.columns([9, 1], gap="small", vertical_alignment="center")
-
-      with col_marca:
-          st.markdown(
-              """<div class="bookea-brand">
-                <div class="bookea-title">🎟️ Bookea</div>
-                <div class="bookea-subtitle">Reservaciones en segundos.</div>
-              </div>""",
-              unsafe_allow_html=True
-          )
-
-      with col_menu:
-          # Menú de cuenta: solo se muestra el icono ⋮
-          with st.popover("⠇⠇", use_container_width=False):
-
-              if st.button("Entrar", key="menu_cuenta_entrar", use_container_width=True):
-                  st.session_state.origen_login = "menu_general"
-                  # 🌟 Aseguramos que si hay un local expandido, se fije antes de ir al login
-                  if st.session_state.get("id_local_expandido"):
-                      fijar_local_actual(st.session_state.id_local_expandido)
-                  st.session_state.vista_actual_publica = "login_cliente"
-                  st.rerun()
-
-              # 🌟 Vista independiente de registro de clientes
-              if st.button("Registrarse", key="menu_cuenta_registrarse", use_container_width=True):
-                  if st.session_state.get("id_local_expandido"):
-                      fijar_local_actual(st.session_state.id_local_expandido)
-                  st.session_state.vista_actual_publica = "registro_clientes"
-                  st.rerun()
-
-              if st.button("Olvidé contraseña", key="menu_cuenta_olvido", use_container_width=True):
-                  if st.session_state.get("id_local_expandido"):
-                      fijar_local_actual(st.session_state.id_local_expandido)
-                  st.session_state.vista_actual_publica = "recuperar_contrasena"
-                  st.rerun()
-
-  st.markdown("", unsafe_allow_html=True)
+  # --- RENDERIZAR CABECERA GLOBAL ---
+  render_header(subtitulo="Reservaciones en segundos.")
   
   # --- 3. BUSCADOR PRINCIPAL ---
   col_search, col_space = st.columns([2, 8])
@@ -626,7 +94,6 @@ def render_home(api_url=API_URL):
       nombre = config.get(section, "nombre", fallback=section)
       icono = config.get(section, "icono", fallback="📌")
       
-      # 💡 Soportamos tanto 'filtros' como 'filtro' para evitar que falle
       filtros_str = config.get(section, "filtros", fallback="")
       if not filtros_str:
         filtros_str = config.get(section, "filtro", fallback="")
@@ -644,14 +111,13 @@ def render_home(api_url=API_URL):
       locales_data = response.json()
       if isinstance(locales_data, list):
         for loc in locales_data:
-          # Extraemos la ubicación (ciudad o dirección principal)
           ubi = loc.get("ciudad") or loc.get("direccion") or loc.get("ubicacion")
           if ubi:
             ubicaciones_disponibles.add(str(ubi).strip())
   except Exception:
     locales_data = []
 
-  # --- 6. FILTROS MINIMALISTAS (CATEGORÍA Y UBICACIÓN) ---
+  # --- 6. FILTROS MINIMALISTAS ---
   st.markdown("###### 🌟 Filtrar Establecimientos")
   col_cat_filt, col_ubi_filt, col_espacio = st.columns([1, 1, 3])
 
@@ -663,14 +129,12 @@ def render_home(api_url=API_URL):
     filtro_categoria_activo = "" if "Todas" in cat_seleccionada_label else cat_seleccionada_label
 
   with col_ubi_filt:
-    # 📍 Lista desplegable dinámica de ubicaciones extraídas de la API
     lista_ubis = ["🌐 Todas las ubicaciones"] + sorted(list(ubicaciones_disponibles))
     ubi_seleccionada = st.selectbox(
         "Ubicación", options=lista_ubis, label_visibility="collapsed"
     )
     filtro_ubicacion_activo = "" if ubi_seleccionada == "🌐 Todas las ubicaciones" else ubi_seleccionada
  
-  # Título dinámico adaptado con la ubicación seleccionada
   titulo_seccion = "🔥 Lugares Destacados (VIP)"
   if filtro_categoria_activo:
     titulo_seccion += f" - {filtro_categoria_activo}"
@@ -687,8 +151,6 @@ def render_home(api_url=API_URL):
       ).strip().upper()
       
       tipo_est = str(loc.get("tipo_establecimiento", "")).strip().lower()
-      
-      # Obtenemos los campos de ubicación del local actual
       ciudad_loc = str(loc.get("ciudad", "")).strip()
       direccion_loc = str(loc.get("direccion") or loc.get("ubicacion", "")).strip()
       
@@ -703,7 +165,6 @@ def render_home(api_url=API_URL):
       if not cumple_categoria:
         continue
         
-      # 📍 Validación estricta del filtro de ubicación seleccionado
       if filtro_ubicacion_activo:
         coincide_ubicacion = (
             filtro_ubicacion_activo.lower() in ciudad_loc.lower() or
@@ -715,23 +176,8 @@ def render_home(api_url=API_URL):
       if tipo_plan == "VIP" or loc.get("es_vip", False):
         destacados.append(loc)
 
-
-# --- 8. RENDERIZADO VERTICAL ADAPTADO PARA MÓVILES Y ESCRITORIO ---
+  # --- 8. RENDERIZADO VERTICAL ADAPTADO ---
   if destacados:
-    
-    # CSS para garantizar que en pantallas móviles la foto y los textos quepan lado a lado sin estorbar
-    st.markdown("""
-      <style>
-        [data-testid="stImage"] img {
-        width: 110px !important;
-        height: 140px !important;
-        object-fit: cover !important;
-        border-radius: 6px;
-        }
-      </style>
-        
-    """, unsafe_allow_html=True)
-
     for i, venue in enumerate(destacados):
       venue_id = venue.get("id")
       titulo = venue.get("nombre") or venue.get("nombre_local") or venue.get("titulo") or "Local VIP"
@@ -740,7 +186,6 @@ def render_home(api_url=API_URL):
       capacidad = venue.get("capacidad", "Consultar")
       descripcion = venue.get("descripcion", "Espacio exclusivo para tus eventos.")
 
-      # Tarjeta optimizada para flujo compacto lado a lado
       with st.container(border=True):
         col_img_mini, col_txt_mini = st.columns([0.5, 4])
         
@@ -758,7 +203,7 @@ def render_home(api_url=API_URL):
             st.info("📌 Sin foto")
 
         with col_txt_mini:
-          st.markdown(f"**{titulo}**   `{tipo_est}`", unsafe_allow_html=True)
+          st.markdown(f"**{titulo}** &nbsp;&nbsp;`{tipo_est}`", unsafe_allow_html=True)
           st.caption(f"📍 {ubicacion} | 👥 {capacidad}")
           st.write(descripcion)
                   
@@ -766,22 +211,19 @@ def render_home(api_url=API_URL):
           texto_boton = "Ocultar Cartelera" if esta_expandido else "Consultar Cartelera"
           tipo_btn = "secondary" if esta_expandido else "primary"
           
-          # Botón pequeño alineado a la izquierda dentro de la columna de texto
           if st.button(texto_boton, key=f"btn_vip_compacto_{venue_id}_{i}", type=tipo_btn):
             if esta_expandido:
               st.session_state.id_local_expandido = None
             else:
               st.session_state.id_local_expandido = venue_id
-              # 🌟 AQUÍ FIJAMOS EL LOCAL COMPARTIDO DE FORMA TRANSVERSAL
               fijar_local_actual(venue_id)
             st.rerun()
 
-      # --- 9. SI ESTE LOCAL ESTÁ EXPANDIDO, INSERTAR SU CARTELERA EXACTAMENTE AQUÍ ---
+      # --- 9. SI ESTE LOCAL ESTÁ EXPANDIDO ---
       if str(st.session_state.get("id_local_expandido")) == str(venue_id):
-        
         with st.container(border=True):
           st.markdown(f"###### 🗓️ Cartelera de Eventos - {titulo}")
-          st.caption(f" Explora Eventos y Reserva Registrandote.")
+          st.caption("Explora Eventos y Reserva Registrandote.")
 
           eventos_a_mostrar = []
           try:
@@ -802,15 +244,20 @@ def render_home(api_url=API_URL):
                 "artista_orquesta": "A tu elección"
             }]
 
-          cols_eventos = st.columns(5)
+          # 🌟 CARTELERA EN DOBLE COLUMNA (IMAGEN Y DESCRIPCIÓN AL LADO)
           for e_idx, evento in enumerate(eventos_a_mostrar):
             ev_id = evento.get("id")
             nombre_ev = evento.get("titulo") or evento.get("nombre_evento", "Sin nombre")
             estado_ev = str(evento.get("estado", "")).strip().lower()
             es_tu_evento = (estado_ev == "plantilla" or str(nombre_ev).strip().lower() == "tu evento")
+            fecha_raw = evento.get("fecha_hora") or evento.get("fecha", "N/A")
+            fecha_corta = fecha_raw.split("T")[0] if "T" in fecha_raw else fecha_raw
+            artista = evento.get("artista_orquesta", "A tu elección")
 
-            with cols_eventos[e_idx % 5]:
-              with st.container(border=True):
+            with st.container(border=True):
+              col_ev_img, col_ev_txt = st.columns([1, 2.5])
+              
+              with col_ev_img:
                 nombre_imagen = evento.get("imagen")
                 imagen_encontrada_ev = None
                 posibles_nombres = []
@@ -842,11 +289,22 @@ def render_home(api_url=API_URL):
                 if imagen_encontrada_ev:
                   st.image(imagen_encontrada_ev, use_container_width=True)
                 else:
-                  st.markdown("🎧 **Bookea**")
+                  st.markdown(
+                      """
+                      <div style="background: #141625; padding: 10px; text-align: center; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                          <span style="font-size: 14px;">🎧</span>
+                          <b style="color: #ffffff; font-size: 8px; margin-top: 2px;">Bookea</b>
+                      </div>
+                      """,
+                      unsafe_allow_html=True,
+                  )
+
+              with col_ev_txt:
+                st.markdown(f"**{nombre_ev}**", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size:11px; margin-bottom:2px;'>📅 {fecha_corta}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size:11px; margin-bottom:6px;'>🎤 {artista}</p>", unsafe_allow_html=True)
                 
-                st.markdown(f"**{nombre_ev}**")
                 texto_boton_accion = "✨ Reservar / Crear" if es_tu_evento else "Reservar"
-                
                 if st.button(texto_boton_accion, key=f"compact_ev_{ev_id}_{i}_{e_idx}", use_container_width=True, type="primary"):
                   cliente_logueado = st.session_state.get("logged_in") and st.session_state.get("user_role") == "cliente"
                   if cliente_logueado:
@@ -858,30 +316,9 @@ def render_home(api_url=API_URL):
                     st.rerun()
                     
           if st.session_state.get("evento_pendiente_reserva"):
-                        
-            # 🌟 Estilos CSS para reducir la altura de los inputs y botones de este formulario
-            # 🌟 Contenedor centrado y más estrecho para reducir el tamaño visual drásticamente
             _, col_form, _ = st.columns([0.8, 2.8, 6.8])
             with col_form:
               with st.container(border=True):
-                
-                st.markdown("""
-                <style>
-                  .bookea-login-title {
-                    font-size: 1rem;
-                    font-weight: 700;
-                    text-align: left;
-                    margin-bottom: 12px;
-                  }
-                  .bookea-input-label {
-                    font-size: 0.88rem;
-                    font-weight: 700;
-                    color: #ffffff;
-                    margin: 6px 0 3px 0;
-                    text-align: left;
-                  }
-                </style>
-                """, unsafe_allow_html=True)
                 st.markdown('<div class="bookea-login-title">🔒 Inicia sesión para continuar</div>', unsafe_allow_html=True)            
 
                 with st.form(f"form_login_compact_{i}"):
@@ -897,7 +334,6 @@ def render_home(api_url=API_URL):
                     cerrar_inline = st.form_submit_button("Cerrar", use_container_width=True)
                   
                   if cerrar_inline:
-                    # Solo cierra este login en línea y vuelve al punto donde se solicitó.
                     st.session_state.evento_pendiente_reserva = None
                     st.rerun()
                   
@@ -918,8 +354,6 @@ def render_home(api_url=API_URL):
                           ev_pendiente = st.session_state.evento_pendiente_reserva
                           st.session_state.evento_pendiente_reserva = None
                           st.session_state.evento_a_reservar = ev_pendiente
-                          #st.session_state.vista_actual_publica = "reservacion"
-                          # 🌟 Corrección clave para enrutar directo a la selección de mesa
                           st.session_state.paso_reserva = "seleccionar_mesa"
                           st.rerun()
                         else:
@@ -929,5 +363,3 @@ def render_home(api_url=API_URL):
                     else:
                       st.warning("Completa ambos campos.")
 
-        break
-      

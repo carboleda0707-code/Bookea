@@ -1,5 +1,6 @@
 import requests
 import streamlit as st
+from header_global import render_header
 
 FUCSIA = "#ff1493"
 
@@ -28,28 +29,19 @@ def campo_texto(t, key, color, tipo=None, placeholder=None):
 
 
 def render_login_cliente(API_URL):
-  # --- CSS PARA REDUCIR TAMAÑO DE INPUTS Y BOTONES ---
-  st.markdown(
-      """
-    
-    """,
-      unsafe_allow_html=True,
-  )
+  # Indicar el tipo de portal para el menú global
+  st.session_state["tipo_portal"] = "cliente"
+
+  # --- RENDERIZAR CABECERA GLOBAL ---
+  render_header(subtitulo="Acceso de Clientes")
 
   if "accion_cli" not in st.session_state:
     st.session_state.accion_cli = "Iniciar Sesión"
 
-  _, col_center, _ = st.columns([1, 2.5, 1], vertical_alignment="top")
-  with col_center:
-    st.markdown("⭐ ¡Bienvenido a Bookea!", unsafe_allow_html=True)
-    st.markdown(
-        "Registrate - Crea tus eventos y reserva al instante.",
-        unsafe_allow_html=True,
-    )
-
-   # --- CONTENEDOR MÁS ESTRECHO ---
+  # --- CONTENEDOR MÁS ESTRECHO ---
   _, c_form, _ = st.columns([2, 1.5, 2])
   with c_form:
+    st.markdown(" ", unsafe_allow_html=True)
     st.markdown("🔐 Iniciar Sesión - Cliente", unsafe_allow_html=True)
 
     email = campo_texto(
@@ -75,7 +67,6 @@ def render_login_cliente(API_URL):
       btn_entrar = st.button("Entrar 🚪", use_container_width=True)
 
     if btn_retornar:
-      # Si venía del menú general, limpiamos la bandera y volvemos al home
       st.session_state.pop("origen_login", None)
       st.session_state.vista_actual_publica = "home"
       st.rerun()
@@ -102,20 +93,16 @@ def render_login_cliente(API_URL):
             })
             st.success(f"¡Bienvenido, {data.get('nombre')}!")
 
-            # Verificamos si entró por el menú general o si hay un local previo guardado
             origen = st.session_state.get("origen_login")
             local_previo = st.session_state.get("vista_previa_login")
 
             if origen == "menu_general":
-              # Limpiamos la bandera y lo mandamos al home limpio ya logueado
               st.session_state.pop("origen_login", None)
               st.session_state.vista_actual_publica = "home"
             elif local_previo:
-              # Si estaba explorando un local específico, lo restauramos
               st.session_state.id_local_expandido = local_previo
               st.session_state.vista_actual_publica = "home"
             else:
-              # Por defecto al home
               st.session_state.vista_actual_publica = "home"
 
             st.rerun()

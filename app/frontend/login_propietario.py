@@ -1,5 +1,6 @@
 import requests
 import streamlit as st
+from header_global import render_header
 
 AZUL = "#2196f3"
 
@@ -28,16 +29,13 @@ def campo_texto(t, key, color, tipo=None, placeholder=None):
 
 
 def render_login_propietario(API_URL):
-  # Cabecera centrada minimalista
-  _, col_center, _ = st.columns([1, 2.5, 1], vertical_alignment="top")
-  with col_center:
-    st.markdown("🏢 Bookea Propietarios", unsafe_allow_html=True)
-    st.markdown(
-        "Gestiona tus reservas, mesas y eventos desde tu panel.",
-        unsafe_allow_html=True,
-    )
+  # Indicar el tipo de portal para el menú global de propietarios
+  st.session_state["tipo_portal"] = "propietario"
 
-  # Contenedor del formulario más estrecho (idéntico a cliente)
+  # --- RENDERIZAR CABECERA GLOBAL ---
+  render_header(subtitulo="Portal de Propietarios")
+
+  # Contenedor del formulario más estrecho
   _, c_form, _ = st.columns([2, 1.5, 2])
   with c_form:
     st.markdown("🔐 Iniciar Sesión - Propietario", unsafe_allow_html=True)
@@ -64,7 +62,6 @@ def render_login_propietario(API_URL):
     with col2:
       btn_entrar = st.button("Entrar 🚪", key="btn_ent_prop", use_container_width=True)
 
-    # Lógica estrictamente encapsulada dentro de los clics de los botones
     if btn_retornar:
       st.session_state["vista_actual_publica"] = "home"
       st.rerun()
@@ -72,7 +69,6 @@ def render_login_propietario(API_URL):
     if btn_entrar:
       if email_prop and password_prop:
         try:
-          # Endpoint y formato idéntico al que usaba el sistema de propietarios
           r = requests.post(
               f"{API_URL}/auth/login",
               json={
@@ -109,15 +105,12 @@ def render_login_propietario(API_URL):
                 "menu_propietario_activo": "Agenda de Eventos",
             })
 
-            # Forzar parámetros en la URL para mantener la sesión
             st.query_params["logged"] = "true"
             st.query_params["role"] = rol_asignado
             if data.get("local_id"):
               st.query_params["local_id"] = str(data.get("local_id"))
 
             st.success(f"¡Bienvenido, {data.get('nombre')}!")
-            
-            # Redirigir a la vista de la agenda del propietario
             st.session_state["vista_actual_publica"] = "agenda_propietario"
             st.rerun()
           else:
