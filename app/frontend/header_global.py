@@ -6,7 +6,7 @@ def render_header(subtitulo="Soluciones para propietarios"):
     y menú contextual según el estado de la sesión y el rol del usuario.
     """
     
-    # Estilos CSS estrictos para eliminar recuadros, fondos y saltos en el menú de 3 puntos
+    # Estilos CSS ultrasuaves para un menú totalmente plano, sin recuadros ni bordes
     st.markdown("""
         <style>
         .bp-brand-container {
@@ -70,33 +70,41 @@ def render_header(subtitulo="Soluciones para propietarios"):
           color: rgba(255,255,255,.92) !important; width: 32px !important; min-width: 32px !important; height: 32px !important; min-height: 32px !important; padding: 0 !important; margin: 0 !important;
         }
         
-        /* Contenedor flotante del popover optimizado y sin bordes internos */
+        /* Contenedor flotante general del popover */
         [data-testid="stPopoverBody"] { 
             background: #0d0f1a !important; 
             border: 1px solid rgba(150, 55, 255, 0.25) !important; 
             border-radius: 10px !important; 
-            padding: 6px !important; 
+            padding: 4px !important; 
             box-shadow: 0 8px 28px rgba(0,0,0,.45) !important; 
             min-width: 190px !important;
         }
         
-        /* ELIMINAR CUALQUIER RECUADRO O BORDE en los botones internos del popover */
-        [data-testid="stPopoverBody"] div.stButton {
-            width: 100% !important;
-            margin: 1px 0 !important;
+        /* ELIMINAR CUALQUIER FONDO O BORDE EN LOS CONTENEDORES DE BOTONES */
+        [data-testid="stPopoverBody"] [data-testid="stButton"],
+        [data-testid="stPopoverBody"] div.stButton,
+        [data-testid="stPopoverBody"] div[data-baseweb] {
+            background: transparent !important;
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
             padding: 0 !important;
+            width: 100% !important;
         }
         
-        [data-testid="stPopoverBody"] div.stButton > button {
+        /* BOTONES INTERNOS: Planos, sin recuadro, estilo lista limpia */
+        [data-testid="stPopoverBody"] button,
+        [data-testid="stPopoverBody"] [data-testid="stButton"] > button {
             background: transparent !important; 
             background-color: transparent !important;
             color: #e2e8f0 !important; 
             border: none !important; 
             box-shadow: none !important;
             outline: none !important;
-            min-height: 32px !important; 
-            height: 32px !important; 
-            margin: 0 !important; 
+            min-height: 30px !important; 
+            height: 30px !important; 
+            margin: 1px 0 !important; 
             padding: 0 10px !important; 
             border-radius: 6px !important; 
             text-align: left !important;
@@ -109,17 +117,20 @@ def render_header(subtitulo="Soluciones para propietarios"):
             transition: background-color 0.15s ease;
         }
         
-        /* Efecto hover limpio al pasar el cursor por las opciones */
-        [data-testid="stPopoverBody"] div.stButton > button:hover { 
+        /* Efecto hover suave al pasar el cursor */
+        [data-testid="stPopoverBody"] button:hover,
+        [data-testid="stPopoverBody"] [data-testid="stButton"] > button:hover { 
             background: rgba(150, 55, 255, 0.15) !important; 
             color: #ffffff !important; 
             border: none !important;
             box-shadow: none !important;
         }
 
-        /* Asegurar tipografía y texto continuo sin saltos */
-        [data-testid="stPopoverBody"] div.stButton > button p,
-        [data-testid="stPopoverBody"] div.stButton > button span {
+        /* Texto interno limpio sin saltos */
+        [data-testid="stPopoverBody"] button p,
+        [data-testid="stPopoverBody"] button span,
+        [data-testid="stPopoverBody"] [data-testid="stButton"] > button p,
+        [data-testid="stPopoverBody"] [data-testid="stButton"] > button span {
             color: inherit !important;
             font-size: 0.85rem !important;
             text-align: left !important;

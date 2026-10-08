@@ -40,10 +40,7 @@ def render_home(api_url=API_URL):
     button:hover, button:focus, button:focus-visible, button:active,
     [data-testid="stButton"] button,
     [data-testid="stButton"] button:hover, [data-testid="stButton"] button:focus,
-    [data-testid="stButton"] button:focus-visible, [data-testid="stButton"] button:active,
-    [data-testid="stFormSubmitButton"] button,
-    [data-testid="stFormSubmitButton"] button:hover, [data-testid="stFormSubmitButton"] button:focus,
-    [data-testid="stFormSubmitButton"] button:focus-visible, [data-testid="stFormSubmitButton"] button:active {
+    [data-testid="stButton"] button:focus-visible, [data-testid="stButton"] button:active {
       outline: none !important; box-shadow: none !important;
       -webkit-tap-highlight-color: transparent !important;
       transition: none !important;
@@ -70,26 +67,6 @@ def render_home(api_url=API_URL):
       font-size: 1rem !important;
     }
 
-    /* Limpieza total de bordes y recuadros en menús desplegables / Popovers (3 puntitos) */
-    div[data-testid="stPopoverBody"] {
-      background-color: #141625 !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      border-radius: 10px !important;
-      padding: 6px !important;
-    }
-    div[data-testid="stPopoverBody"] button {
-      background-color: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      text-align: left !important;
-      padding: 8px 12px !important;
-      margin: 2px 0 !important;
-      border-radius: 6px !important;
-    }
-    div[data-testid="stPopoverBody"] button:hover {
-      background-color: rgba(150, 55, 255, 0.15) !important;
-    }
-
     /* Forzar doble columna horizontal estricta sin saltos raros */
     div[data-testid="stHorizontalBlock"] {
       display: flex !important;
@@ -109,6 +86,12 @@ def render_home(api_url=API_URL):
         height: 150px !important; 
         object-fit: cover !important; 
         border-radius: 8px; 
+    }
+
+    /* Ajustar botones de eventos (Crear / Reservar) al tamaño de su texto */
+    div[data-testid="stVerticalBlock"] div.stButton > button {
+        width: auto !important;
+        display: inline-block !important;
     }
 
     .bookea-login-title { font-size: 1rem; font-weight: 700; text-align: left; margin-bottom: 12px; }
@@ -261,8 +244,10 @@ def render_home(api_url=API_URL):
           st.markdown(f"**{titulo}** &nbsp;&nbsp;`{tipo_est}`", unsafe_allow_html=True)
           st.markdown(f"<p style='font-size:11px; margin-bottom:6px;'>📍 {ubicacion}</p>", unsafe_allow_html=True)
           
-          # Enlaces de contacto limpios con salto de línea ordenado
-          if telefono_contacto and telefono_contacto.lower() not in ["none", "null", ""]:
+          # Validación de WhatsApp robusta (Oculta el número en pantalla y solo activa el enlace)
+          telefono_valido = telefono_contacto and telefono_contacto.lower() not in ["none", "null", "", "undefined"] and any(c.isdigit() for c in telefono_contacto)
+
+          if telefono_valido:
               num_limpio = ''.join(filter(str.isdigit, telefono_contacto))
               num_whatsapp = f"593{num_limpio.lstrip('0')}" if len(num_limpio) >= 9 else num_limpio
               st.markdown(f"📱 [WhatsApp](https://wa.me/{num_whatsapp})", unsafe_allow_html=True)
@@ -275,7 +260,7 @@ def render_home(api_url=API_URL):
           st.markdown("<div style='margin-bottom: 6px;'></div>", unsafe_allow_html=True)
                   
           esta_expandido = (str(st.session_state.id_local_expandido) == str(venue_id))  
-          texto_boton = "Ocultar Cartelera" if esta_expandido else "Consultar Cartelera"
+          texto_boton = "Ocultar Cartelera" if esta_expandido else "Ver Cartelera"
           tipo_btn = "secondary" if esta_expandido else "primary"
           
           if st.button(texto_boton, key=f"btn_vip_compacto_{venue_id}_{i}", type=tipo_btn):
@@ -371,7 +356,7 @@ def render_home(api_url=API_URL):
                 st.markdown(f"<p style='font-size:11px; margin-bottom:6px;'>🎤 {artista}</p>", unsafe_allow_html=True)
                 
                 texto_boton_accion = "✨ Crear" if es_tu_evento else "Reservar"
-                if st.button(texto_boton_accion, key=f"compact_ev_{ev_id}_{i}_{e_idx}", use_container_width=True, type="primary"):
+                if st.button(texto_boton_accion, key=f"compact_ev_{ev_id}_{i}_{e_idx}", use_container_width=False, type="primary"):
                   cliente_logueado = st.session_state.get("logged_in") and st.session_state.get("user_role") == "cliente"
                   if cliente_logueado:
                     st.session_state.evento_a_reservar = ev_id
