@@ -6,7 +6,6 @@ def render_header(subtitulo="Soluciones para propietarios"):
     y menú contextual según el estado de la sesión y el rol del usuario.
     """
     
-    # Estilos CSS ultrasuaves para un menú totalmente plano, sin recuadros ni bordes
     st.markdown("""
         <style>
         .bp-brand-container {
@@ -59,7 +58,6 @@ def render_header(subtitulo="Soluciones para propietarios"):
             padding: 0 !important;
         }
         
-        /* Alineación del bloque y el botón popover principal */
         .st-key-bookea_header [data-testid="stHorizontalBlock"] {
           display: flex !important; flex-wrap: nowrap !important; align-items: center !important; gap: 0 !important;
         }
@@ -70,7 +68,6 @@ def render_header(subtitulo="Soluciones para propietarios"):
           color: rgba(255,255,255,.92) !important; width: 32px !important; min-width: 32px !important; height: 32px !important; min-height: 32px !important; padding: 0 !important; margin: 0 !important;
         }
         
-        /* Contenedor flotante general del popover */
         [data-testid="stPopoverBody"] { 
             background: #0d0f1a !important; 
             border: 1px solid rgba(150, 55, 255, 0.25) !important; 
@@ -80,7 +77,6 @@ def render_header(subtitulo="Soluciones para propietarios"):
             min-width: 190px !important;
         }
         
-        /* ELIMINAR CUALQUIER FONDO O BORDE EN LOS CONTENEDORES DE BOTONES */
         [data-testid="stPopoverBody"] [data-testid="stButton"],
         [data-testid="stPopoverBody"] div.stButton,
         [data-testid="stPopoverBody"] div[data-baseweb] {
@@ -93,7 +89,6 @@ def render_header(subtitulo="Soluciones para propietarios"):
             width: 100% !important;
         }
         
-        /* BOTONES INTERNOS: Planos, sin recuadro, estilo lista limpia */
         [data-testid="stPopoverBody"] button,
         [data-testid="stPopoverBody"] [data-testid="stButton"] > button {
             background: transparent !important; 
@@ -117,7 +112,6 @@ def render_header(subtitulo="Soluciones para propietarios"):
             transition: background-color 0.15s ease;
         }
         
-        /* Efecto hover suave al pasar el cursor */
         [data-testid="stPopoverBody"] button:hover,
         [data-testid="stPopoverBody"] [data-testid="stButton"] > button:hover { 
             background: rgba(150, 55, 255, 0.15) !important; 
@@ -126,7 +120,6 @@ def render_header(subtitulo="Soluciones para propietarios"):
             box-shadow: none !important;
         }
 
-        /* Texto interno limpio sin saltos */
         [data-testid="stPopoverBody"] button p,
         [data-testid="stPopoverBody"] button span,
         [data-testid="stPopoverBody"] [data-testid="stButton"] > button p,
@@ -141,7 +134,6 @@ def render_header(subtitulo="Soluciones para propietarios"):
         </style>
     """, unsafe_allow_html=True)
 
-    # Contenedor de la cabecera
     with st.container(key="bookea_header"):
         col_marca, col_menu = st.columns([9, 1], gap="small", vertical_alignment="center")
 
@@ -213,6 +205,15 @@ def render_header(subtitulo="Soluciones para propietarios"):
                         if st.button("Olvidé contraseña", key="menu_prop_rec", use_container_width=True):
                             st.session_state.vista_actual_publica = "recuperar_contrasena_propietario"
                             st.rerun()
+                        
+                        st.markdown("<hr style='margin:4px 0; border-color:rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+                        if st.button("❓ Ayuda", key="menu_prop_ayuda", use_container_width=True):
+                            st.session_state.vista_actual_publica = "ayuda_propietario"
+                            st.rerun()
+                        if st.button("🚪 Cerrar", key="menu_prop_cerrar_portal", use_container_width=True):
+                            st.session_state.tipo_portal = None
+                            st.session_state.vista_actual_publica = "home"
+                            st.rerun()
                     else:
                         if st.button("Entrar", key="menu_gen_entrar", use_container_width=True):
                             st.session_state.origen_login = "menu_general"
@@ -243,4 +244,17 @@ def render_header(subtitulo="Soluciones para propietarios"):
                                 except ImportError:
                                     pass
                             st.session_state.vista_actual_publica = "recuperar_contrasena"
+                            st.rerun()
+
+                        st.markdown("<hr style='margin:4px 0; border-color:rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+                        if st.button("🏛️ Ingreso Propietarios", key="menu_gen_propietario", use_container_width=True):
+                            st.session_state.vista_actual_publica = "home_propietario"
+                            st.rerun()
+
+                        # --- NUEVAS OPCIONES EN EL MENÚ PRINCIPAL ---
+                        if st.button("❓ Ayuda", key="menu_gen_ayuda", use_container_width=True):
+                            st.session_state.vista_actual_publica = "ayuda"
+                            st.rerun()
+                        if st.button("🚪 Cerrar", key="menu_gen_cerrar", use_container_width=True):
+                            st.session_state.clear()
                             st.rerun()

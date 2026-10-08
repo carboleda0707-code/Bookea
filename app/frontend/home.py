@@ -43,11 +43,12 @@ def render_home(api_url=API_URL):
       transition: none !important;
     }
 
-    /* Selectores (Categoría y Ubicación) */
-    [data-baseweb="select"] {
-      width: 100% !important;
-      min-width: 170px !important;
+    /* CORRECCIÓN: Limitar el ancho de los selectores de los filtros */
+    div[data-testid="stColumn"] [data-baseweb="select"] {
+      width: 220px !important;
+      max-width: 100% !important;
     }
+
     [data-baseweb="select"] > div {
       outline: none !important; 
       box-shadow: none !important;
