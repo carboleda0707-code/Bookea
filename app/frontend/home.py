@@ -289,7 +289,7 @@ def render_home(api_url=API_URL):
       # --- 9. SI ESTE LOCAL ESTÁ EXPANDIDO ---
       if str(st.session_state.get("id_local_expandido")) == str(venue_id):
         with st.container(border=True):
-          st.markdown(f"###### 🗓️ Cartelera de Eventos - {titulo}")
+          st.markdown(f"###### 🗓️ Cartelera de - {titulo}")
           st.caption("Explora Eventos y Reserva Registrandote.")
 
           eventos_a_mostrar = []
@@ -370,7 +370,7 @@ def render_home(api_url=API_URL):
                 st.markdown(f"<p style='font-size:11px; margin-bottom:2px;'>📅 {fecha_corta}</p>", unsafe_allow_html=True)
                 st.markdown(f"<p style='font-size:11px; margin-bottom:6px;'>🎤 {artista}</p>", unsafe_allow_html=True)
                 
-                texto_boton_accion = "✨ Reservar / Crear" if es_tu_evento else "Reservar"
+                texto_boton_accion = "✨ Crear" if es_tu_evento else "Reservar"
                 if st.button(texto_boton_accion, key=f"compact_ev_{ev_id}_{i}_{e_idx}", use_container_width=True, type="primary"):
                   cliente_logueado = st.session_state.get("logged_in") and st.session_state.get("user_role") == "cliente"
                   if cliente_logueado:
