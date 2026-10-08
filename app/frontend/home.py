@@ -26,6 +26,16 @@ def render_home(api_url=API_URL):
         max-width: 1180px !important;
     }
 
+    /* Mejora de tamaño y respuesta táctil para botones */
+    div.stButton > button, div.stFormSubmitButton > button {
+        width: 100% !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        padding: 0.6rem 0.8rem !important;
+        border-radius: 8px !important;
+        min-height: 44px !important;
+    }
+
     button,
     button:hover, button:focus, button:focus-visible, button:active,
     [data-testid="stButton"] button,
@@ -59,56 +69,23 @@ def render_home(api_url=API_URL):
       flex-direction: row !important;
       flex-wrap: nowrap !important;
       align-items: center !important;
-      gap: 6px !important;
+      gap: 10px !important;
     }
     div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
       flex: 1 1 auto !important;
       min-width: 0 !important;
     }
 
-    /* Tamaño optimizado y compacto para imágenes de locales y eventos */
+    /* Tamaño optimizado y apreciable para imágenes de locales y eventos */
     [data-testid="stImage"] img { 
         width: 100% !important; 
-        height: 120px !important; 
+        height: 125px !important; 
         object-fit: cover !important; 
         border-radius: 6px; 
     }
 
-    .bookea-login-title { font-size: 1rem; font-weight: 700; color: #ffffff !important; text-align: left; margin-bottom: 12px; }
-    .bookea-input-label { font-size: .88rem; font-weight: 700; color: #ffffff !important; margin: 6px 0 3px; text-align: left; }
-    
-    /* Campos de texto del login inferior más pequeños y ajustados */
-    div[data-testid="stForm"] [data-testid="stTextInput"] {
-        max-width: 320px !important;
-    }
-    div[data-testid="stForm"] [data-testid="stTextInput"] input {
-        padding: 4px 10px !important;
-        font-size: 0.85rem !important;
-        min-height: 32px !important;
-        height: 32px !important;
-    }
-
-    /* Estilos específicos para los botones del formulario inferior sin destello blanco */
-    div[data-testid="stForm"] [data-testid="stFormSubmitButton"]:nth-of-type(1) button {
-        background-color: #9637ff !important;
-        border: none !important;
-        color: #ffffff !important;
-        width: auto !important;
-        min-width: 90px !important;
-        padding: 4px 14px !important;
-        font-size: 0.82rem !important;
-        border-radius: 6px !important;
-    }
-    div[data-testid="stForm"] [data-testid="stFormSubmitButton"]:nth-of-type(2) button {
-        background-color: #00cfff !important;
-        border: none !important;
-        color: #ffffff !important;
-        width: auto !important;
-        min-width: 90px !important;
-        padding: 4px 14px !important;
-        font-size: 0.82rem !important;
-        border-radius: 6px !important;
-    }
+    .bookea-login-title { font-size: 1rem; font-weight: 700; text-align: left; margin-bottom: 12px; }
+    .bookea-input-label { font-size: .88rem; font-weight: 700; color: #fff; margin: 6px 0 3px; text-align: left; }
     </style>
     """, unsafe_allow_html=True)
     
@@ -238,7 +215,7 @@ def render_home(api_url=API_URL):
       slug_local = venue.get("slug") or venue.get("local_slug") or venue.get("id")
 
       with st.container(border=True):
-        col_img_mini, col_txt_mini = st.columns([0.6, 4], gap="small")
+        col_img_mini, col_txt_mini = st.columns([1, 3], gap="small")
         
         with col_img_mini:
           imagen_path = venue.get("imagen") or venue.get("foto") or venue.get("url_imagen")
@@ -254,23 +231,22 @@ def render_home(api_url=API_URL):
             st.info("📌 Sin foto")
 
         with col_txt_mini:
-          num_limpio = ''.join(filter(str.isdigit, str(telefono_contacto))) if telefono_contacto else ""
-          num_whatsapp = f"593{num_limpio.lstrip('0')}" if len(num_limpio) >= 9 else num_limpio
+          st.markdown(f"**{titulo}** &nbsp;&nbsp;`{tipo_est}`", unsafe_allow_html=True)
+          st.markdown(f"<p style='font-size:11px; margin-bottom:4px;'>📍 {ubicacion}</p>", unsafe_allow_html=True)
           
-          whatsapp_html = f"<a href='https://wa.me/{num_whatsapp}' target='_blank' style='color: #00cfff; text-decoration: none;'>📱 WhatsApp</a>" if telefono_contacto else "<span style='color: #888;'>📱 Sin WhatsApp</span>"
-          web_html = f"<a href='?local={slug_local}' style='color: #9637ff; text-decoration: none;'>🌐 Mini Web</a>" if slug_local else ""
-          
-          st.markdown(f"""
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <div><b>{titulo}</b> &nbsp;&nbsp;<code>{tipo_est}</code></div>
-              <div style="font-size: 11px; color: #a0aec0;">📍 {ubicacion}</div>
-              <div style="font-size: 11px; display: flex; gap: 16px;">
-                {whatsapp_html}
-                {web_html}
-              </div>
-            </div>
-          """, unsafe_allow_html=True)
-          
+          # Enlaces de WhatsApp y Mini Web limpios en línea
+          elementos_contacto = []
+          if telefono_contacto:
+              num_limpio = ''.join(filter(str.isdigit, str(telefono_contacto)))
+              num_whatsapp = f"593{num_limpio.lstrip('0')}" if len(num_limpio) >= 9 else num_limpio
+              elementos_contacto.append(f"📱 [WhatsApp ({telefono_contacto})](https://wa.me/{num_whatsapp})")
+          else:
+              elementos_contacto.append("📱 *Sin WhatsApp*")
+              
+          if slug_local:
+              elementos_contacto.append(f"🌐 [Mini Web](?local={slug_local})")
+              
+          st.markdown(" &nbsp;&nbsp;&nbsp;&nbsp; ".join(elementos_contacto), unsafe_allow_html=True)
           st.markdown("<div style='margin-bottom: 6px;'></div>", unsafe_allow_html=True)
                   
           esta_expandido = (str(st.session_state.id_local_expandido) == str(venue_id))  
@@ -320,7 +296,7 @@ def render_home(api_url=API_URL):
             artista = evento.get("artista_orquesta", "A tu elección")
 
             with st.container(border=True):
-              col_ev_img, col_ev_txt = st.columns([0.6, 4], gap="small")
+              col_ev_img, col_ev_txt = st.columns([1, 2.5], gap="small")
               
               with col_ev_img:
                 nombre_imagen = evento.get("imagen")
@@ -356,7 +332,7 @@ def render_home(api_url=API_URL):
                 else:
                   st.markdown(
                       """
-                      <div style="background: #141625; padding: 10px; text-align: center; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                      <div style="background: #141625; padding: 10px; text-align: center; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); height: 125px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                           <span style="font-size: 14px;">🎧</span>
                           <b style="color: #ffffff; font-size: 8px; margin-top: 2px;">Bookea</b>
                       </div>
@@ -365,18 +341,12 @@ def render_home(api_url=API_URL):
                   )
 
               with col_ev_txt:
-                st.markdown(f"""
-                  <div style="display: flex; flex-direction: column; gap: 3px;">
-                    <div><b>{nombre_ev}</b></div>
-                    <div style="font-size: 11px; color: #a0aec0;">📅 {fecha_corta}</div>
-                    <div style="font-size: 11px; color: #a0aec0; margin-bottom: 4px;">🎤 {artista}</div>
-                  </div>
-                """, unsafe_allow_html=True)
+                st.markdown(f"**{nombre_ev}**", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size:11px; margin-bottom:2px;'>📅 {fecha_corta}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size:11px; margin-bottom:6px;'>🎤 {artista}</p>", unsafe_allow_html=True)
                 
-                st.markdown("<div style='margin-bottom: 6px;'></div>", unsafe_allow_html=True)
-                
-                texto_boton_accion = "✨ Crear Tu Evento" if es_tu_evento else "Reservar"
-                if st.button(texto_boton_accion, key=f"compact_ev_{ev_id}_{i}_{e_idx}", type="primary"):
+                texto_boton_accion = "✨ Reservar / Crear" if es_tu_evento else "Reservar"
+                if st.button(texto_boton_accion, key=f"compact_ev_{ev_id}_{i}_{e_idx}", use_container_width=True, type="primary"):
                   cliente_logueado = st.session_state.get("logged_in") and st.session_state.get("user_role") == "cliente"
                   if cliente_logueado:
                     st.session_state.evento_a_reservar = ev_id
@@ -401,7 +371,7 @@ def render_home(api_url=API_URL):
                 st.markdown('<div class="bookea-input-label">Contraseña</div>', unsafe_allow_html=True)
                 pass_inline = st.text_input("", type="password", placeholder="Contraseña", key=f"pass_c_{i}", label_visibility="collapsed")
                 
-                col_btn_entrar, col_btn_cerrar, col_sp = st.columns([1, 1, 2])
+                _, col_btn_entrar, col_btn_cerrar, _ = st.columns([0.8, 1.4, 1.4, 0.8])
                 with col_btn_entrar:
                   submitted_inline = st.form_submit_button("Entrar", use_container_width=True)
                 with col_btn_cerrar:
