@@ -6,7 +6,7 @@ def render_header(subtitulo="Soluciones para propietarios"):
     y menú contextual según el estado de la sesión y el rol del usuario.
     """
     
-    # Estilos CSS compartidos para la cabecera y el popover limpio
+    # Estilos CSS estrictos para eliminar recuadros, fondos y saltos en el menú de 3 puntos
     st.markdown("""
         <style>
         .bp-brand-container {
@@ -59,7 +59,7 @@ def render_header(subtitulo="Soluciones para propietarios"):
             padding: 0 !important;
         }
         
-        /* Alineación del bloque y el botón popover */
+        /* Alineación del bloque y el botón popover principal */
         .st-key-bookea_header [data-testid="stHorizontalBlock"] {
           display: flex !important; flex-wrap: nowrap !important; align-items: center !important; gap: 0 !important;
         }
@@ -67,53 +67,65 @@ def render_header(subtitulo="Soluciones para propietarios"):
         .st-key-bookea_header [data-testid="stPopover"] { display: flex !important; justify-content: flex-end !important; align-items: center !important; width: 100% !important; }
         .st-key-bookea_header [data-testid="stPopover"] > button {
           background: transparent !important; background-color: transparent !important; border: 0 !important; outline: 0 !important; box-shadow: none !important;
-          color: rgba(255,255,255,.92) !important; width: 28px !important; min-width: 28px !important; height: 28px !important; min-height: 28px !important; padding: 0 !important; margin: 0 !important;
+          color: rgba(255,255,255,.92) !important; width: 32px !important; min-width: 32px !important; height: 32px !important; min-height: 32px !important; padding: 0 !important; margin: 0 !important;
         }
         
-        /* Contenedor flotante del popover optimizado */
+        /* Contenedor flotante del popover optimizado y sin bordes internos */
         [data-testid="stPopoverBody"] { 
             background: #0d0f1a !important; 
             border: 1px solid rgba(150, 55, 255, 0.25) !important; 
             border-radius: 10px !important; 
             padding: 6px !important; 
             box-shadow: 0 8px 28px rgba(0,0,0,.45) !important; 
-            min-width: 180px !important;
+            min-width: 190px !important;
         }
         
-        /* Transformación de los botones internos en filas limpias sin recuadro */
-        [data-testid="stPopoverBody"] [data-testid="stButton"] > button {
+        /* ELIMINAR CUALQUIER RECUADRO O BORDE en los botones internos del popover */
+        [data-testid="stPopoverBody"] div.stButton {
+            width: 100% !important;
+            margin: 1px 0 !important;
+            padding: 0 !important;
+        }
+        
+        [data-testid="stPopoverBody"] div.stButton > button {
             background: transparent !important; 
             background-color: transparent !important;
             color: #e2e8f0 !important; 
             border: none !important; 
             box-shadow: none !important;
-            min-height: 28px !important; 
-            height: 28px !important; 
-            margin: 2px 0 !important; 
+            outline: none !important;
+            min-height: 32px !important; 
+            height: 32px !important; 
+            margin: 0 !important; 
             padding: 0 10px !important; 
             border-radius: 6px !important; 
             text-align: left !important;
-            font-size: 0.82rem !important;
-            font-weight: 400 !important;
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
             white-space: nowrap !important;
             width: 100% !important;
-            transition: background-color 0.2s ease;
+            display: flex !important;
+            align-items: center !important;
+            transition: background-color 0.15s ease;
         }
         
-        /* Efecto hover al pasar el cursor */
-        [data-testid="stPopoverBody"] [data-testid="stButton"] > button:hover { 
+        /* Efecto hover limpio al pasar el cursor por las opciones */
+        [data-testid="stPopoverBody"] div.stButton > button:hover { 
             background: rgba(150, 55, 255, 0.15) !important; 
             color: #ffffff !important; 
-            border: none !important; 
+            border: none !important;
+            box-shadow: none !important;
         }
 
-        /* Asegurar tipografía limpia dentro del botón */
-        [data-testid="stPopoverBody"] [data-testid="stButton"] > button p,
-        [data-testid="stPopoverBody"] [data-testid="stButton"] > button span {
+        /* Asegurar tipografía y texto continuo sin saltos */
+        [data-testid="stPopoverBody"] div.stButton > button p,
+        [data-testid="stPopoverBody"] div.stButton > button span {
             color: inherit !important;
-            font-size: 0.82rem !important;
+            font-size: 0.85rem !important;
             text-align: left !important;
             white-space: nowrap !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         </style>
     """, unsafe_allow_html=True)
