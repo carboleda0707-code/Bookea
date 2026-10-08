@@ -4,7 +4,7 @@ import json
 
 
 def render_seleccion_mesas(api_url: str, evento_id: int, cliente_id: int):
-    st.markdown("### 🪑 Selección de Mesas por Zona y Local")
+    st.markdown("#### 🪑 Selección de Mesas por Zona y Local")
     
     try:
         # 1. Info del evento y extracción segura del local_id
@@ -97,7 +97,7 @@ def render_seleccion_mesas(api_url: str, evento_id: int, cliente_id: int):
         zona_seleccionada_label = st.selectbox("📍 Selecciona una Zona para ver sus mesas:", opciones_disponibles)
         zona_actual = zonas_opciones_dict.get(zona_seleccionada_label, zona_seleccionada_label)
         
-        st.markdown(f"#### 🏷️ Mesas en la zona: **{zona_seleccionada_label}**")
+        st.markdown(f"#### 🏷️ Mesas: **{zona_seleccionada_label}**")
 
         mesas_en_zona = 0
 
@@ -183,7 +183,7 @@ def render_seleccion_mesas(api_url: str, evento_id: int, cliente_id: int):
         consumo_total = sum(item["consumo"] for item in st.session_state.carrito_reservas.values())
         capacidad_total = sum(item["capacidad"] for item in st.session_state.carrito_reservas.values())
 
-        st.markdown("### 📊 Resumen Acumulado de tu Selección")
+        st.markdown("### 📊 Resumen de tu Selección")
         
         # Mostrar elementos seleccionados actualmente para que el usuario sepa qué lleva acumulado
         if st.session_state.carrito_reservas:
@@ -205,7 +205,6 @@ def render_seleccion_mesas(api_url: str, evento_id: int, cliente_id: int):
         cantidad_personas = st.number_input("Número total de asistentes", min_value=1, value=max(1, capacidad_total))
         tipo_celebracion = st.selectbox("Tipo de celebración", ["Ninguna", "Cumpleaños", "Aniversario", "Despedida", "Otro"])
 
-        st.markdown("---")
         st.markdown("### 💳 Comprobante de Pago")
         archivo_comprobante = st.file_uploader("Adjunta la captura de tu transferencia o depósito", type=['png', 'jpg', 'jpeg'])
 
