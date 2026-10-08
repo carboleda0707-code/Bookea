@@ -16,7 +16,7 @@ def render_home(api_url=API_URL):
   """Renderiza la Landing Page principal de Bookea (Vista Pública)."""
   
   # ============================================================
-  # ESTILOS MINIMALISTAS Y ANCHOS OPTIMIZADOS PARA MÓVIL
+  # ESTILOS OPTIMIZADOS: SELECTORES GRANDES, MENÚ LIMPIO Y MÓVIL
   # ============================================================
   st.markdown("""
     <style>
@@ -26,7 +26,7 @@ def render_home(api_url=API_URL):
         max-width: 1180px !important;
     }
 
-    /* Mejora de tamaño y respuesta táctil para botones */
+    /* Mejora de tamaño y respuesta táctil para botones principales */
     div.stButton > button, div.stFormSubmitButton > button {
         width: 100% !important;
         font-size: 0.95rem !important;
@@ -54,21 +54,43 @@ def render_home(api_url=API_URL):
       content: none !important; display: none !important; background: transparent !important; box-shadow: none !important;
     }
 
-    /* Forzar que los selectores (selectbox) tengan ancho completo y dejen ver el texto */
+    /* Selectores (Categoría y Ubicación) más grandes, anchos y legibles */
     [data-baseweb="select"] {
       width: 100% !important;
-      min-width: 140px !important;
+      min-width: 170px !important;
     }
     [data-baseweb="select"] > div {
       outline: none !important; 
       box-shadow: none !important;
       -webkit-tap-highlight-color: transparent !important;
       background-color: #141625 !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      border-radius: 8px !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 10px !important;
+      min-height: 48px !important;
+      font-size: 1rem !important;
     }
 
-    /* Forzar doble columna horizontal estricta sin saltos raros en móvil y PC */
+    /* Limpieza total de bordes y recuadros en menús desplegables / Popovers (3 puntitos) */
+    div[data-testid="stPopoverBody"] {
+      background-color: #141625 !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 10px !important;
+      padding: 6px !important;
+    }
+    div[data-testid="stPopoverBody"] button {
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      text-align: left !important;
+      padding: 8px 12px !important;
+      margin: 2px 0 !important;
+      border-radius: 6px !important;
+    }
+    div[data-testid="stPopoverBody"] button:hover {
+      background-color: rgba(150, 55, 255, 0.15) !important;
+    }
+
+    /* Forzar doble columna horizontal estricta sin saltos raros */
     div[data-testid="stHorizontalBlock"] {
       display: flex !important;
       flex-direction: row !important;
@@ -86,7 +108,7 @@ def render_home(api_url=API_URL):
         width: 100% !important; 
         height: 150px !important; 
         object-fit: cover !important; 
-        border-radius: 6px; 
+        border-radius: 8px; 
     }
 
     .bookea-login-title { font-size: 1rem; font-weight: 700; text-align: left; margin-bottom: 12px; }
@@ -150,9 +172,9 @@ def render_home(api_url=API_URL):
   except Exception:
     locales_data = []
 
-  # --- 6. FILTROS AMPLIADOS ---
+  # --- 6. FILTROS AMPLIADOS Y VISIBLES ---
   st.markdown("###### 🌟 Filtrar Establecimientos")
-  col_cat_filt, col_ubi_filt, col_espacio = st.columns([1.5, 1.5, 2])
+  col_cat_filt, col_ubi_filt, col_espacio = st.columns([1.8, 1.8, 1.4])
 
   with col_cat_filt:
     cat_seleccionada_label = st.selectbox(
@@ -209,7 +231,7 @@ def render_home(api_url=API_URL):
       if tipo_plan == "VIP" or loc.get("es_vip", False):
         destacados.append(loc)
 
-  # --- 8. RENDERIZADO VERTICAL CON IMAGEN MÁS GRANDE [1.5, 2.5] ---
+  # --- 8. RENDERIZADO VERTICAL CON IMAGEN Y ESPACIADO LIMPIO ---
   if destacados:
     for i, venue in enumerate(destacados):
       venue_id = venue.get("id")
@@ -237,9 +259,9 @@ def render_home(api_url=API_URL):
 
         with col_txt_mini:
           st.markdown(f"**{titulo}** &nbsp;&nbsp;`{tipo_est}`", unsafe_allow_html=True)
-          st.markdown(f"<p style='font-size:11px; margin-bottom:4px;'>📍 {ubicacion}</p>", unsafe_allow_html=True)
+          st.markdown(f"<p style='font-size:11px; margin-bottom:6px;'>📍 {ubicacion}</p>", unsafe_allow_html=True)
           
-          # Enlace limpio solo con la palabra WhatsApp
+          # Enlaces de contacto limpios con salto de línea ordenado
           if telefono_contacto and telefono_contacto.lower() not in ["none", "null", ""]:
               num_limpio = ''.join(filter(str.isdigit, telefono_contacto))
               num_whatsapp = f"593{num_limpio.lstrip('0')}" if len(num_limpio) >= 9 else num_limpio
@@ -247,11 +269,10 @@ def render_home(api_url=API_URL):
           else:
               st.markdown("📱 *Sin WhatsApp*", unsafe_allow_html=True)
               
-          # Mini Web en la siguiente línea
           if slug_local:
               st.markdown(f"🌐 [Ver Mini Web](?local={slug_local})", unsafe_allow_html=True)
               
-          st.markdown("<div style='margin-bottom: 4px;'></div>", unsafe_allow_html=True)
+          st.markdown("<div style='margin-bottom: 6px;'></div>", unsafe_allow_html=True)
                   
           esta_expandido = (str(st.session_state.id_local_expandido) == str(venue_id))  
           texto_boton = "Ocultar Cartelera" if esta_expandido else "Consultar Cartelera"
