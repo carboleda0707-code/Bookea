@@ -26,9 +26,8 @@ def render_home(api_url=API_URL):
         max-width: 1180px !important;
     }
 
-    /* Mejora de tamaño y respuesta táctil para botones principales */
-    div.stButton > button, div.stFormSubmitButton > button {
-        width: 100% !important;
+    /* Botones generales (excluyendo el formulario de login para que no se expandan feo en PC) */
+    div.stButton > button:not([data-testid="baseButton-secondary"]), div.stFormSubmitButton > button {
         font-size: 0.95rem !important;
         font-weight: 600 !important;
         padding: 0.6rem 0.8rem !important;
@@ -36,22 +35,21 @@ def render_home(api_url=API_URL):
         min-height: 44px !important;
     }
 
+    /* Forzar que los botones dentro de formularios tengan un ancho automático o controlado en PC */
+    div[data-testid="stForm"] div.stButton > button, 
+    div[data-testid="stForm"] div.stFormSubmitButton > button {
+        width: 100% !important;
+    }
+
     button,
     button:hover, button:focus, button:focus-visible, button:active,
-    [data-testid="stButton"] button,
-    [data-testid="stButton"] button:hover, [data-testid="stButton"] button:focus,
-    [data-testid="stButton"] button:focus-visible, [data-testid="stButton"] button:active {
+    [data-testid="stButton"] button {
       outline: none !important; box-shadow: none !important;
       -webkit-tap-highlight-color: transparent !important;
       transition: none !important;
     }
-    button::before, button::after,
-    [data-testid="stButton"] button::before, [data-testid="stButton"] button::after,
-    [data-testid="stFormSubmitButton"] button::before, [data-testid="stFormSubmitButton"] button::after {
-      content: none !important; display: none !important; background: transparent !important; box-shadow: none !important;
-    }
 
-    /* Selectores (Categoría y Ubicación) más grandes, anchos y legibles */
+    /* Selectores (Categoría y Ubicación) */
     [data-baseweb="select"] {
       width: 100% !important;
       min-width: 170px !important;
@@ -59,7 +57,6 @@ def render_home(api_url=API_URL):
     [data-baseweb="select"] > div {
       outline: none !important; 
       box-shadow: none !important;
-      -webkit-tap-highlight-color: transparent !important;
       background-color: #141625 !important;
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
       border-radius: 10px !important;
@@ -67,31 +64,12 @@ def render_home(api_url=API_URL):
       font-size: 1rem !important;
     }
 
-    /* Forzar doble columna horizontal estricta sin saltos raros */
-    div[data-testid="stHorizontalBlock"] {
-      display: flex !important;
-      flex-direction: row !important;
-      flex-wrap: nowrap !important;
-      align-items: center !important;
-      gap: 10px !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
-      flex: 1 1 auto !important;
-      min-width: 0 !important;
-    }
-
-    /* Imagen más ancha y alta (150px) para locales y eventos */
+    /* Imagen controlada para que no se estire demasiado en PC */
     [data-testid="stImage"] img { 
         width: 100% !important; 
-        height: 150px !important; 
+        max-height: 150px !important; 
         object-fit: cover !important; 
         border-radius: 8px; 
-    }
-
-    /* Ajustar botones de eventos (Crear / Reservar) al tamaño de su texto */
-    div[data-testid="stVerticalBlock"] div.stButton > button {
-        width: auto !important;
-        display: inline-block !important;
     }
 
     .bookea-login-title { font-size: 1rem; font-weight: 700; text-align: left; margin-bottom: 12px; }
@@ -221,7 +199,11 @@ def render_home(api_url=API_URL):
       titulo = venue.get("nombre") or venue.get("nombre_local") or venue.get("titulo") or "Local VIP"
       tipo_est = venue.get("tipo_establecimiento", "")
       ubicacion = venue.get("direccion") or venue.get("ubicacion") or "Ubicación"
-      telefono_contacto = str(venue.get("telefono_contacto") or "").strip()
+      
+      # Validación flexible de WhatsApp (comprueba múltiples campos)
+      telefono_crudo = venue.get("telefono_contacto") or venue.get("telefono") or venue.get("celular") or ""
+      telefono_str = str(telefono_crudo).strip()
+      
       slug_local = venue.get("slug") or venue.get("local_slug") or venue.get("id")
 
       with st.container(border=True):
@@ -244,12 +226,15 @@ def render_home(api_url=API_URL):
           st.markdown(f"**{titulo}** &nbsp;&nbsp;`{tipo_est}`", unsafe_allow_html=True)
           st.markdown(f"<p style='font-size:11px; margin-bottom:6px;'>📍 {ubicacion}</p>", unsafe_allow_html=True)
           
-          # Validación de WhatsApp robusta (Oculta el número en pantalla y solo activa el enlace)
-          telefono_valido = telefono_contacto and telefono_contacto.lower() not in ["none", "null", "", "undefined"] and any(c.isdigit() for c in telefono_contacto)
+          # Validación robusta de WhatsApp
+          telefono_valido = telefono_str and telefono_str.lower() not in ["none", "null", "", "undefined", "nan"] and any(c.isdigit() for c in telefono_str)
 
           if telefono_valido:
-              num_limpio = ''.join(filter(str.isdigit, telefono_contacto))
-              num_whatsapp = f"593{num_limpio.lstrip('0')}" if len(num_limpio) >= 9 else num_limpio
+              num_limpio = ''.join(filter(str.isdigit, telefono_str))
+              if len(num_limpio) >= 7:
+                  num_whatsapp = f"593{num_limpio.lstrip('0')}" if not num_limpio.startswith("593") else num_limpio
+              else:
+                  num_whatsapp = num_limpio
               st.markdown(f"📱 [WhatsApp](https://wa.me/{num_whatsapp})", unsafe_allow_html=True)
           else:
               st.markdown("📱 *Sin WhatsApp*", unsafe_allow_html=True)
