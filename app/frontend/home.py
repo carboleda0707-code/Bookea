@@ -26,19 +26,13 @@ def render_home(api_url=API_URL):
         max-width: 1180px !important;
     }
 
-    /* Botones generales (excluyendo el formulario de login para que no se expandan feo en PC) */
-    div.stButton > button:not([data-testid="baseButton-secondary"]), div.stFormSubmitButton > button {
+    /* Botones generales y de formularios */
+    div.stButton > button, div.stFormSubmitButton > button {
         font-size: 0.95rem !important;
         font-weight: 600 !important;
         padding: 0.6rem 0.8rem !important;
         border-radius: 8px !important;
         min-height: 44px !important;
-    }
-
-    /* Forzar que los botones dentro de formularios tengan un ancho automático o controlado en PC */
-    div[data-testid="stForm"] div.stButton > button, 
-    div[data-testid="stForm"] div.stFormSubmitButton > button {
-        width: 100% !important;
     }
 
     button,
@@ -64,12 +58,19 @@ def render_home(api_url=API_URL):
       font-size: 1rem !important;
     }
 
-    /* Imagen controlada para que no se estire demasiado en PC */
+    /* Imagen compacta alineada a la izquierda */
     [data-testid="stImage"] img { 
         width: 100% !important; 
-        max-height: 150px !important; 
+        max-width: 160px !important;
+        max-height: 140px !important; 
         object-fit: cover !important; 
         border-radius: 8px; 
+    }
+
+    /* Reducir el espacio entre columnas de imagen y texto para acercarlos */
+    div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:first-child {
+        flex: 0 0 140px !important;
+        max-width: 340px !important;
     }
 
     .bookea-login-title { font-size: 1rem; font-weight: 700; text-align: left; margin-bottom: 12px; }
@@ -207,7 +208,7 @@ def render_home(api_url=API_URL):
       slug_local = venue.get("slug") or venue.get("local_slug") or venue.get("id")
 
       with st.container(border=True):
-        col_img_mini, col_txt_mini = st.columns([1.5, 2.5], gap="small")
+        col_img_mini, col_txt_mini = st.columns([0.8, 4], gap="small")
         
         with col_img_mini:
           imagen_path = venue.get("imagen") or venue.get("foto") or venue.get("url_imagen")
@@ -291,7 +292,7 @@ def render_home(api_url=API_URL):
             artista = evento.get("artista_orquesta", "A tu elección")
 
             with st.container(border=True):
-              col_ev_img, col_ev_txt = st.columns([1.5, 2.5], gap="small")
+              col_ev_img, col_ev_txt = st.columns([0.8, 4], gap="small")
               
               with col_ev_img:
                 nombre_imagen = evento.get("imagen")
