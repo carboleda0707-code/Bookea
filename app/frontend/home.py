@@ -16,7 +16,7 @@ def render_home(api_url=API_URL):
   """Renderiza la Landing Page principal de Bookea (Vista Pública)."""
   
   # ============================================================
-  # ESTILOS MINIMALISTAS Y FORZADO DE DOBLE COLUMNA ESTRICTA
+  # ESTILOS MINIMALISTAS Y ANCHOS OPTIMIZADOS PARA MÓVIL
   # ============================================================
   st.markdown("""
     <style>
@@ -54,13 +54,18 @@ def render_home(api_url=API_URL):
       content: none !important; display: none !important; background: transparent !important; box-shadow: none !important;
     }
 
-    [data-baseweb="select"] > div,
-    [data-baseweb="select"] > div:hover,
-    [data-baseweb="select"] > div:focus,
-    [data-baseweb="select"] > div:focus-within,
-    [data-baseweb="select"] > div:active {
-      outline: none !important; box-shadow: none !important;
+    /* Forzar que los selectores (selectbox) tengan ancho completo y dejen ver el texto */
+    [data-baseweb="select"] {
+      width: 100% !important;
+      min-width: 140px !important;
+    }
+    [data-baseweb="select"] > div {
+      outline: none !important; 
+      box-shadow: none !important;
       -webkit-tap-highlight-color: transparent !important;
+      background-color: #141625 !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 8px !important;
     }
 
     /* Forzar doble columna horizontal estricta sin saltos raros en móvil y PC */
@@ -76,10 +81,10 @@ def render_home(api_url=API_URL):
       min-width: 0 !important;
     }
 
-    /* Tamaño optimizado y apreciable para imágenes de locales y eventos */
+    /* Imagen más ancha y alta (150px) para locales y eventos */
     [data-testid="stImage"] img { 
         width: 100% !important; 
-        height: 125px !important; 
+        height: 150px !important; 
         object-fit: cover !important; 
         border-radius: 6px; 
     }
@@ -145,9 +150,9 @@ def render_home(api_url=API_URL):
   except Exception:
     locales_data = []
 
-  # --- 6. FILTROS MINIMALISTAS ---
+  # --- 6. FILTROS AMPLIADOS ---
   st.markdown("###### 🌟 Filtrar Establecimientos")
-  col_cat_filt, col_ubi_filt, col_espacio = st.columns([1, 1, 3])
+  col_cat_filt, col_ubi_filt, col_espacio = st.columns([1.5, 1.5, 2])
 
   with col_cat_filt:
     cat_seleccionada_label = st.selectbox(
@@ -204,18 +209,18 @@ def render_home(api_url=API_URL):
       if tipo_plan == "VIP" or loc.get("es_vip", False):
         destacados.append(loc)
 
-  # --- 8. RENDERIZADO VERTICAL ADAPTADO ---
+  # --- 8. RENDERIZADO VERTICAL CON IMAGEN MÁS GRANDE [1.5, 2.5] ---
   if destacados:
     for i, venue in enumerate(destacados):
       venue_id = venue.get("id")
       titulo = venue.get("nombre") or venue.get("nombre_local") or venue.get("titulo") or "Local VIP"
       tipo_est = venue.get("tipo_establecimiento", "")
       ubicacion = venue.get("direccion") or venue.get("ubicacion") or "Ubicación"
-      telefono_contacto = venue.get("telefono_contacto") or ""
+      telefono_contacto = str(venue.get("telefono_contacto") or "").strip()
       slug_local = venue.get("slug") or venue.get("local_slug") or venue.get("id")
 
       with st.container(border=True):
-        col_img_mini, col_txt_mini = st.columns([1, 3], gap="small")
+        col_img_mini, col_txt_mini = st.columns([1.5, 2.5], gap="small")
         
         with col_img_mini:
           imagen_path = venue.get("imagen") or venue.get("foto") or venue.get("url_imagen")
@@ -234,20 +239,19 @@ def render_home(api_url=API_URL):
           st.markdown(f"**{titulo}** &nbsp;&nbsp;`{tipo_est}`", unsafe_allow_html=True)
           st.markdown(f"<p style='font-size:11px; margin-bottom:4px;'>📍 {ubicacion}</p>", unsafe_allow_html=True)
           
-          # Enlaces de WhatsApp y Mini Web limpios en línea
-          elementos_contacto = []
-          if telefono_contacto:
-              num_limpio = ''.join(filter(str.isdigit, str(telefono_contacto)))
+          # Enlace limpio solo con la palabra WhatsApp
+          if telefono_contacto and telefono_contacto.lower() not in ["none", "null", ""]:
+              num_limpio = ''.join(filter(str.isdigit, telefono_contacto))
               num_whatsapp = f"593{num_limpio.lstrip('0')}" if len(num_limpio) >= 9 else num_limpio
-              elementos_contacto.append(f"📱 [WhatsApp ({telefono_contacto})](https://wa.me/{num_whatsapp})")
+              st.markdown(f"📱 [WhatsApp](https://wa.me/{num_whatsapp})", unsafe_allow_html=True)
           else:
-              elementos_contacto.append("📱 *Sin WhatsApp*")
+              st.markdown("📱 *Sin WhatsApp*", unsafe_allow_html=True)
               
+          # Mini Web en la siguiente línea
           if slug_local:
-              elementos_contacto.append(f"🌐 [Mini Web](?local={slug_local})")
+              st.markdown(f"🌐 [Ver Mini Web](?local={slug_local})", unsafe_allow_html=True)
               
-          st.markdown(" &nbsp;&nbsp;&nbsp;&nbsp; ".join(elementos_contacto), unsafe_allow_html=True)
-          st.markdown("<div style='margin-bottom: 6px;'></div>", unsafe_allow_html=True)
+          st.markdown("<div style='margin-bottom: 4px;'></div>", unsafe_allow_html=True)
                   
           esta_expandido = (str(st.session_state.id_local_expandido) == str(venue_id))  
           texto_boton = "Ocultar Cartelera" if esta_expandido else "Consultar Cartelera"
@@ -296,7 +300,7 @@ def render_home(api_url=API_URL):
             artista = evento.get("artista_orquesta", "A tu elección")
 
             with st.container(border=True):
-              col_ev_img, col_ev_txt = st.columns([1, 2.5], gap="small")
+              col_ev_img, col_ev_txt = st.columns([1.5, 2.5], gap="small")
               
               with col_ev_img:
                 nombre_imagen = evento.get("imagen")
@@ -332,9 +336,9 @@ def render_home(api_url=API_URL):
                 else:
                   st.markdown(
                       """
-                      <div style="background: #141625; padding: 10px; text-align: center; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); height: 125px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                          <span style="font-size: 14px;">🎧</span>
-                          <b style="color: #ffffff; font-size: 8px; margin-top: 2px;">Bookea</b>
+                      <div style="background: #141625; padding: 10px; text-align: center; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.15); height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                          <span style="font-size: 18px;">🎧</span>
+                          <b style="color: #ffffff; font-size: 10px; margin-top: 2px;">Bookea</b>
                       </div>
                       """,
                       unsafe_allow_html=True,
