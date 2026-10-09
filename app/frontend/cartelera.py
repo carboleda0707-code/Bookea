@@ -6,260 +6,15 @@ import requests
 import streamlit as st
 from filtro_locales import render_filtro_locales
 from pie_pagina import render_pie_pagina
+from header_global import render_header
 
 def render_cartelera(api_url, cliente_id=None):
   
-  # ============================================================
-  # ESTILOS GLOBALES: TARJETAS UNIFORMES Y BOTONES AL 100%
-  # ============================================================
-  st.markdown("""
-  <style>
-  /* ============================================================
-     0. CONTENEDOR GENERAL Y AGRUPACIÓN DE TARJETAS AL CENTRO
-     ============================================================ */
-  .block-container {
-      max-width: 1600px !important;
-      padding-top: 1.5rem !important;
-      padding-bottom: 2rem !important;
-      margin: auto !important;
-  }
+  # ==========================================================
+  # RENDERIZAR CABECERA GLOBAL UNIFICADA
+  # ==========================================================
+  render_header("Catálogo de Eventos")
 
-  /* Forzar que las columnas se agrupen al centro con poca separación */
-  [data-testid="stHorizontalBlock"] {
-      display: flex !important;
-      justify-content: center !important;
-      gap: 20px !important;
-  }
-
-  div[data-testid="column"] {
-      width: auto !important;
-      flex: 0 1 auto !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-  }
-
-  /* ============================================================
-     1. SELECTORES Y MENÚS DESPLEGABLES (ST.SELECTBOX)
-     ============================================================ */
-  div[data-testid="stSelectbox"] label {
-      color: #38bdf8 !important;
-      font-weight: 600 !important;
-      font-size: 12px !important;
-  }
-
-  div[data-testid="stSelectbox"] div[data-baseweb="select"] {
-      background-color: #161b22 !important;
-      border: 1px solid rgba(56, 189, 248, 0.5) !important;
-      border-radius: 6px !important;
-      color: #ffffff !important;
-      min-height: 32px !important;
-  }
-
-  div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
-      color: #ffffff !important;
-      background-color: transparent !important;
-  }
-
-  div[data-baseweb="popover"] div[data-baseweb="menu"] {
-      background-color: #121620 !important;
-      border: 1px solid rgba(56, 189, 248, 0.4) !important;
-  }
-
-  div[data-baseweb="popover"] div[role="option"] {
-      color: #ffffff !important;
-      background-color: #121620 !important;
-  }
-
-  div[data-baseweb="popover"] div[role="option"]:hover {
-      background-color: #1f293d !important;
-      color: #38bdf8 !important;
-  }
-
-  /* ============================================================
-     2. BOTÓN PRINCIPAL DE FILTROS (ST.POPOVER)
-     ============================================================ */
-  div[data-testid="stPopover"] {
-      display: flex;
-      justify-content: center;
-  }
-
-  div[data-testid="stPopover"] > button {
-      background-color: #1f2430 !important;
-      border: 1px solid rgba(56, 189, 248, 0.4) !important;
-      color: #ffffff !important;
-      font-weight: 600 !important;
-      font-size: 12px !important;
-      padding: 4px 12px !important;
-      border-radius: 6px !important;
-      width: 100% !important;
-      transition: none !important;
-      box-shadow: none !important;
-      outline: none !important;
-  }
-
-  div[data-testid="stPopover"] > button:focus,
-  div[data-testid="stPopover"] > button:active,
-  div[data-testid="stPopover"] > button:focus-visible {
-      background-color: #1f2430 !important;
-      border-color: rgba(56, 189, 248, 0.4) !important;
-      box-shadow: none !important;
-      outline: none !important;
-  }
-
-  /* ============================================================
-     3. BOTONES GENERALES Y BOTONES DE TARJETAS AL 100%
-     ============================================================ */
-  div.stButton {
-      display: flex !important;
-      justify-content: center !important;
-      width: 100% !important;
-  }
-
-  div.stButton > button {
-      transition: none !important;
-      box-shadow: none !important;
-      outline: none !important;
-      background-color: #1f2430 !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      color: #ffffff !important;
-      font-size: 12px !important;
-      padding: 6px 14px !important;
-      border-radius: 6px !important;
-      min-height: 34px !important;
-      width: auto !important;
-      max-width: 100% !important;
-  }
-
-  /* Forzar que los botones dentro de las tarjetas midan exactamente el ancho de la tarjeta */
-  div[data-testid="stVerticalBlockBorderWrapper"] div.stButton > button {
-      width: 100% !important;
-      margin-top: auto !important;
-  }
-
-  div.stButton > button:hover {
-      background-color: #2a3142 !important;
-      border-color: #38bdf8 !important;
-      color: #38bdf8 !important;
-  }
-
-  /* ============================================================
-     4. INPUTS DE TEXTO COMPACTOS
-     ============================================================ */
-  div[data-testid="stTextInput"] input {
-      background-color: #141625 !important;
-      color: #ffffff !important;
-      font-size: 12px !important;
-      padding: 4px 8px !important;
-  }
-
-  div[data-testid="stTextInput"] div[data-baseweb="input"] {
-      background-color: #141625 !important;
-      border: 1px solid rgba(56, 189, 248, 0.4) !important;
-      border-radius: 6px !important;
-      min-height: 30px !important;
-  }
-
-  /* ============================================================
-     5. ESTILOS VISIBLES PARA ST.RADIO (AGENDA / CALENDARIO)
-     ============================================================ */
-  div[data-testid="stRadio"] {
-      background: rgba(22, 27, 34, 0.85) !important;
-      padding: 6px 14px !important;
-      border-radius: 8px !important;
-      border: 1px solid rgba(56, 189, 248, 0.4) !important;
-      display: inline-flex !important;
-  }
-
-  div[data-testid="stRadio"] label {
-      color: #ffffff !important;
-      font-weight: 800 !important;
-      font-size: 14px !important;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
-  }
-
-  div[data-testid="stRadio"] label span {
-      color: #ffffff !important;
-  }
-
-  /* ============================================================
-     6. TARJETAS CON IMÁGENES A 350PX Y ALINEACIÓN FLEXBOX ESTRICTA
-     ============================================================ */
-  div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlockBorderWrapper"] {
-      padding: 12px !important;
-      width: 340px !important;
-      max-width: 340px !important;
-      min-height: 490px !important;
-      margin: 0 !important;
-      background-color: #121620 !important;
-      border: 1px solid rgba(150, 55, 255, 0.25) !important;
-      border-radius: 8px !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      text-align: center !important;
-  }
-
-  [data-testid="stImage"] {
-      width: 100% !important;
-      display: flex !important;
-      justify-content: center !important;
-  }
-
-  [data-testid="stImage"] img {
-      width: 100% !important;
-      height: 330px !important;
-      object-fit: cover !important;
-      border-radius: 6px !important;
-      margin: 0 auto !important;
-      display: block !important;
-  }
-
-  .card-title {
-      font-size: 13px !important;
-      font-weight: 700 !important;
-      color: #ffffff !important;
-      margin: 10px 0 4px 0 !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-      text-align: center !important;
-      width: 100% !important;
-  }
-
-  .card-text {
-      font-size: 11px !important;
-      color: #b8b9c5 !important;
-      margin: 0 0 4px 0 !important;
-      text-align: center !important;
-      width: 100% !important;
-  }
-
-  .card-no-image {
-      background-color: #141625;
-      border: 1px dashed rgba(150, 55, 255, 0.3);
-      border-radius: 6px;
-      text-align: center;
-      padding: 10px 4px;
-      height: 330px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-  }
-
-  /* ============================================================
-     7. CONTROL RESPONSIVO DE COLUMNAS FANTASMA (SOLO PC)
-     ============================================================ */
-  @media (max-width: 868px) {
-      .columna-fantasma {
-          display: none !important;
-      }
-  }
-  </style>
-  """, unsafe_allow_html=True)
-    
   # ==========================================
   # 0.1. CARGA DE PAÍSES Y CONFIGURACIÓN INI
   # ==========================================
@@ -272,7 +27,6 @@ def render_cartelera(api_url, cliente_id=None):
       else {"Ecuador": "+593"}
   )
   paises_dict = {pais.title(): prefijo for pais, prefijo in paises_dict.items()}
-  lista_paises = list(paises_dict.keys())
 
   # ==========================================
   # 0.2. OBTENCIÓN ROBUSTA DE LOCALES
@@ -304,14 +58,6 @@ def render_cartelera(api_url, cliente_id=None):
   if not local_inicial and locales:
     local_inicial = locales[0]
 
-  def_pais = str(local_inicial.get("pais", "Ecuador")).strip().title()
-  def_ciudad = str(local_inicial.get("ciudad", "Guayaquil")).strip()
-  def_tipo = str(
-      local_inicial.get(
-          "tipo_establecimiento",
-          local_inicial.get("tipo_negocio", "Restaurante/Bar"),
-      )
-  ).strip()
   def_id = local_inicial.get("id")
 
   # ==========================================
@@ -455,14 +201,12 @@ def render_cartelera(api_url, cliente_id=None):
       or info_local_actual.get("zona_ubicacion") 
       or "Local"
   )
-  
   direccion_local_cal = (
       info_local_actual.get("direccion")
       or info_local_actual.get("direccion_local")
       or info_local_actual.get("ubicacion")
       or "S/D"
   )
-  
   telefono_local_cal = (
       info_local_actual.get("telefono_contacto")
       or info_local_actual.get("telefono")
@@ -524,8 +268,6 @@ def render_cartelera(api_url, cliente_id=None):
                   st.error("No se pudo registrar el like")
           except Exception:
             st.error("Error de conexión con el servidor")
-            
-      st.markdown("</div>", unsafe_allow_html=True)
 
   st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
 

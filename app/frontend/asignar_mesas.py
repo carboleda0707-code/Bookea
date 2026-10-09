@@ -1,98 +1,10 @@
 import requests
 import streamlit as st
-
+from header_global import render_header
 
 def render_asignar_mesas(API_URL):
-  # ==========================================================
-  # ESTILOS CSS REFORZADOS (CENTRADO TOTAL Y COMPACTO 320PX)
-  # ==========================================================
-  st.markdown(
-      """
-    <style>
-    /* 1. Centrar títulos, subtítulos y textos generales */
-    .stMarkdown, h1, h2, h3, h4, h5, h6 {
-        text-align: center !important;
-    }
-
-    /* 2. Forzar blanco brillante y negrita en absolutamente todos los títulos de campos */
-    .stApp label,
-    div[data-testid="stWidgetLabel"] p,
-    div[data-testid="stForm"] label p,
-    label[data-testid="stWidgetLabel"] p,
-    .stMarkdown p strong {
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-        font-size: 15px !important;
-        letter-spacing: 0.3px !important;
-        text-shadow: 0px 1px 3px rgba(0,0,0,0.9) !important;
-        text-align: center !important;
-    }
-
-    /* 3. Limitar ancho de TODOS los campos de entrada a 320px y centrarlos */
-    div[data-testid="stTextInput"], 
-    div[data-testid="stNumberInput"],
-    div[data-testid="stSelectbox"] {
-        max-width: 320px !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-    }
-
-    /* 4. Centrar formularios y contenedores internos */
-    div[data-testid="stForm"] {
-        max-width: 480px !important;
-        margin: 0 auto !important;
-        background-color: #0d0f1a !important;
-        border: 1px solid rgba(150, 55, 255, 0.25) !important;
-        border-radius: 12px !important;
-        padding: 24px !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
-    }
-
-    /* 5. Centrar tablas / dataframes */
-    div[data-testid="stDataFrame"] {
-        display: flex !important;
-        justify-content: center !important;
-        margin: 0 auto !important;
-        max-width: 520px !important; /* Controla qué tan angosta se ve la tabla */
-    }
-    
-    div[data-testid="stDataFrame"] > div {
-        width: 100% !important;
-    }
-
-    /* 6. Botones centrados, compactos y modernos */
-    div[data-testid="stFormSubmitButton"],
-    div.stButton {
-        display: flex !important;
-        justify-content: center !important;
-    }
-
-    div[data-testid="stFormSubmitButton"] > button,
-    div.stButton > button {
-        max-width: 220px !important;
-        width: 100% !important;
-        padding: 10px 20px !important;
-        background: linear-gradient(135deg, #7928CA 0%, #4A00E0 100%) !important;
-        color: #FFFFFF !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-        font-size: 15px !important;
-        box-shadow: 0 4px 12px rgba(121, 40, 202, 0.35) !important;
-        transition: all 0.2s ease-in-out !important;
-        margin: 0 auto !important;
-    }
-
-    div[data-testid="stFormSubmitButton"] > button:hover,
-    div.stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 18px rgba(121, 40, 202, 0.6) !important;
-        border-color: #00cfff !important;
-    }
-    </style>
-    """,
-      unsafe_allow_html=True,
-  )
+  # Renderizar la cabecera global unificada (incluye menú y estilos generales)
+  render_header("Soluciones para propietarios")
 
   # Encabezado principal centrado mediante columnas simétricas
   _, col_title, _ = st.columns([1, 3, 1])
@@ -304,7 +216,6 @@ def render_asignar_mesas(API_URL):
                   f" asociadas): {res_update.text}"
               )
 
-  #st.markdown("---")
   with col_title:
     st.subheader(" ")
 

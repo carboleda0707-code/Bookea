@@ -9,6 +9,8 @@ sys.path.append(
 import requests
 import streamlit as st
 
+# Configuración inicial de página (DEBE SER LO PRIMERO)
+st.set_page_config(page_title="Bookea - Sistema de Reservas", layout="wide")
 
 from app.frontend.home import render_home
 from app.frontend.login_cliente import render_login_cliente
@@ -18,7 +20,6 @@ from app.frontend.home_propietario import render_home_propietario
 from app.frontend.login_propietario import render_login_propietario
 from app.frontend.registro_propietario import render_registro_propietario
 
-
 from app.frontend.admin_panel import render_admin_panel
 from app.frontend.agenda_propietario import render_agenda_propietario
 from app.frontend.asignar_mesas import render_asignar_mesas
@@ -26,17 +27,12 @@ from app.frontend.bienvenida import render_bienvenida
 from app.frontend.cartelera import render_cartelera as render_catalogo_clientes
 from app.frontend.clientefinal_reservas import render_mis_reservas
 from app.frontend.mapa_mesas import render_mapa_mesas
-from app.frontend.configuracion_notificaciones import (
-    render_configuracion_notificaciones,
-
-)
+from app.frontend.configuracion_notificaciones import render_configuracion_notificaciones
 from app.frontend.control_puerta import render_control_puerta
 from app.frontend.control_reservas import render_control_reservas
 from app.frontend.crear_eventos import render_crear_eventos
 from app.frontend.crear_mesas import render_crear_mesas
-from app.frontend.crear_reserva_personalizada import ( 
-    render_crear_reserva_personalizada,
-)
+from app.frontend.crear_reserva_personalizada import render_crear_reserva_personalizada
 from app.frontend.crear_zonas import render_crear_zonas
 from app.frontend.historial_asistencia import render_historial_asistencia
 from app.frontend.mantenimiento import render_mantenimiento
@@ -46,132 +42,16 @@ from app.frontend.truco_java import configurar_puente_html
 from app.frontend.validaciones_cliente import render_mantenimiento_cliente
 from app.frontend.filtro_locales import render_filtro_locales
 
-
-
 # Configuración PWA mediante inyección segura de texto plano
 pwa_html = chr(60) + 'link rel="manifest" href="/static/manifest.json"' + chr(62)
 pwa_html += chr(60) + 'meta name="theme-color" content="#050612"' + chr(62)
 pwa_html += chr(60) + 'meta name="apple-mobile-web-app-capable" content="yes"' + chr(62)
 pwa_html += chr(60) + 'script' + chr(62) + "if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}" + chr(60) + '/script' + chr(62)
 
-
 st.markdown(pwa_html, unsafe_allow_html=True)
-
 configurar_puente_html()
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
-
-
-st.set_page_config(page_title="Bookea - Sistema de Reservas", layout="wide")
-
-st.markdown(   """
-<style>
-            
-/* ============================================================
-   BOOKEA — ESTILOS GLOBALES Y CORRECCIÓN DE CONTRASTE
-   ============================================================ */
-
-/* Cabecera nativa de Streamlit */
-header[data-testid="stHeader"] {
-    display: none !important;
-    height: 0 !important;
-    min-height: 0 !important;
-    visibility: hidden !important;
-}
-
-/* Ocultar pie de página nativo y de aplicación */
-footer {
-    display: none !important;
-    visibility: hidden !important;
-}
-
-/* Contenedor principal */
-[data-testid="stAppViewContainer"],
-[data-testid="stAppViewContainer"] > .main,
-[data-testid="stMain"],
-[data-testid="stMainBlockContainer"],
-.block-container {
-    padding-top: 3rem !important;
-    max-width: 100% !important;
-    margin-top: -60px !important;
-}
-
-html, body, [data-testid="stAppViewContainer"],
-[data-testid="stApp"], .stApp {
-    margin: 0 !important;
-    padding-top: 0 !important;
-    background-color: #050612 !important;
-    color: #f7f7ff !important;
-    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-}
-
-[data-testid="stToolbar"] {
-    display: none !important;
-}
-
-/* ============================================================
-   CORRECCIÓN DEFINITIVA DE BOTONES Y POPOVERS (FONDO OSCURO Y TEXTO BLANCO)
-   ============================================================ */
-
-/* Botones estándar y de tipo popover / enlace */
-[data-testid="stButton"] > button,
-[data-testid="stPopover"] > button,
-button[data-baseweb="button"] {
-    background-color: #141625 !important;
-    background-image: none !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(150, 55, 255, 0.35) !important;
-}
-
-/* Estado Hover / Focus / Active para botones y popovers */
-[data-testid="stButton"] > button:hover,
-[data-testid="stButton"] > button:focus,
-[data-testid="stButton"] > button:active,
-[data-testid="stPopover"] > button:hover,
-[data-testid="stPopover"] > button:focus,
-[data-testid="stPopover"] > button:active,
-button[data-baseweb="button"]:hover {
-    background-color: #1f2238 !important;
-    color: #ffffff !important;
-    border-color: #00cfff !important;
-}
-
-/* Forzar que el texto y los iconos dentro de los botones sean siempre blancos */
-[data-testid="stButton"] > button p,
-[data-testid="stPopover"] > button p,
-[data-testid="stPopover"] > button span {
-    color: #ffffff !important;
-}
-
-/* Selectores desplegables */
-div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
-    background-color: #141625 !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(150, 55, 255, 0.35) !important;
-}
-
-div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover {
-    background-color: #1f2238 !important;
-    border-color: #00cfff !important;
-}
-
-/* Opciones de los menús desplegables */
-div[role="listbox"] li[role="option"] {
-    background-color: #141625 !important;
-    color: #ffffff !important;
-}
-
-div[role="listbox"] li[role="option"]:hover,
-div[role="listbox"] li[role="option"]:focus,
-div[role="listbox"] li[role="option"][aria-selected="true"] {
-  background-color: #20232d !important;
-  color: #ffffff !important;
-}
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
 
 # --- 1. INICIALIZACIÓN DE ESTADOS DE SESIÓN Y URL ---
 query_params = st.query_params
@@ -232,7 +112,6 @@ if not st.session_state.get("logged_in", False):
     else:
         render_home(API_URL)
         st.stop()
-
 
 # ============================================================
 # ZONA LOGUEADA: EVALUACIÓN ÚNICA Y ESTRICTA DE ROLES

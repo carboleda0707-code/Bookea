@@ -8,125 +8,8 @@ def render_agenda_propietario(api_url):
   # Indicar al header global que el portal activo es de propietario
   st.session_state["tipo_portal"] = "propietario"
   
-  # Renderizar cabecera limpia (sin menú de gestión flotante redundante)
+  # Renderizar cabecera limpia y unificada
   render_header(subtitulo="Gestión de Eventos y Reservas")
-  
-  # ============================================================
-  # ESTILOS CSS GLOBALES (OPTIMIZADO PARA MÓVIL Y SELECTORES)
-  # ============================================================
-  st.markdown("""
-  <style>
-  .block-container {
-      padding-top: 0.4rem !important;
-      padding-bottom: 2rem !important;
-      max-width: 480px !important; /* Ancho estándar optimizado para móvil */
-      margin: 0 auto !important;
-  }
-  
-  /* AJUSTAR SELECTORES AL TEXTO / TAMAÑO COMPACTO MÓVIL */
-  div[data-testid="stSelectbox"] {
-      width: 100% !important;
-      max-width: 280px !important;
-      margin: 0 auto !important;
-  }
-  
-  /* ESTILOS PARA EL SELECTOR DE VISTA / RADIO PESTAÑAS */
-  div[data-testid="stRadio"] {
-      background: transparent !important;
-      padding: 4px;
-      border-radius: 12px;
-      border: 1px solid rgba(150, 55, 255, 0.3);
-      width: fit-content;
-      margin: 0 auto !important;
-  }
-  div[data-testid="stRadio"] > div {
-      gap: 6px;
-      flex-direction: row !important;
-      justify-content: center !important;
-  }
-  div[data-testid="stRadio"] input,
-  div[data-testid="stRadio"] div[role="radiogroup"] label > div:first-child {
-      display: none !important;
-  }
-  div[data-testid="stRadio"] label {
-      padding: 6px 12px !important;
-      border-radius: 8px !important;
-      color: #ffffff !important;
-      font-weight: 700 !important;
-      font-size: 11px !important;
-      background-color: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      cursor: pointer;
-  }
-  div[data-testid="stRadio"] label p {
-      color: #ffffff !important;
-  }
-  div[data-testid="stRadio"] label:hover {
-      background-color: rgba(0, 207, 255, 0.15) !important;
-      border-color: rgba(0, 207, 255, 0.4) !important;
-      color: #00cfff !important;
-  }
-
-  /* IMAGEN COMPACTA EN EL MEMBRETE DEL LOCAL */
-  .local-header-img img {
-      width: 100% !important;
-      max-width: 120px !important;
-      height: 120px !important;
-      object-fit: cover !important;
-      border-radius: 6px !important;
-      display: block;
-      margin: 0 auto;
-  }
-
-  /* TARJETAS DE CARTELERA */
-  .cartelera-section [data-testid="stHorizontalBlock"] {
-      display: flex !important;
-      justify-content: center !important;
-      gap: 15px !important;
-  }
-  .cartelera-section div[data-testid="column"] {
-      width: 100% !important;
-      max-width: 260px !important;
-      flex: 1 1 auto !important;
-  }
-  .cartelera-section div[data-testid="stVerticalBlockBorderWrapper"],
-  .cartelera-section div[data-testid="stVerticalBlock"] {
-      width: 100% !important;
-      padding: 8px !important;
-      background-color: #121620 !important;
-      border: 1px solid rgba(150, 55, 255, 0.25) !important;
-      border-radius: 8px !important;
-  }
-  .cartelera-section [data-testid="stImage"] img {
-      width: 100% !important;
-      height: 280px !important;
-      object-fit: cover !important;
-      border-radius: 6px !important;
-  }
-
-  .card-title {
-      color: #ffffff !important;
-      font-weight: 700 !important;
-      font-size: 12px !important;
-      margin: 8px 0 4px 0 !important;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-align: center;
-      width: 100%;
-  }
-  .card-info {
-      color: #b8b9c5 !important;
-      font-size: 11px !important;
-      margin: 0 0 4px 0 !important;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-align: center;
-      width: 100%;
-  }
-  </style>
-  """, unsafe_allow_html=True)
 
   # ============================================================
   # RECUPERAR DATOS DE SESIÓN Y LOCALES
@@ -450,7 +333,7 @@ def render_agenda_propietario(api_url):
         btn_guardar = st.form_submit_button("💾 Guardar Cambios")
 
         if btn_guardar:
-          fecha_hora_str = f"{n_fecha}T{n_hora.strftime('%H:%M:%S')}'"
+          fecha_hora_str = f"{n_fecha}T{n_hora.strftime('%H:%M:%S')}"
           data_act = {
               "nombre_evento": n_nombre,
               "artista_orquesta": n_artista,

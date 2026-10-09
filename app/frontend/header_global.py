@@ -2,12 +2,106 @@ import streamlit as st
 
 def render_header(subtitulo="Soluciones para propietarios"):
     """
-    Renderiza la cabecera global de Bookea con logo, subtítulo dinámico
-    y menú contextual según el estado de la sesión y el rol del usuario.
+    Renderiza la cabecera global de Bookea, incluyendo estilos CSS unificados,
+    script de control y menú contextual según el estado de la sesión.
     """
     
     st.markdown("""
         <style>
+        /* ============================================================
+           BOOKEA — ESTILOS GLOBALES Y DE CABECERA UNIFICADOS
+           ============================================================ */
+
+        /* Cabecera nativa de Streamlit */
+        header[data-testid="stHeader"] {
+            display: none !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            visibility: hidden !important;
+        }
+
+        /* Ocultar pie de página nativo */
+        footer {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Contenedor principal */
+        [data-testid="stAppViewContainer"],
+        [data-testid="stAppViewContainer"] > .main,
+        [data-testid="stMain"],
+        [data-testid="stMainBlockContainer"],
+        .block-container {
+            padding-top: 3rem !important;
+            max-width: 100% !important;
+            margin-top: -60px !important;
+        }
+
+        html, body, [data-testid="stAppViewContainer"],
+        [data-testid="stApp"], .stApp {
+            margin: 0 !important;
+            padding-top: 0 !important;
+            background-color: #050612 !important;
+            color: #f7f7ff !important;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        }
+
+        [data-testid="stToolbar"] {
+            display: none !important;
+        }
+
+        /* Botones y selectores globales */
+        [data-testid="stButton"] > button,
+        [data-testid="stPopover"] > button,
+        button[data-baseweb="button"] {
+            background-color: #141625 !important;
+            background-image: none !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(150, 55, 255, 0.35) !important;
+        }
+
+        [data-testid="stButton"] > button:hover,
+        [data-testid="stButton"] > button:focus,
+        [data-testid="stButton"] > button:active,
+        [data-testid="stPopover"] > button:hover,
+        [data-testid="stPopover"] > button:focus,
+        [data-testid="stPopover"] > button:active,
+        button[data-baseweb="button"]:hover {
+            background-color: #1f2238 !important;
+            color: #ffffff !important;
+            border-color: #00cfff !important;
+        }
+
+        [data-testid="stButton"] > button p,
+        [data-testid="stPopover"] > button p,
+        [data-testid="stPopover"] > button span {
+            color: #ffffff !important;
+        }
+
+        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+            background-color: #141625 !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(150, 55, 255, 0.35) !important;
+        }
+
+        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover {
+            background-color: #1f2238 !important;
+            border-color: #00cfff !important;
+        }
+
+        div[role="listbox"] li[role="option"] {
+            background-color: #141625 !important;
+            color: #ffffff !important;
+        }
+
+        div[role="listbox"] li[role="option"]:hover,
+        div[role="listbox"] li[role="option"]:focus,
+        div[role="listbox"] li[role="option"][aria-selected="true"] {
+          background-color: #20232d !important;
+          color: #ffffff !important;
+        }
+
+        /* Estilos específicos de la marca y cabecera */
         .bp-brand-container {
             display: flex;
             align-items: center;
@@ -72,14 +166,17 @@ def render_header(subtitulo="Soluciones para propietarios"):
             background: #0d0f1a !important; 
             border: 1px solid rgba(150, 55, 255, 0.25) !important; 
             border-radius: 10px !important; 
-            padding: 4px !important; 
+            padding: 6px 4px !important; 
             box-shadow: 0 8px 28px rgba(0,0,0,.45) !important; 
             min-width: 190px !important;
         }
         
+        [data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
+            gap: 2px !important;
+        }
+        
         [data-testid="stPopoverBody"] [data-testid="stButton"],
-        [data-testid="stPopoverBody"] div.stButton,
-        [data-testid="stPopoverBody"] div[data-baseweb] {
+        [data-testid="stPopoverBody"] div.stButton {
             background: transparent !important;
             background-color: transparent !important;
             border: none !important;
@@ -87,29 +184,33 @@ def render_header(subtitulo="Soluciones para propietarios"):
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
+            text-align: right !important;
         }
         
         [data-testid="stPopoverBody"] button,
-        [data-testid="stPopoverBody"] [data-testid="stButton"] > button {
+        [data-testid="stPopoverBody"] [data-testid="stButton"] > button,
+        [data-testid="stPopoverBody"] button div,
+        [data-testid="stPopoverBody"] button p,
+        [data-testid="stPopoverBody"] button span {
             background: transparent !important; 
             background-color: transparent !important;
-            color: #e2e8f0 !important; 
+            color: #cbd5e1 !important; 
             border: none !important; 
             box-shadow: none !important;
             outline: none !important;
-            min-height: 30px !important; 
-            height: 30px !important; 
-            margin: 1px 0 !important; 
-            padding: 0 10px !important; 
-            border-radius: 6px !important; 
-            text-align: left !important;
-            font-size: 0.85rem !important;
-            font-weight: 500 !important;
+            min-height: 24px !important; 
+            height: 24px !important; 
+            margin: 0 !important; 
+            padding: 0 8px !important; 
+            border-radius: 4px !important; 
+            text-align: right !important;
+            font-size: 0.82rem !important;
+            font-weight: 300 !important;
             white-space: nowrap !important;
             width: 100% !important;
             display: flex !important;
             align-items: center !important;
-            transition: background-color 0.15s ease;
+            justify-content: flex-end !important;
         }
         
         [data-testid="stPopoverBody"] button:hover,
@@ -119,19 +220,20 @@ def render_header(subtitulo="Soluciones para propietarios"):
             border: none !important;
             box-shadow: none !important;
         }
-
-        [data-testid="stPopoverBody"] button p,
-        [data-testid="stPopoverBody"] button span,
-        [data-testid="stPopoverBody"] [data-testid="stButton"] > button p,
-        [data-testid="stPopoverBody"] [data-testid="stButton"] > button span {
-            color: inherit !important;
-            font-size: 0.85rem !important;
-            text-align: left !important;
-            white-space: nowrap !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
         </style>
+        
+        <script>
+            // Script para cerrar automáticamente el popover al hacer clic en sus opciones
+            document.addEventListener("click", function(e) {
+                if (e.target.closest('[data-testid="stPopoverBody"] button')) {
+                    setTimeout(() => {
+                        document.body.click();
+                        const overlays = document.querySelectorAll('[data-testid="stPopoverOverlay"]');
+                        overlays.forEach(o => o.click());
+                    }, 20);
+                }
+            });
+        </script>
     """, unsafe_allow_html=True)
 
     with st.container(key="bookea_header"):
@@ -154,7 +256,7 @@ def render_header(subtitulo="Soluciones para propietarios"):
                 
                 # --- CONTEXTO 1: CLIENTE LOGUEADO ---
                 if st.session_state.get("logged_in") and st.session_state.get("user_role") == "cliente":
-                    st.markdown(f"<p style='font-size:11px; padding:4px 8px; color:#00cfff; margin:0;'>👤 {st.session_state.get('user_name', 'Cliente')}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='font-size:11px; font-weight:300; padding:2px 6px; color:#00cfff; text-align:right; margin:0 0 2px 0;'>👤 {st.session_state.get('user_name', 'Cliente')}</p>", unsafe_allow_html=True)
                     if st.button("Mis Reservas", key="menu_cli_reservas", use_container_width=True):
                         st.session_state.vista_actual_publica = "mis_reservas"
                         st.rerun()
@@ -164,7 +266,7 @@ def render_header(subtitulo="Soluciones para propietarios"):
 
                 # --- CONTEXTO 2: PROPIETARIO LOGUEADO O EN PORTAL PROPIETARIO ---
                 elif st.session_state.get("logged_in") and st.session_state.get("user_role") == "propietario":
-                    st.markdown(f"<p style='font-size:11px; padding:4px 8px; color:#9637ff; margin:0;'>🏢 Menú de Gestión</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='font-size:11px; font-weight:300; padding:2px 6px; color:#9637ff; text-align:right; margin:0 0 2px 0;'>🏢 Menú de Gestión</p>", unsafe_allow_html=True)
                     
                     if st.button("📅 Agenda de Eventos", key="m_ges_agenda", use_container_width=True):
                         st.session_state.vista_actual = "agenda_propietario"
@@ -188,7 +290,7 @@ def render_header(subtitulo="Soluciones para propietarios"):
                         st.session_state.vista_actual = "control_puerta"
                         st.rerun()
                     
-                    st.markdown("<hr style='margin:4px 0; border-color:rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+                    st.markdown("<hr style='margin:3px 0; border-color:rgba(255,255,255,0.08);'>", unsafe_allow_html=True)
                     if st.button("🚪 Cerrar Sesión", key="menu_prop_salir", use_container_width=True):
                         st.session_state.clear()
                         st.rerun()
@@ -206,7 +308,7 @@ def render_header(subtitulo="Soluciones para propietarios"):
                             st.session_state.vista_actual_publica = "recuperar_contrasena_propietario"
                             st.rerun()
                         
-                        st.markdown("<hr style='margin:4px 0; border-color:rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+                        st.markdown("<hr style='margin:3px 0; border-color:rgba(255,255,255,0.08);'>", unsafe_allow_html=True)
                         if st.button("❓ Ayuda", key="menu_prop_ayuda", use_container_width=True):
                             st.session_state.vista_actual_publica = "ayuda_propietario"
                             st.rerun()
@@ -246,15 +348,15 @@ def render_header(subtitulo="Soluciones para propietarios"):
                             st.session_state.vista_actual_publica = "recuperar_contrasena"
                             st.rerun()
 
-                        st.markdown("<hr style='margin:4px 0; border-color:rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+                        st.markdown("<hr style='margin:3px 0; border-color:rgba(255,255,255,0.08);'>", unsafe_allow_html=True)
                         if st.button("🏛️ Ingreso Propietarios", key="menu_gen_propietario", use_container_width=True):
                             st.session_state.vista_actual_publica = "home_propietario"
                             st.rerun()
-
-                        # --- NUEVAS OPCIONES EN EL MENÚ PRINCIPAL ---
                         if st.button("❓ Ayuda", key="menu_gen_ayuda", use_container_width=True):
                             st.session_state.vista_actual_publica = "ayuda"
                             st.rerun()
                         if st.button("🚪 Cerrar", key="menu_gen_cerrar", use_container_width=True):
                             st.session_state.clear()
+                            st.query_params.clear()
+                            st.session_state.vista_actual_publica = "home"
                             st.rerun()

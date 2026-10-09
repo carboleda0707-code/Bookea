@@ -52,8 +52,7 @@ def render_home(api_url=API_URL):
     [data-baseweb="select"] > div {
       outline: none !important; 
       box-shadow: none !important;
-      background-color: #141625 !important;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      background-color: #141625 !important;!important;
       border-radius: 10px !important;
       min-height: 48px !important;
       font-size: 1rem !important;
