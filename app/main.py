@@ -5,8 +5,10 @@ from app import models
 from app.routers import auth, clientes_auth, reservas, zonas, precios_mesas, locales, admin, recuperacion
 from fastapi.staticfiles import StaticFiles
 from app.routers import locales # O como se llame tu archivo de router de locales
-
 from pathlib import Path
+from fastapi.responses import RedirectResponse
+
+
 
 # Definimos la ruta base del proyecto de forma absoluta
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,7 +48,7 @@ def obtener_anuncios(db: Session = Depends(get_db)):
 
 @app.get("/")
 def read_root():
-    return {"mensaje": "Bienvenido a la API de Reservas Multi-Local 🚀"}
+    return RedirectResponse(url="/app/")
 
 # Esto fuerza la creación de solo las tablas que faltan en la base de datos
 models.Base.metadata.create_all(bind=engine)
