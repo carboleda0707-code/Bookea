@@ -505,7 +505,20 @@
         }
 
         eventos.forEach(ev => {
-          const evImg = ev.imagen ? obtenerUrlImagen(ev.imagen, 'evento') : imgUrl;
+          // CHIVATO EN VIVO
+          console.log("CHIVATO - OBJETO EVENTO COMPLETO:", ev);
+          console.log("CHIVATO - VALOR DE ev.imagen:", ev.imagen);
+
+          const evImg = (ev.imagen && ev.imagen.trim() !== "") 
+            ? obtenerUrlImagen(ev.imagen, 'evento') 
+            : imgUrl;
+
+          console.log("CHIVATO - URL RESULTANTE evImg:", evImg);
+
+          const nombreEv = ev.nombre_evento || ev.titulo || 'Evento';
+
+
+
           gridEventos.innerHTML += `
             <div class="card-bookea flex flex-col justify-between">
               <div class="relative w-full h-52">
