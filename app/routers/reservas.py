@@ -56,8 +56,8 @@ def crear_evento(
     artista_orquesta: str = Form(None),
     fecha_hora: str = Form(...),
     descripcion: str = Form(None),
-    estado: str = Form("activo"),  # Por defecto activo si lo crea el propietario
-    creador: str = Form(None),     # Nuevo campo para almacenar el creador/correo
+    estado: str = Form("activo"),
+    creador: str = Form(None),
     file: UploadFile = File(None),
     db: Session = Depends(get_db)
 ):
@@ -101,7 +101,7 @@ def crear_evento(
             descripcion=descripcion,
             imagen=nombre_archivo,
             estado=estado,
-            creador=creador  # Guardamos el correo o creador del evento
+            creador=creador
         )
         
         db.add(nuevo_evento)
@@ -119,7 +119,7 @@ def crear_evento(
 def listar_eventos(
     local_id: int = None, 
     usuario_id: int = None, 
-    incluir_pendientes: bool = True, # Forzado en True para evitar bloqueos por estado
+    incluir_pendientes: bool = True,
     cliente_email: str = None,  
     db: Session = Depends(get_db)
 ):
@@ -130,7 +130,6 @@ def listar_eventos(
     elif usuario_id is not None:
         query = query.filter(models.Local.propietario_id == usuario_id)
         
-    # Se eliminan los filtros estrictos de estado para asegurar que la API devuelva todos los registros del local
     eventos = query.all()
     
     eventos_filtrados = []
@@ -181,8 +180,7 @@ def obtener_mesas_disponibles(evento_id: int, db: Session = Depends(get_db)):
         p_reserva = float(precio_info.precio_reserva) if precio_info and precio_info.precio_reserva > 0 else 25.00
         p_consumo = float(precio_info.consumo_minimo) if precio_info and precio_info.consumo_minimo > 0 else 15.00
 
-        # DETECCIÓN DINÁMICA: Si es un pase general, siempre está disponible para la venta múltiple
-        es_pase_general = "pase" in str(mesa.numero_mesa).lower()
+        es_pase_general = "pase" in str(mesa.numero_mesa).lower() or "general" in str(mesa.numero_mesa).lower()
         
         disponible_final = True if es_pase_general else (mesa.id not in lista_reservadas)
 
@@ -259,6 +257,16 @@ async def crear_reserva_con_pago(
     lista_mesas = json.loads(mesas_ids)
     
     try:
+        mesas_reales_ids = []
+        for m_id in lista_mesas:
+            mesa_obj = db.query(models.Mesa).filter(models.Mesa.id == m_id).first()
+            if mesa_obj:
+                es_pase = "pase" in str(mesa_obj.numero_mesa).lower() or "general" in str(mesa_obj.numero_mesa).lower()
+                if not es_pase:
+                    mesas_reales_ids.append(m_id)
+            else:
+                mesas_reales_ids.append(m_id)
+
         reservas_existentes = db.query(models.Reserva).filter(
             models.Reserva.evento_id == evento_id,
             models.Reserva.estado_reserva != "cancelada"
@@ -267,7 +275,7 @@ async def crear_reserva_con_pago(
         mesas_ocupadas_ids = []
         for r in reservas_existentes:
             for m in r.mesas:
-                if m.id in lista_mesas:
+                if m.id in mesas_reales_ids:
                     mesas_ocupadas_ids.append(m.id)
                     
         if mesas_ocupadas_ids:

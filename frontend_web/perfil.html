@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookea | Actualizar Datos</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .brand-title { font-weight: 800; color: #e11d48; }
+    .card-auth { background: #ffffff; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+    .btn-rose { background-color: #e11d48; color: #ffffff; border-radius: 12px; font-weight: 700; transition: background-color 0.2s ease; }
+    .btn-rose:hover { background-color: #be123c; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between">
+
+  <!-- HEADER -->
+  <header class="bg-white border-b border-slate-200 py-4 px-6 flex items-center justify-between">
+    <a href="/app/" class="flex items-center gap-2 text-decoration-none">
+      <div class="w-9 h-9 bg-rose-600 rounded-full flex items-center justify-center text-white font-extrabold text-lg">B</div>
+      <div class="flex flex-col">
+        <span class="brand-title text-xl tracking-tight leading-none">bookea</span>
+        <span class="text-[8px] text-slate-400 font-semibold tracking-widest uppercase">Tu Evento VIP</span>
+      </div>
+    </a>
+    <a href="/app/" class="text-xs font-bold text-slate-600 hover:text-rose-600 transition-colors flex items-center gap-1">
+      <i class="fa-solid fa-arrow-left"></i> Volver al Catálogo
+    </a>
+  </header>
+
+  <!-- FORMULARIO DE PERFIL -->
+  <main class="flex-grow flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md card-auth p-8">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl mx-auto flex items-center justify-center text-xl mb-3 shadow-inner">
+          <i class="fa-solid fa-user-gear"></i>
+        </div>
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Mi Perfil</h2>
+        <p class="text-xs text-slate-500 mt-1 font-medium">Actualiza tu información personal</p>
+      </div>
+
+      <form id="formPerfil" onsubmit="actualizarPerfil(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nombre completo</label>
+          <input type="text" id="perfilNombre" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Correo electrónico</label>
+          <input type="email" id="perfilEmail" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Teléfono / WhatsApp</label>
+          <input type="tel" id="perfilTelefono" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nueva contraseña (opcional)</label>
+          <input type="password" id="perfilPassword" placeholder="Dejar en blanco para mantener la actual" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all">
+        </div>
+
+        <div id="perfilMensaje" class="hidden text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center"></div>
+
+        <button type="submit" class="w-full btn-rose py-3 text-sm shadow-md mt-2 cursor-pointer">
+          Guardar Cambios 💾
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+    <p>© 2026 Bookea - Plataforma de Reservas y Pases VIP</p>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const sesion = JSON.parse(localStorage.getItem('user_session'));
+      if (!sesion || !sesion.logged_in) {
+        window.location.href = '/app/login.html';
+        return;
+      }
+      document.getElementById('perfilNombre').value = sesion.user_name || '';
+      document.getElementById('perfilEmail').value = sesion.email || sesion.user_email || '';
+      document.getElementById('perfilTelefono').value = sesion.telefono || '';
+    });
+
+    async function actualizarPerfil(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('perfilNombre').value.trim();
+      const email = document.getElementById('perfilEmail').value.trim().toLowerCase();
+      const telefono = document.getElementById('perfilTelefono').value.trim();
+      const password = document.getElementById('perfilPassword').value;
+      const msgDiv = document.getElementById('perfilMensaje');
+
+      // Actualizar sesión local
+      let sesion = JSON.parse(localStorage.getItem('user_session')) || {};
+      sesion.user_name = nombre;
+      sesion.email = email;
+      sesion.telefono = telefono;
+      localStorage.setItem('user_session', JSON.stringify(sesion));
+
+      msgDiv.textContent = "¡Datos actualizados correctamente!";
+      msgDiv.classList.remove('hidden');
+
+      setTimeout(() => {
+        window.location.href = '/app/';
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

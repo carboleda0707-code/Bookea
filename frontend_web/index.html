@@ -1,363 +1,622 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookea - Acceso</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookea | Tienda de Reservas y Pases VIP</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+
+    .top-bar {
+      background-color: #000000;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    .brand-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      color: #e11d48;
+    }
+
+    .category-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .category-circle.active {
+      border-color: #e11d48;
+      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2);
+    }
+
+    .categories-carousel {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .categories-carousel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .card-bookea {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .card-bookea:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15);
+      border-color: #cbd5e1;
+    }
+
+    .badge-opciones {
+      background-color: #1e293b;
+      color: #ffffff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .btn-action {
+      background-color: #0f172a;
+      color: #ffffff;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 8px 14px;
+      transition: background-color 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-action:hover {
+      background-color: #e11d48;
+    }
+
+    .btn-reservar {
+      background-color: #e11d48;
+      color: #ffffff;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 8px 14px;
+      transition: background-color 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-reservar:hover {
+      background-color: #be123c;
+    }
+  </style>
 </head>
-<body class="bg-gray-950 text-white min-h-screen flex items-center justify-center p-4 antialiased">
+<body class="bg-slate-50">
 
-    <!-- Tarjeta Principal / Contenedor de Autenticación -->
-    <div class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+  <!-- 1. BARRA SUPERIOR PROMOCIONAL -->
+  <div class="top-bar text-center py-2.5 px-4 flex items-center justify-center gap-2">
+    <span>✨ PASES 100% SEGUROS Y RESERVACIONES INSTANTÁNEAS EN TODO EL ECUADOR ✨</span>
+  </div>
+
+  <!-- 2. HEADER Y NAVEGACIÓN PRINCIPAL -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      
+      <!-- LOGO BOOKEA -->
+      <a href="#" onclick="mostrarCatalogo(event)" class="flex items-center gap-2 text-decoration-none">
+        <div class="w-10 h-10 bg-rose-600 rounded-full flex items-center justify-center text-white font-extrabold text-xl">
+          B
+        </div>
+        <div class="flex flex-col">
+          <span class="brand-title text-2xl tracking-tight leading-none">bookea</span>
+          <span class="text-[9px] text-slate-400 font-semibold tracking-widest uppercase">Tu Evento VIP</span>
+        </div>
+      </a>
+
+      <!-- MENÚ DE NAVEGACIÓN -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-wider text-slate-700">
+        <a href="#" onclick="mostrarCatalogo(event)" class="hover:text-rose-600 transition-colors">INICIO</a>
+        <div class="relative group cursor-pointer flex items-center gap-1 hover:text-rose-600">
+          <span>CATÁLOGO / LOCALES</span>
+          <i class="fa-solid fa-chevron-down text-[10px]"></i>
+        </div>
+        <a href="#" class="text-rose-600 font-extrabold flex items-center gap-1 hover:text-rose-700">
+          🔥 PROMOS / EVENTOS
+        </a>
+      </nav>
+
+      <!-- BARRA DE BÚSQUEDA, CIUDAD Y USUARIO -->
+      <div class="flex items-center gap-3">
+        <!-- Selector Dinámico de Ciudad -->
+        <select id="selectCiudadFiltro" onchange="cambiarCiudad()" class="bg-slate-100 border-0 rounded-full py-2 px-3 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-rose-500 outline-none cursor-pointer">
+          <!-- Inyección dinámica -->
+        </select>
+
+        <div class="relative hidden sm:block w-48">
+          <input type="text" id="inputBuscadorGlobal" oninput="renderizarGrillaLocales()" placeholder="Buscar local..." class="w-full bg-slate-100 border-0 rounded-full py-2 pl-9 pr-4 text-xs font-medium focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+        </div>
+
+        <!-- Botón / Nombre de Usuario dinámico -->
+        <a id="btnMiCuenta" href="/app/login.html" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-full text-xs font-bold text-slate-700 transition-all">
+          <i class="fa-regular fa-user"></i>
+          <span id="labelMiCuenta" class="hidden sm:inline">Mi Cuenta</span>
+        </a>
+
+        <!-- Carrito -->
+        <div class="relative bg-rose-50 hover:bg-rose-100 text-rose-600 p-2.5 rounded-full cursor-pointer transition-colors">
+          <i class="fa-solid fa-ticket text-sm"></i>
+          <span class="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- BARRA DE CATEGORÍAS CIRCULARES -->
+  <!-- ========================================== -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative group border-b border-slate-200 bg-white shadow-sm mb-6">
+    <button onclick="scrollCategorias(-200)" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 hover:bg-white border border-slate-200 rounded-full shadow-md flex items-center justify-center text-slate-700 hover:text-rose-600 transition-all">
+      <i class="fa-solid fa-chevron-left text-xs"></i>
+    </button>
+
+    <div id="containerCategorias" class="categories-carousel px-8 py-1">
+      <!-- Inyección dinámica -->
+    </div>
+
+    <button onclick="scrollCategorias(200)" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 hover:bg-white border border-slate-200 rounded-full shadow-md flex items-center justify-center text-slate-700 hover:text-rose-600 transition-all">
+      <i class="fa-solid fa-chevron-right text-xs"></i>
+    </button>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- VISTA PRINCIPAL (CATÁLOGO GENERAL Y CARTELERA DEBAJO) -->
+  <!-- ========================================== -->
+  <div id="vistaCatalogo">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 mb-16">
+      
+      <!-- Encabezado de sección -->
+      <div class="flex items-center gap-3 mb-8">
+        <h2 id="tituloSeccionLocales" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+          Establecimientos Disponibles
+        </h2>
+        <span id="contadorLocales" class="bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1 rounded-full">
+          0 Locales
+        </span>
+      </div>
+
+      <!-- Grilla normal de locales -->
+      <div id="gridLocales" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Inyección dinámica -->
+      </div>
+
+      <!-- Sección de Cartelera que aparece exclusivamente debajo del catálogo cuando se selecciona un local -->
+      <div id="seccionCarteleraLocal" class="hidden mt-12 pt-8 border-t border-slate-200">
+        <div class="mb-6 flex items-center justify-between">
+          <h3 class="text-xl font-extrabold text-slate-900 tracking-tight">🗓️ Cartelera de Eventos y Pases VIP</h3>
+          <span id="contadorEventos" class="bg-rose-50 text-rose-600 text-xs font-bold px-3 py-1 rounded-full">0 Eventos</span>
+        </div>
+
+        <div id="gridEventosLocal" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Inyección dinámica de eventos -->
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- 3. FOOTER -->
+  <footer class="bg-black text-white py-10">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+      <p class="font-bold text-white text-sm mb-2">Bookea - Plataforma de Reservas y Pases VIP</p>
+      <p>© 2026 Bookea. Todos los derechos reservados. Pagos 100% seguros.</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT DE CONTROL, FILTRADO Y VALIDACIÓN DE SESIÓN -->
+  <script>
+    let todosLosLocales = [];
+    let categoriaSeleccionada = "todos";
+
+    function verificarEstadoSesion() {
+      const sessionStr = localStorage.getItem('user_session');
+      const btnMiCuenta = document.getElementById('btnMiCuenta');
+      const labelMiCuenta = document.getElementById('labelMiCuenta');
+
+      if (sessionStr) {
+        try {
+          const session = JSON.parse(sessionStr);
+          if (session && session.logged_in) {
+            labelMiCuenta.innerText = session.user_name || "Mi Cuenta";
+            btnMiCuenta.href = "#";
+            btnMiCuenta.onclick = (e) => {
+              e.preventDefault();
+              if (confirm(`Hola ${session.user_name}, ¿deseas cerrar sesión?`)) {
+                localStorage.removeItem('user_session');
+                window.location.reload();
+              }
+            };
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      labelMiCuenta.innerText = "Mi Cuenta";
+      btnMiCuenta.href = "/app/login.html";
+      btnMiCuenta.onclick = null;
+    }
+
+    function realizarReservaConAuth(eventoId) {
+      const sessionStr = localStorage.getItem('user_session');
+      let estaLogueado = false;
+
+      if (sessionStr) {
+        try {
+          const session = JSON.parse(sessionStr);
+          if (session && session.logged_in) {
+            estaLogueado = true;
+          }
+        } catch (e) {
+          estaLogueado = false;
+        }
+      }
+
+      if (!estaLogueado) {
+        localStorage.setItem('redirect_after_login', `/app/reserva.html?evento_id=${eventoId}`);
+        window.location.href = '/app/login.html';
+      } else {
+        window.location.href = `/app/reserva.html?evento_id=${eventoId}`;
+      }
+    }
+
+    function scrollCategorias(displacement) {
+      const container = document.getElementById('containerCategorias');
+      container.scrollBy({ left: displacement, behavior: 'smooth' });
+    }
+
+    function mostrarCatalogo(e) {
+      if (e) e.preventDefault();
+      document.getElementById('seccionCarteleraLocal').classList.add('hidden');
+      window.history.pushState({}, '', '/app/');
+      filtrarPorCategoria('todos');
+    }
+
+    function filtrarPorCategoria(tipo) {
+      categoriaSeleccionada = tipo;
+      document.getElementById('seccionCarteleraLocal').classList.add('hidden');
+      
+      document.querySelectorAll('.category-item').forEach(el => {
+        const img = el.querySelector('.category-circle');
+        const txt = el.querySelector('span');
+        if (el.dataset.categoria === tipo) {
+          img.classList.add('active');
+          txt.classList.add('text-rose-600', 'font-black');
+          txt.classList.remove('text-slate-600');
+        } else {
+          img.classList.remove('active');
+          txt.classList.remove('text-rose-600', 'font-black');
+          txt.classList.add('text-slate-600');
+        }
+      });
+
+      renderizarGrillaLocales();
+    }
+
+    function cambiarCiudad() {
+      categoriaSeleccionada = 'todos';
+      document.getElementById('seccionCarteleraLocal').classList.add('hidden');
+      
+      document.querySelectorAll('.category-item').forEach(el => {
+        const img = el.querySelector('.category-circle');
+        const txt = el.querySelector('span');
+        if (el.dataset.categoria === 'todos') {
+          img.classList.add('active');
+          txt.classList.add('text-rose-600', 'font-black');
+          txt.classList.remove('text-slate-600');
+        } else {
+          img.classList.remove('active');
+          txt.classList.remove('text-rose-600', 'font-black');
+          txt.classList.add('text-slate-600');
+        }
+      });
+
+      renderizarGrillaLocales();
+    }
+
+    // Función auxiliar para construir URLs estáticas de uploads
+    function obtenerUrlImagen(imagenDB, tipoRecurso = 'local') {
+      if (!imagenDB) {
+        return "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500&auto=format&fit=crop&q=80";
+      }
+      let imgTrim = imagenDB.trim();
+
+      if (imgTrim.startsWith('app/')) {
+        imgTrim = imgTrim.substring(4);
+      }
+
+      if (imgTrim.startsWith('http://') || imgTrim.startsWith('https://')) {
+        return imgTrim;
+      }
+
+      if (imgTrim.startsWith('/static/')) {
+        return imgTrim;
+      }
+
+      if (imgTrim.startsWith('static/')) {
+        return '/' + imgTrim;
+      }
+
+      if (tipoRecurso === 'evento') {
+        if (imgTrim.startsWith('uploads/')) {
+          return `/static/${imgTrim}`;
+        }
+        if (imgTrim.includes('/')) {
+          return `/static/uploads/${imgTrim}`;
+        }
+        return `/static/uploads/${imgTrim}`;
+      }
+
+      return `/static/${imgTrim}`;
+    }
+
+    function renderizarGrillaLocales() {
+      const ciudadSeleccionada = document.getElementById('selectCiudadFiltro').value;
+      const textoBusqueda = document.getElementById('inputBuscadorGlobal').value.toLowerCase().trim();
+      const gridLocales = document.getElementById('gridLocales');
+      gridLocales.innerHTML = '';
+
+      const filtrados = todosLosLocales.filter(local => {
+        const ciudadLocal = (local.ciudad || "").trim();
+        const tipoLocal = (local.tipo_establecimiento || "DISCOTECA").trim().toUpperCase();
+        const nombreLocal = (local.nombre || local.nombre_local || "").toLowerCase();
+
+        const coincideCiudad = !ciudadSeleccionada || ciudadLocal.toLowerCase() === ciudadSeleccionada.toLowerCase();
+        const coincideCategoria = categoriaSeleccionada === 'todos' || tipoLocal === categoriaSeleccionada.toUpperCase();
+        const coincideBusqueda = !textoBusqueda || nombreLocal.includes(textoBusqueda) || tipoLocal.toLowerCase().includes(textoBusqueda);
+
+        return coincideCiudad && coincideCategoria && coincideBusqueda;
+      });
+
+      document.getElementById('contadorLocales').innerText = `${filtrados.length} Locales`;
+      document.getElementById('tituloSeccionLocales').innerText = categoriaSeleccionada === 'todos' 
+        ? `Establecimientos en ${ciudadSeleccionada}` 
+        : `${categoriaSeleccionada} en ${ciudadSeleccionada}`;
+
+      if (filtrados.length === 0) {
+        gridLocales.innerHTML = `<p class="text-slate-500 col-span-full text-center py-12 font-semibold">No se encontraron establecimientos en ${ciudadSeleccionada} para esta categoría.</p>`;
+        return;
+      }
+
+      filtrados.forEach(local => {
+        const imgUrl = obtenerUrlImagen(local.imagen, 'local');
+        const tipo = local.tipo_establecimiento || "DISCOTECA & CLUB";
+        const nombre = local.nombre || local.nombre_local || "Establecimiento Bookea";
+        const slug = local.slug || local.id;
+        const direccion = local.direccion || 'S/D';
+        const ciudad = local.ciudad || 'Ecuador';
+        const likes = local.likes || 0;
         
-        <!-- Logo / Título -->
-        <div class="flex items-center justify-between border-b border-gray-800 pb-4">
-            <div class="flex items-center gap-2">
-                <span class="text-xl">📅</span>
-                <h1 class="text-xl font-bold tracking-tight">Bookea</h1>
-            </div>
-            <a href="/app/dashboard-cliente.html" class="text-xs text-indigo-400 hover:underline font-medium">Ver Cartelera →</a>
-        </div>
+        const telefonoLimpio = local.telefono_contacto ? local.telefono_contacto.replace(/\D/g, '') : '';
+        const urlWhatsApp = telefonoLimpio ? `https://wa.me/${telefonoLimpio}` : '#';
 
-        <!-- Menú de Selección de Rol -->
-        <div class="space-y-2">
-            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Seleccione su Acceso</p>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="cambiarAcceso('cliente')" id="btn-rol-cliente" class="px-3 py-2 rounded-xl text-xs font-medium text-pink-400 bg-gray-800 border border-pink-500/30 transition flex items-center justify-center gap-2">
-                    👤 Cliente
-                </button>
-                <button onclick="cambiarAcceso('propietario')" id="btn-rol-propietario" class="px-3 py-2 rounded-xl text-xs font-medium text-gray-400 hover:bg-gray-800 border border-gray-800 transition flex items-center justify-center gap-2">
-                    🏢 Propietario
-                </button>
-            </div>
-        </div>
-
-        <!-- Formulario Dinámico de Acceso -->
-        <div id="contenedor-formulario" class="space-y-4 pt-2">
-            <div>
-                <h3 id="form-titulo" class="font-bold text-sm text-pink-500">🔒 Acceso de Clientes</h3>
-                <p id="form-subtitulo" class="text-xs text-gray-400">Inicia sesión para gestionar tus reservas.</p>
+        gridLocales.innerHTML += `
+          <div class="card-bookea p-5 flex flex-col sm:flex-row gap-5 items-center justify-between">
+            <div class="relative w-full sm:w-52 h-48 flex-shrink-0 cursor-pointer" onclick="cargarCarteleraLocal('${slug}')">
+              <img src="${imgUrl}" class="w-full h-full object-cover rounded-xl border border-slate-200" alt="${nombre}">
+              <span class="badge-opciones absolute top-2 right-2 shadow-md">VIP Pass</span>
             </div>
 
-            <!-- Pestañas Login / Registro -->
-            <div class="flex border-b border-gray-800 text-xs font-semibold">
-                <button onclick="cambiarModoForm('login')" id="tab-login" class="pb-2 px-3 text-white border-b-2 border-pink-500">Iniciar Sesión</button>
-                <button onclick="cambiarModoForm('registro')" id="tab-registro" class="pb-2 px-3 text-gray-400 hover:text-white">Registrarse</button>
-            </div>
-
-            <!-- Inputs del Formulario -->
-            <form id="auth-form" onsubmit="manejarAutenticacion(event)" class="space-y-3">
-                <div>
-                    <label id="label-usuario" class="block text-xs font-medium text-gray-300 mb-1">Correo Electrónico</label>
-                    <input type="email" id="input-email" required class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-300 mb-1">Contraseña</label>
-                    <input type="password" id="input-password" required class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none">
-                </div>
-                <button type="submit" id="btn-submit" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition">
-                    Ingresar
-                </button>
-            </form>
-        </div>
-
-        <div id="mensaje-error" class="text-red-400 text-xs text-center hidden"></div>
-
-        <!-- Enlace Olvidaste tu contraseña -->
-        <div class="p-3 bg-gray-950 border border-gray-800/80 rounded-2xl flex items-center gap-3">
-            <span class="text-lg">🔑</span>
-            <div class="text-xs">
-                <a href="javascript:void(0);" onclick="abrirModalRecuperacion()" class="text-yellow-400 font-semibold hover:underline">¿Olvidaste tu contraseña?</a>
-                <p class="text-[10px] text-gray-500">Recupérala fácilmente aquí.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Recuperación de Contraseña -->
-    <div id="modal-recuperacion" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display: none;">
-        <div class="bg-gray-900 border border-gray-800 text-white w-full max-w-md rounded-3xl shadow-2xl p-6 sm:p-8 space-y-5 relative">
-            <button onclick="cerrarModalRecuperacion()" class="absolute top-5 right-5 text-gray-400 hover:text-white font-bold text-lg">✕</button>
-            
-            <div class="text-center space-y-1">
-                <h3 class="text-xl font-bold text-pink-500">Recuperar Contraseña</h3>
-                <p id="modal-subtitulo" class="text-xs text-gray-400">Ingresa tu correo electrónico para recibir un código de verificación de 6 dígitos.</p>
-            </div>
-
-            <!-- PASO 1: Ingresar Correo -->
-            <div id="step-correo" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-300 mb-1">Correo Electrónico</label>
-                    <input type="email" id="recup-email" placeholder="tucorreo@email.com" class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none">
-                </div>
-                <button onclick="enviarCodigoRecuperacion()" id="btn-enviar-codigo" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition">
-                    Enviar Código OTP
-                </button>
-            </div>
-
-            <!-- PASO 2: Ingresar Código y Nueva Contraseña -->
-            <div id="step-cambio" class="space-y-4" style="display: none;">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-300 mb-1">Código de 6 dígitos</label>
-                    <input type="text" id="recup-codigo" maxlength="6" placeholder="123456" class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-center tracking-widest text-lg font-bold text-white focus:ring-2 focus:ring-pink-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-300 mb-1">Nueva Contraseña</label>
-                    <input type="password" id="recup-nueva-password" placeholder="••••••••" class="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none">
-                </div>
-                <button onclick="cambiarPasswordFinal()" id="btn-cambiar-pass" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition">
-                    Restablecer Contraseña
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script de Control -->
-    <script>
-        let rolActual = 'cliente';
-        let modoForm = 'login';
-        let correoEnProceso = "";
-
-        function cambiarAcceso(rol) {
-            rolActual = rol;
-            const titulo = document.getElementById('form-titulo');
-            const subtitulo = document.getElementById('form-subtitulo');
-            const btnSubmit = document.getElementById('btn-submit');
-            const labelUsuario = document.getElementById('label-usuario');
-            const btnCliente = document.getElementById('btn-rol-cliente');
-            const btnPropietario = document.getElementById('btn-rol-propietario');
-            const tabLogin = document.getElementById('tab-login');
-            const tabRegistro = document.getElementById('tab-registro');
-
-            if (rol === 'propietario') {
-                btnPropietario.className = "px-3 py-2 rounded-xl text-xs font-medium text-cyan-400 bg-gray-800 border border-cyan-500/30 transition flex items-center justify-center gap-2";
-                btnCliente.className = "px-3 py-2 rounded-xl text-xs font-medium text-gray-400 hover:bg-gray-800 border border-gray-800 transition flex items-center justify-center gap-2";
-                titulo.innerText = "🔑 Acceso Propietario";
-                titulo.className = "font-bold text-sm text-cyan-400";
-                subtitulo.innerText = "Gestiona tu establecimiento y eventos.";
-                btnSubmit.className = "w-full bg-cyan-600 hover:bg-cyan-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition";
-                labelUsuario.innerText = "Usuario / Correo";
-                if(modoForm === 'login') {
-                    tabLogin.className = "pb-2 px-3 text-white border-b-2 border-cyan-500";
-                } else {
-                    tabRegistro.className = "pb-2 px-3 text-white border-b-2 border-cyan-500";
-                }
-            } else {
-                btnCliente.className = "px-3 py-2 rounded-xl text-xs font-medium text-pink-400 bg-gray-800 border border-pink-500/30 transition flex items-center justify-center gap-2";
-                btnPropietario.className = "px-3 py-2 rounded-xl text-xs font-medium text-gray-400 hover:bg-gray-800 border border-gray-800 transition flex items-center justify-center gap-2";
-                titulo.innerText = "🔒 Acceso de Clientes";
-                titulo.className = "font-bold text-sm text-pink-500";
-                subtitulo.innerText = "Inicia sesión para gestionar tus reservas.";
-                btnSubmit.className = "w-full bg-pink-600 hover:bg-pink-700 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition";
-                labelUsuario.innerText = "Correo Electrónico";
-                if(modoForm === 'login') {
-                    tabLogin.className = "pb-2 px-3 text-white border-b-2 border-pink-500";
-                } else {
-                    tabRegistro.className = "pb-2 px-3 text-white border-b-2 border-pink-500";
-                }
-            }
-        }
-
-        function cambiarModoForm(modo) {
-            modoForm = modo;
-            const tabLogin = document.getElementById('tab-login');
-            const tabRegistro = document.getElementById('tab-registro');
-            const btnSubmit = document.getElementById('btn-submit');
-            const borderColor = rolActual === 'propietario' ? 'border-cyan-500' : 'border-pink-500';
-
-            if (modo === 'login') {
-                tabLogin.className = `pb-2 px-3 text-white border-b-2 ${borderColor}`;
-                tabRegistro.className = "pb-2 px-3 text-gray-400 hover:text-white border-b-2 border-transparent";
-                btnSubmit.innerText = rolActual === 'propietario' ? "Ingresar al Panel" : "Ingresar";
-            } else {
-                tabRegistro.className = `pb-2 px-3 text-white border-b-2 ${borderColor}`;
-                tabLogin.className = "pb-2 px-3 text-gray-400 hover:text-white border-b-2 border-transparent";
-                btnSubmit.innerText = "Registrarse";
-            }
-        }
-
-        async function manejarAutenticacion(event) {
-            event.preventDefault();
-            const email = document.getElementById('input-email').value;
-            const password = document.getElementById('input-password').value;
-            const errorDiv = document.getElementById('mensaje-error');
-            errorDiv.classList.add('hidden');
-            
-            if (rolActual === 'propietario') {
-                if (modoForm === 'login') {
-                    alert(`Iniciando sesión como Propietario (${email})...`);
-                } else {
-                    alert(`Registrando propietario (${email})...`);
-                }
-                return;
-            }
-
-            if (modoForm === 'login') {
-                try {
-                    const response = await fetch('/clientes/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: email, password: password })
-                    });
-                    if (response.ok) {
-                        const dataCli = await response.json();
-                        localStorage.setItem("logged_in", "true");
-                        localStorage.setItem("user_role", "cliente");
-                        localStorage.setItem("cliente_id", dataCli.id || dataCli.cliente_id);
-                        localStorage.setItem("usuario_id", dataCli.id || dataCli.cliente_id);
-                        localStorage.setItem("user_name", dataCli.nombre || email.split('@')[0]);
-                        localStorage.setItem("cliente_info", JSON.stringify(dataCli));
-                        window.location.href = "/app/dashboard-cliente.html";
-                    } else {
-                        // Fallback de respaldo local
-                        localStorage.setItem("logged_in", "true");
-                        localStorage.setItem("user_role", "cliente");
-                        localStorage.setItem("cliente_id", "1");
-                        localStorage.setItem("usuario_id", "1");
-                        localStorage.setItem("user_name", email.split('@')[0]);
-                        window.location.href = "/app/dashboard-cliente.html";
-                    }
-                } catch (error) {
-                    localStorage.setItem("logged_in", "true");
-                    localStorage.setItem("user_role", "cliente");
-                    localStorage.setItem("cliente_id", "1");
-                    localStorage.setItem("usuario_id", "1");
-                    localStorage.setItem("user_name", email.split('@')[0]);
-                    window.location.href = "/app/dashboard-cliente.html";
-                }
-            } else {
-                try {
-                    const response = await fetch('/clientes/registro', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: email, password: password, nombre: email.split('@')[0] })
-                    });
-                    if (response.ok) {
-                        const dataCli = await response.json();
-                        localStorage.setItem("logged_in", "true");
-                        localStorage.setItem("user_role", "cliente");
-                        localStorage.setItem("cliente_id", dataCli.id || dataCli.cliente_id || "1");
-                        localStorage.setItem("usuario_id", dataCli.id || dataCli.cliente_id || "1");
-                        localStorage.setItem("user_name", dataCli.nombre || email.split('@')[0]);
-                        localStorage.setItem("cliente_info", JSON.stringify(dataCli));
-                        window.location.href = "/app/dashboard-cliente.html";
-                    } else {
-                        localStorage.setItem("logged_in", "true");
-                        localStorage.setItem("user_role", "cliente");
-                        localStorage.setItem("cliente_id", "1");
-                        localStorage.setItem("usuario_id", "1");
-                        localStorage.setItem("user_name", email.split('@')[0]);
-                        window.location.href = "/app/dashboard-cliente.html";
-                    }
-                } catch (error) {
-                    localStorage.setItem("logged_in", "true");
-                    localStorage.setItem("user_role", "cliente");
-                    localStorage.setItem("cliente_id", "1");
-                    localStorage.setItem("usuario_id", "1");
-                    localStorage.setItem("user_name", email.split('@')[0]);
-                    window.location.href = "/app/dashboard-cliente.html";
-                }
-            }
-        }
-
-        // Funciones del Modal de Recuperación de Contraseña
-        function abrirModalRecuperacion() {
-            document.getElementById('modal-recuperacion').style.display = 'flex';
-            document.getElementById('step-correo').style.display = 'block';
-            document.getElementById('step-cambio').style.display = 'none';
-            document.getElementById('modal-subtitulo').innerText = "Ingresa tu correo electrónico para recibir un código de verificación de 6 dígitos.";
-            document.getElementById('recup-email').value = "";
-            document.getElementById('recup-codigo').value = "";
-            document.getElementById('recup-nueva-password').value = "";
-        }
-
-        function cerrarModalRecuperacion() {
-            document.getElementById('modal-recuperacion').style.display = 'none';
-        }
-
-        async function enviarCodigoRecuperacion() {
-            const email = document.getElementById('recup-email').value.trim();
-            if (!email) {
-                alert("Por favor ingresa un correo electrónico.");
-                return;
-            }
-
-            const btn = document.getElementById('btn-enviar-codigo');
-            btn.disabled = true;
-            btn.innerText = "Enviando código...";
-
-            try {
-                const response = await fetch('/auth-recuperacion/solicitar-codigo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || "No se pudo enviar el correo.");
-                }
-
-                correoEnProceso = email;
-                alert("¡Código enviado con éxito! Revisa tu bandeja de entrada.");
+            <div class="flex flex-col flex-grow justify-between w-full h-full py-1">
+              <div>
+                <span class="text-[10px] font-extrabold text-rose-600 uppercase tracking-widest block mb-1">${tipo}</span>
                 
-                document.getElementById('step-correo').style.display = 'none';
-                document.getElementById('step-cambio').style.display = 'block';
-                document.getElementById('modal-subtitulo').innerText = `Hemos enviado un código a ${email}. Ingrésalo junto a tu nueva contraseña.`;
+                <div class="flex items-center justify-between gap-2 mb-2.5">
+                  <h3 class="font-extrabold text-slate-900 text-lg cursor-pointer hover:text-rose-600 transition-colors leading-tight" onclick="cargarCarteleraLocal('${slug}')">${nombre}</h3>
+                  <button onclick="darLike(${local.id})" class="text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-colors border border-rose-100 shadow-sm cursor-pointer flex-shrink-0">
+                    <i class="fa-solid fa-thumbs-up text-rose-500"></i> <span id="likesCount-${local.id}">${likes}</span>
+                  </button>
+                </div>
 
-            } catch (error) {
-                alert("Error: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Enviar Código OTP";
-            }
+                <div class="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 flex items-center gap-2 mb-3">
+                  <span>🏠</span> <span class="truncate">${direccion}</span>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2.5 pt-2 border-t border-slate-100">
+                <div class="flex items-center gap-2">
+                  <span class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                    📍 ${ciudad}
+                  </span>
+                  ${telefonoLimpio ? `<a href="${urlWhatsApp}" target="_blank" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"><i class="fa-brands fa-whatsapp text-emerald-600"></i> WhatsApp</a>` : ``}
+                </div>
+                
+                <div>
+                  <button onclick="cargarCarteleraLocal('${slug}')" class="btn-action">
+                    <i class="fa-solid fa-hand-point-right text-yellow-400 text-sm"></i> Cartelera
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function cargarCarteleraLocal(identificador) {
+      window.history.pushState({}, '', `/app/?local_vip=${identificador}`);
+      const seccionCartelera = document.getElementById('seccionCarteleraLocal');
+      const gridEventos = document.getElementById('gridEventosLocal');
+      
+      seccionCartelera.classList.remove('hidden');
+      gridEventos.innerHTML = `<p class="text-slate-500 font-semibold py-4">Cargando cartelera de eventos...</p>`;
+
+      try {
+        const respLocal = await fetch(`/locales/${identificador}`);
+        if (!respLocal.ok) throw new Error('Local no encontrado');
+        const local = await respLocal.json();
+
+        const imgUrl = obtenerUrlImagen(local.imagen, 'local');
+        const respEventos = await fetch(`/locales/${local.id}/eventos`);
+        const eventos = respEventos.ok ? await respEventos.json() : [];
+        
+        document.getElementById('contadorEventos').innerText = `${eventos.length} Eventos`;
+        gridEventos.innerHTML = '';
+
+        if (eventos.length === 0) {
+          gridEventos.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10 font-semibold">No hay eventos programados en este establecimiento actualmente.</p>`;
+          return;
         }
 
-        async function cambiarPasswordFinal() {
-            const codigo = document.getElementById('recup-codigo').value.trim();
-            const nueva_password = document.getElementById('recup-nueva-password').value.trim();
+        eventos.forEach(ev => {
+          const evImg = ev.imagen ? obtenerUrlImagen(ev.imagen, 'evento') : imgUrl;
+          gridEventos.innerHTML += `
+            <div class="card-bookea flex flex-col justify-between">
+              <div class="relative w-full h-52">
+                <img src="${evImg}" class="w-full h-full object-cover" alt="${ev.titulo}">
+                <span class="badge-opciones absolute top-3 right-3 shadow-md">VIP Pass</span>
+              </div>
+              <div class="p-5 flex flex-col flex-grow justify-between">
+                <div>
+                  <span class="text-[10px] font-extrabold text-rose-600 uppercase tracking-widest">Cartelera</span>
+                  <h4 class="font-extrabold text-slate-900 text-base mt-1 mb-1">${ev.titulo}</h4>
+                  <p class="text-xs text-slate-500 font-medium mb-1">📅 ${ev.fecha || 'Por confirmar'} ${ev.hora ? '| ' + ev.hora : ''}</p>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <span class="text-xs font-black text-emerald-600">Disponible</span>
+                  <button onclick="realizarReservaConAuth(${ev.id})" class="btn-reservar">Reservar Mesa</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
 
-            if (!codigo || codigo.length !== 6) {
-                alert("Por favor ingresa el código de 6 dígitos válido.");
-                return;
-            }
-            if (!nueva_password || nueva_password.length < 6) {
-                alert("La contraseña debe tener al menos 6 caracteres.");
-                return;
-            }
+        seccionCartelera.scrollIntoView({ behavior: 'smooth' });
 
-            const btn = document.getElementById('btn-cambiar-pass');
-            btn.disabled = true;
-            btn.innerText = "Actualizando...";
+      } catch (err) {
+        console.error(err);
+        gridEventos.innerHTML = `<p class="text-rose-600 font-semibold py-4">Error al cargar la cartelera de eventos.</p>`;
+      }
+    }
 
-            try {
-                const response = await fetch('/auth-recuperacion/cambiar-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: correoEnProceso,
-                        codigo: codigo,
-                        nueva_password: nueva_password
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || "Error al actualizar la contraseña.");
-                }
-
-                alert("¡Contraseña actualizada exitosamente! Ahora puedes iniciar sesión con tu nueva contraseña.");
-                cerrarModalRecuperacion();
-
-            } catch (error) {
-                alert("Error: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Restablecer Contraseña";
-            }
+    async function darLike(localId) {
+      try {
+        const res = await fetch(`/locales/${localId}/like`, { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          const el = document.getElementById(`likesCount-${localId}`);
+          if (el) el.innerText = data.likes;
         }
-    </script>
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      verificarEstadoSesion();
+
+      try {
+        const response = await fetch('/locales/');
+        if (!response.ok) throw new Error('Error al conectar con la API');
+        
+        todosLosLocales = await response.json();
+
+        const ciudadPorDefecto = (todosLosLocales.length > 0 && todosLosLocales[0].ciudad) ? todosLosLocales[0].ciudad.trim() : "";
+
+        const ciudadesSet = new Set();
+        todosLosLocales.forEach(l => {
+          if (l.ciudad) ciudadesSet.add(l.ciudad.trim());
+        });
+
+        const selectCiudad = document.getElementById('selectCiudadFiltro');
+        selectCiudad.innerHTML = '';
+        
+        ciudadesSet.forEach(ciudad => {
+          const option = document.createElement('option');
+          option.value = ciudad;
+          option.textContent = `📍 ${ciudad}`;
+          if (ciudad.toLowerCase() === ciudadPorDefecto.toLowerCase()) {
+            option.selected = true;
+          }
+          selectCiudad.appendChild(option);
+        });
+
+        if (!selectCiudad.value && selectCiudad.options.length > 0) {
+          selectCiudad.options[0].selected = true;
+        }
+
+        const categoriasSet = new Set();
+        todosLosLocales.forEach(l => {
+          if (l.tipo_establecimiento) categoriasSet.add(l.tipo_establecimiento.trim());
+        });
+
+        const containerCategorias = document.getElementById('containerCategorias');
+        containerCategorias.innerHTML = '';
+
+        const imgTodos = (todosLosLocales.length > 0) ? obtenerUrlImagen(todosLosLocales[0].imagen, 'local') : "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=150&auto=format&fit=crop&q=80";
+
+        containerCategorias.innerHTML += `
+          <div data-categoria="todos" onclick="filtrarPorCategoria('todos')" class="category-item flex flex-col items-center gap-2 cursor-pointer flex-shrink-0 group">
+            <img src="${imgTodos}" class="category-circle active group-hover:scale-105" alt="Todos">
+            <span class="text-[11px] font-bold tracking-wider text-rose-600 uppercase">TODOS</span>
+          </div>
+        `;
+
+        categoriasSet.forEach(cat => {
+          const localEjemplo = todosLosLocales.find(l => (l.tipo_establecimiento || "").trim() === cat);
+          const imgCat = localEjemplo ? obtenerUrlImagen(localEjemplo.imagen, 'local') : "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=150&auto=format&fit=crop&q=80";
+          
+          containerCategorias.innerHTML += `
+            <div data-categoria="${cat}" onclick="filtrarPorCategoria('${cat}')" class="category-item flex flex-col items-center gap-2 cursor-pointer flex-shrink-0 group">
+              <img src="${imgCat}" class="category-circle group-hover:scale-105" alt="${cat}">
+              <span class="text-[11px] font-bold tracking-wider text-slate-600 uppercase">${cat}</span>
+            </div>
+          `;
+        });
+
+        window.history.replaceState({}, '', '/app/');
+        mostrarCatalogo(null);
+
+      } catch (error) {
+        console.error("Error cargando los locales:", error);
+      }
+    });
+  </script>
+
 </body>
 </html>
