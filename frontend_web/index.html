@@ -380,33 +380,19 @@
       }
       let imgTrim = imagenDB.trim();
 
-      if (imgTrim.startsWith('app/')) {
-        imgTrim = imgTrim.substring(4);
-      }
-
       if (imgTrim.startsWith('http://') || imgTrim.startsWith('https://')) {
         return imgTrim;
       }
 
-      if (imgTrim.startsWith('/static/')) {
-        return imgTrim;
+      if (imgTrim.startsWith('app/static/uploads/')) {
+        imgTrim = imgTrim.replace('app/static/uploads/', '');
+      } else if (imgTrim.startsWith('static/uploads/')) {
+        imgTrim = imgTrim.replace('static/uploads/', '');
+      } else if (imgTrim.startsWith('app/')) {
+        imgTrim = imgTrim.substring(4);
       }
 
-      if (imgTrim.startsWith('static/')) {
-        return '/' + imgTrim;
-      }
-
-      if (tipoRecurso === 'evento') {
-        if (imgTrim.startsWith('uploads/')) {
-          return `/static/${imgTrim}`;
-        }
-        if (imgTrim.includes('/')) {
-          return `/static/uploads/${imgTrim}`;
-        }
-        return `/static/uploads/${imgTrim}`;
-      }
-
-      return `/static/${imgTrim}`;
+      return `/static/uploads/${imgTrim}`;
     }
 
     function renderizarGrillaLocales() {
