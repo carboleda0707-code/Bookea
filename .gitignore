@@ -1,0 +1,7 @@
+# Ignorar subidas dinámicas de usuarios
+app/static/uploads/comprobantes/
+app/static/uploads/qrs/
+
+# Permitir los flyers y fotos oficiales de los eventos
+!app/static/uploads/*.png
+!app/static/uploads/*.jpg
