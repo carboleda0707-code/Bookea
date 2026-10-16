@@ -155,7 +155,7 @@
             <i class="fa-solid fa-key"></i>
           </div>
           <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Recuperar Acceso</h2>
-          <p class="text-xs text-slate-500 mt-1 font-medium">Te enviaremos las instrucciones de restablecimiento</p>
+          <p class="text-xs text-slate-500 mt-1 font-medium">Te enviaremos un código OTP de restablecimiento</p>
         </div>
 
         <form id="formRecuperarProp" onsubmit="handleRecuperarPropietario(event)" class="space-y-4">
@@ -164,16 +164,51 @@
             <input type="email" id="recPropEmail" required placeholder="correo@negocio.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all">
           </div>
 
-          <div id="recPropMensaje" class="hidden text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center"></div>
+          <div id="recPropMensaje" class="hidden text-xs font-bold p-3 rounded-xl text-center"></div>
 
           <button type="submit" class="w-full btn-indigo py-3 text-sm shadow-md mt-2 cursor-pointer">
-            Enviar Instrucciones ✉️
+            Enviar Código OTP ✉️
           </button>
         </form>
 
         <div class="text-center mt-6 pt-6 border-t border-slate-100">
           <button onclick="cambiarVistaProp('login')" class="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center justify-center gap-1 mx-auto">
             <i class="fa-solid fa-arrow-left"></i> Volver al inicio de sesión
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. FORMULARIO CAMBIO DE CONTRASEÑA CON OTP -->
+      <div id="vistaNuevoPassProp" class="card-auth p-8 hidden">
+        <div class="text-center mb-6">
+          <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-xl mb-3 shadow-inner">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Nueva Contraseña</h2>
+          <p class="text-xs text-slate-500 mt-1 font-medium">Ingresa el código OTP enviado a <span id="spanCorreoDestino" class="font-bold text-indigo-600">tu correo</span></p>
+        </div>
+
+        <form id="formNuevoPass" onsubmit="handleCambiarPassword(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Código de 6 dígitos</label>
+            <input type="text" id="codigoOtp" required placeholder="123456" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none tracking-widest text-center text-lg font-bold">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nueva Contraseña</label>
+            <input type="password" id="nuevoPassword" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all">
+          </div>
+
+          <div id="nuevoPassMensaje" class="hidden text-xs font-bold p-3 rounded-xl text-center"></div>
+
+          <button type="submit" class="w-full btn-indigo py-3 text-sm shadow-md mt-2 cursor-pointer">
+            Actualizar Contraseña 🔒
+          </button>
+        </form>
+
+        <div class="text-center mt-6 pt-6 border-t border-slate-100">
+          <button onclick="cambiarVistaProp('recuperar')" class="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center justify-center gap-1 mx-auto">
+            <i class="fa-solid fa-arrow-left"></i> Reenviar código / Volver
           </button>
         </div>
       </div>
@@ -186,12 +221,15 @@
     <p>© 2026 Bookea - Plataforma de Reservas y Pases VIP</p>
   </footer>
 
-  <!-- SCRIPT DE CONTROL -->
+  <!-- SCRIPT DE CONTROL Y CONEXIÓN REAL -->
   <script>
+    let correoRecuperacionActual = "";
+
     function cambiarVistaProp(vista) {
       document.getElementById('vistaLoginProp').classList.add('hidden');
       document.getElementById('vistaRegistroProp').classList.add('hidden');
       document.getElementById('vistaRecuperarProp').classList.add('hidden');
+      document.getElementById('vistaNuevoPassProp').classList.add('hidden');
 
       if (vista === 'login') {
         document.getElementById('vistaLoginProp').classList.remove('hidden');
@@ -199,6 +237,8 @@
         document.getElementById('vistaRegistroProp').classList.remove('hidden');
       } else if (vista === 'recuperar') {
         document.getElementById('vistaRecuperarProp').classList.remove('hidden');
+      } else if (vista === 'nuevopass') {
+        document.getElementById('vistaNuevoPassProp').classList.remove('hidden');
       }
     }
 
@@ -222,7 +262,6 @@
           const rol_api = (data.rol || "").trim().toLowerCase();
           const rol_asignado = (rol_api === "super_admin" || rol_api === "superadmin") ? "superadmin" : "propietario";
 
-          // Guardar sesión de propietario
           localStorage.setItem('user_session', JSON.stringify({
             logged_in: true,
             user_role: rol_asignado,
@@ -233,7 +272,6 @@
             token: data.access_token || data.token
           }));
 
-          // Redirigir al panel o cartelera web del local si lo tuviera
           window.location.href = '/app/';
         } else {
           const errData = await response.json();
@@ -249,14 +287,6 @@
 
     async function handleRegistroPropietario(e) {
       e.preventDefault();
-      const nombre = document.getElementById('regPropNombre').value.trim();
-      const email = document.getElementById('regPropEmail').value.trim().toLowerCase();
-      const telefono = document.getElementById('regPropTelefono').value.trim();
-      const password = document.getElementById('regPropPassword').value;
-      const errorDiv = document.getElementById('regPropError');
-      errorDiv.classList.add('hidden');
-
-      // Aquí puedes conectar el endpoint de registro de propietarios si lo tienes activo en FastAPI, o simular el éxito:
       alert('¡Cuenta de propietario creada con éxito! Por favor inicia sesión.');
       cambiarVistaProp('login');
     }
@@ -265,9 +295,77 @@
       e.preventDefault();
       const email = document.getElementById('recPropEmail').value.trim().toLowerCase();
       const msgDiv = document.getElementById('recPropMensaje');
-      
-      msgDiv.textContent = `Se han enviado las instrucciones de recuperación a ${email}.`;
-      msgDiv.classList.remove('hidden');
+      msgDiv.classList.add('hidden');
+
+      try {
+        const response = await fetch('/auth-recuperacion/solicitar-codigo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        if (response.ok) {
+          correoRecuperacionActual = email;
+          document.getElementById('spanCorreoDestino').innerText = email;
+          msgDiv.textContent = '¡Código OTP enviado con éxito a tu correo!';
+          msgDiv.className = "text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center";
+          msgDiv.classList.remove('hidden');
+          
+          setTimeout(() => {
+            cambiarVistaProp('nuevopass');
+          }, 1500);
+        } else {
+          const errData = await response.json();
+          msgDiv.textContent = errData.detail || 'No se pudo enviar el código al correo ingresado.';
+          msgDiv.className = "text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 text-center";
+          msgDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error(err);
+        msgDiv.textContent = 'Error de conexión con el servidor.';
+        msgDiv.className = "text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 text-center";
+        msgDiv.classList.remove('hidden');
+      }
+    }
+
+    async function handleCambiarPassword(e) {
+      e.preventDefault();
+      const codigo = document.getElementById('codigoOtp').value.trim();
+      const nueva_password = document.getElementById('nuevoPassword').value;
+      const msgDiv = document.getElementById('nuevoPassMensaje');
+      msgDiv.classList.add('hidden');
+
+      try {
+        const response = await fetch('/auth-recuperacion/cambiar-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: correoRecuperacionActual,
+            codigo: codigo,
+            nueva_password: nueva_password
+          })
+        });
+
+        if (response.ok) {
+          msgDiv.textContent = '¡Contraseña actualizada con éxito! Redirigiendo...';
+          msgDiv.className = "text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center";
+          msgDiv.classList.remove('hidden');
+
+          setTimeout(() => {
+            cambiarVistaProp('login');
+          }, 2000);
+        } else {
+          const errData = await response.json();
+          msgDiv.textContent = errData.detail || 'Código incorrecto o expirado.';
+          msgDiv.className = "text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 text-center";
+          msgDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error(err);
+        msgDiv.textContent = 'Error de conexión con el servidor.';
+        msgDiv.className = "text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 text-center";
+        msgDiv.classList.remove('hidden');
+      }
     }
   </script>
 
