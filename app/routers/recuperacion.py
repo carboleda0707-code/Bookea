@@ -16,25 +16,32 @@ router = APIRouter(prefix="/auth-recuperacion", tags=["Recuperación de Contrase
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def enviar_correo_recuperacion(db: Session, destinatario: str, codigo: str):
-    """Envía el código OTP leyendo las credenciales SMTP desde la base de datos usando la función segura."""
-    
-    # 1. Intentamos obtener las credenciales de la tabla locales
-    local_config = db.execute(text("SELECT correo_envio, password_app FROM locales WHERE correo_envio IS NOT NULL AND correo_envio != '' LIMIT 1")).fetchone()
+    """Envía el código OTP leyendo las credenciales reales de la base de datos."""
     
     remitente = None
     password = None
 
-    if local_config and local_config.correo_envio and local_config.password_app:
-        remitente = local_config.correo_envio
-        password = local_config.password_app
-    else:
-        remitente = "carboleda0707@gmail.com" 
-        password = "" # O la contraseña de respaldo si la usas
-
-    print(f"CHIVATO SMTP (DB) -> Usuario: {remitente} | Password (longitud): {len(password) if password else 0}")
-
+    # 1. Intentamos leer de la tabla de configuración de notificaciones (la que usa el admin)
+    config_notif = db.execute(text("SELECT correo_remitente, password_correo FROM configuracion_notificaciones LIMIT 1")).fetchone()
+    if config_notif and config_notif.correo_remitente and config_notif.password_correo:
+        remitente = config_notif.correo_remitente
+        password = config_notif.password_correo
+    
+    # 2. Si no hay, intentamos de la tabla locales
     if not remitente or not password:
-        print("⚠️ No hay credenciales SMTP configuradas en la base de datos.")
+        local_config = db.execute(text("SELECT correo_envio, password_app FROM locales WHERE correo_envio IS NOT NULL AND correo_envio != '' LIMIT 1")).fetchone()
+        if local_config and local_config.correo_envio and local_config.password_app:
+            remitente = local_config.correo_envio
+            password = local_config.password_app
+
+    # 3. Si aún no hay, ponemos tu correo por defecto asegurándonos de que no falle (coloca tu contraseña de aplicación aquí si deseas respaldo fijo)
+    if not remitente:
+        remitente = "carboleda0707@gmail.com"
+    
+    print(f"CHIVATO SMTP (Recuperación) -> Usuario: {remitente} | Password (longitud): {len(password) if password else 0}")
+
+    if not password:
+        print("❌ [Error Crítico] La contraseña de aplicación SMTP está vacía en la base de datos.")
         return False
 
     asunto = "🔐 Código de Recuperación de Contraseña - Bookea"
@@ -57,15 +64,13 @@ def enviar_correo_recuperacion(db: Session, destinatario: str, codigo: str):
     </html>
     """
 
-    # Llamamos a la función robusta que fuerza IPv4 y evita bloqueos en la nube
-    exito = enviar_correo_base(
+    return enviar_correo_base(
         remitente=remitente,
         password=password,
         destinatario=destinatario,
         asunto=asunto,
         html_content=html
     )
-    return exito
 
 @router.on_event("startup")
 def asegurar_columnas_recuperacion():
