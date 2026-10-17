@@ -314,9 +314,17 @@
 
     async function handleRecuperar(e) {
       e.preventDefault();
-      const email = document.getElementById('recEmail').value.trim().toLowerCase();
+      const emailInput = document.getElementById('recEmail');
       const msgDiv = document.getElementById('recMensaje');
+      
+      if (!emailInput || !msgDiv) {
+        console.error("Elementos del formulario de recuperación no encontrados.");
+        return;
+      }
+
+      const email = emailInput.value.trim().toLowerCase();
       msgDiv.classList.add('hidden');
+      console.log("📤 Solicitando código OTP para:", email);
 
       try {
         const response = await fetch('/auth-recuperacion/solicitar-codigo', {
@@ -325,9 +333,13 @@
           body: JSON.stringify({ email })
         });
 
+        console.log("📥 Respuesta recibida, status:", response.status);
+
         if (response.ok) {
           correoRecuperacionCliente = email;
-          document.getElementById('spanCorreoCliente').innerText = email;
+          const spanCorreo = document.getElementById('spanCorreoCliente');
+          if (spanCorreo) spanCorreo.innerText = email;
+
           msgDiv.textContent = '¡Código OTP enviado con éxito a tu correo!';
           msgDiv.className = "text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center";
           msgDiv.classList.remove('hidden');
@@ -336,13 +348,18 @@
             cambiarVista('nuevopass');
           }, 1500);
         } else {
-          const errData = await response.json();
-          msgDiv.textContent = errData.detail || 'No se pudo enviar el código al correo ingresado.';
+          let errorMsg = 'No se pudo enviar el código al correo ingresado.';
+          try {
+            const errData = await response.json();
+            errorMsg = errData.detail || errorMsg;
+          } catch (e) {}
+
+          msgDiv.textContent = errorMsg;
           msgDiv.className = "text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 text-center";
           msgDiv.classList.remove('hidden');
         }
       } catch (err) {
-        console.error(err);
+        console.error("❌ Error de conexión:", err);
         msgDiv.textContent = 'Error de conexión con el servidor.';
         msgDiv.className = "text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 text-center";
         msgDiv.classList.remove('hidden');
