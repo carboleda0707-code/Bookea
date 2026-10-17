@@ -1,24 +1,22 @@
 # app/routers/recuperacion.py
 import random
-import smtplib
-import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel, EmailStr
-from dotenv import load_dotenv
 from app.database import get_db
 from app import models
 from passlib.context import CryptContext
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+
+# Importamos la función centralizada y segura de correo que ya tienes probada en el proyecto
+from app.utils.email import enviar_correo_smtp as enviar_correo_base
 
 router = APIRouter(prefix="/auth-recuperacion", tags=["Recuperación de Contraseña"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def enviar_correo_smtp(db: Session, destinatario: str, codigo: str):
-    """Envía el código OTP leyendo las credenciales SMTP desde la tabla de locales o usuarios."""
+def enviar_correo_recuperacion(db: Session, destinatario: str, codigo: str):
+    """Envía el código OTP leyendo las credenciales SMTP desde la base de datos usando la función segura."""
     
     # 1. Intentamos obtener las credenciales de la tabla locales
     local_config = db.execute(text("SELECT correo_envio, password_app FROM locales WHERE correo_envio IS NOT NULL AND correo_envio != '' LIMIT 1")).fetchone()
@@ -31,21 +29,16 @@ def enviar_correo_smtp(db: Session, destinatario: str, codigo: str):
         password = local_config.password_app
     else:
         remitente = "carboleda0707@gmail.com" 
-        password = ""
-
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587  # Cambiado a 587 con STARTTLS para evitar bloqueos en Railway
+        password = "" # O la contraseña de respaldo si la usas
 
     print(f"CHIVATO SMTP (DB) -> Usuario: {remitente} | Password (longitud): {len(password) if password else 0}")
 
     if not remitente or not password:
-        raise HTTPException(status_code=500, detail="No hay credenciales SMTP configuradas en la base de datos.")
+        print("⚠️ No hay credenciales SMTP configuradas en la base de datos.")
+        return False
 
-    mensaje = MIMEMultipart("alternative")
-    mensaje["Subject"] = "🔐 Código de Recuperación de Contraseña - Bookea"
-    mensaje["From"] = remitente
-    mensaje["To"] = destinatario
-
+    asunto = "🔐 Código de Recuperación de Contraseña - Bookea"
+    
     html = f"""
     <html>
       <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
@@ -63,18 +56,16 @@ def enviar_correo_smtp(db: Session, destinatario: str, codigo: str):
       </body>
     </html>
     """
-    mensaje.attach(MIMEText(html, "html"))
 
-    try:
-        # Usamos STARTTLS en el puerto 587 con timeout para evitar bloqueos en producción
-        with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as servidor:
-            servidor.starttls()
-            servidor.login(remitente, password)
-            servidor.sendmail(remitente, destinatario, mensaje.as_string())
-        print(f"--- CORREO SMTP ENVIADO EXITOSAMENTE A: {destinatario} ---")
-    except Exception as e:
-        print(f"--- ERROR AL ENVIAR CORREO SMTP: {e} ---")
-        raise HTTPException(status_code=500, detail=f"No se pudo enviar el correo electrónico: {str(e)}")
+    # Llamamos a la función robusta que fuerza IPv4 y evita bloqueos en la nube
+    exito = enviar_correo_base(
+        remitente=remitente,
+        password=password,
+        destinatario=destinatario,
+        asunto=asunto,
+        html_content=html
+    )
+    return exito
 
 @router.on_event("startup")
 def asegurar_columnas_recuperacion():
@@ -132,8 +123,8 @@ def solicitar_codigo(payload: SolicitarRecuperacion, background_tasks: Backgroun
     usuario.reset_token_expires = datetime.utcnow() + timedelta(minutes=15)
     db.commit()
         
-    # 🚀 ENVIAR EN SEGUNDO PLANO: Esto evita que el HTML se congele esperando la respuesta del socket SMTP
-    background_tasks.add_task(enviar_correo_smtp, db, payload.email, codigo_otp)
+    # Enviar correo en segundo plano usando la función segura con IPv4
+    background_tasks.add_task(enviar_correo_recuperacion, db, payload.email, codigo_otp)
 
     return {"mensaje": "Código de recuperación enviado con éxito al correo."}
 
