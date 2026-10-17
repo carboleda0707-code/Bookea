@@ -5,7 +5,6 @@ import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel, EmailStr
@@ -13,6 +12,7 @@ from dotenv import load_dotenv
 from app.database import get_db
 from app import models
 from passlib.context import CryptContext
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 
 router = APIRouter(prefix="/auth-recuperacion", tags=["Recuperación de Contraseña"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -102,7 +102,7 @@ class VerificarCambioPassword(BaseModel):
     nueva_password: str
 
 @router.post("/solicitar-codigo")
-def solicitar_codigo(payload: SolicitarRecuperacion, db: Session = Depends(get_db)):
+def solicitar_codigo(payload: SolicitarRecuperacion, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     usuario = None
     es_cliente = True
     
@@ -132,8 +132,8 @@ def solicitar_codigo(payload: SolicitarRecuperacion, db: Session = Depends(get_d
     usuario.reset_token_expires = datetime.utcnow() + timedelta(minutes=15)
     db.commit()
         
-    # Llamada correcta a la función externa pasándole db, email y código
-    enviar_correo_smtp(db, payload.email, codigo_otp)
+    # 🚀 ENVIAR EN SEGUNDO PLANO: Esto evita que el HTML se congele esperando la respuesta del socket SMTP
+    background_tasks.add_task(enviar_correo_smtp, db, payload.email, codigo_otp)
 
     return {"mensaje": "Código de recuperación enviado con éxito al correo."}
 
