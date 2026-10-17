@@ -98,7 +98,7 @@ class VerificarCambioPassword(BaseModel):
     nueva_password: str
 
 @router.post("/solicitar-codigo")
-def solicitar_codigo(payload: SolicitarRecuperacion, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def solicitar_codigo(payload: SolicitarRecuperacion, db: Session = Depends(get_db)):
     usuario = None
     es_cliente = True
     
@@ -128,8 +128,11 @@ def solicitar_codigo(payload: SolicitarRecuperacion, background_tasks: Backgroun
     usuario.reset_token_expires = datetime.utcnow() + timedelta(minutes=15)
     db.commit()
         
-    # Enviar correo en segundo plano usando la función segura con IPv4
-    background_tasks.add_task(enviar_correo_recuperacion, db, payload.email, codigo_otp)
+    # Ejecutamos la función de forma sincrónica para capturar cualquier error directamente en la respuesta HTTP
+    exito = enviar_correo_recuperacion(db, payload.email, codigo_otp)
+    
+    if not exito:
+        raise HTTPException(status_code=500, detail="Error al autenticar o conectar con el servidor de correo SMTP.")
 
     return {"mensaje": "Código de recuperación enviado con éxito al correo."}
 
