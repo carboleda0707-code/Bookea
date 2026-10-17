@@ -250,7 +250,8 @@
       errorDiv.classList.add('hidden');
 
       try {
-        const response = await fetch('/clientes-auth/login', {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/clientes-auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -270,7 +271,7 @@
           localStorage.removeItem('redirect_after_login');
           window.location.href = redirectUrl;
         } else {
-          const errData = await response.json();
+          const errData = await response.json().catch(() => ({}));
           errorDiv.textContent = errData.detail || 'Credenciales incorrectas.';
           errorDiv.classList.remove('hidden');
         }
@@ -291,7 +292,8 @@
       errorDiv.classList.add('hidden');
 
       try {
-        const response = await fetch('/clientes-auth/registro', {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/clientes-auth/registro`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre, email, telefono, password })
@@ -301,7 +303,7 @@
           alert('¡Cuenta creada con éxito! Por favor inicia sesión.');
           cambiarVista('login');
         } else {
-          const errData = await response.json();
+          const errData = await response.json().catch(() => ({}));
           errorDiv.textContent = errData.detail || 'Error al registrar la cuenta.';
           errorDiv.classList.remove('hidden');
         }
@@ -324,23 +326,26 @@
 
       const email = emailInput.value.trim().toLowerCase();
       msgDiv.classList.add('hidden');
-      console.log("📤 Solicitando código OTP para:", email);
+      
+      // Mostrar mensaje de progreso inmediato
+      msgDiv.textContent = 'Enviando solicitud al servidor...';
+      msgDiv.className = "text-xs font-bold text-slate-600 bg-slate-100 p-3 rounded-xl border border-slate-200 text-center";
+      msgDiv.classList.remove('hidden');
 
       try {
-        const response = await fetch('/auth-recuperacion/solicitar-codigo', {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/auth-recuperacion/solicitar-codigo`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
-
-        console.log("📥 Respuesta recibida, status:", response.status);
 
         if (response.ok) {
           correoRecuperacionCliente = email;
           const spanCorreo = document.getElementById('spanCorreoCliente');
           if (spanCorreo) spanCorreo.innerText = email;
 
-          msgDiv.textContent = '¡Código OTP enviado con éxito a tu correo!';
+          msgDiv.textContent = '¡Revisa el código de 6 dígitos enviado a tu correo!';
           msgDiv.className = "text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center";
           msgDiv.classList.remove('hidden');
 
@@ -374,7 +379,8 @@
       msgDiv.classList.add('hidden');
 
       try {
-        const response = await fetch('/auth-recuperacion/cambiar-password', {
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/auth-recuperacion/cambiar-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -393,7 +399,7 @@
             cambiarVista('login');
           }, 2000);
         } else {
-          const errData = await response.json();
+          const errData = await response.json().catch(() => ({}));
           msgDiv.textContent = errData.detail || 'Código incorrecto o expirado.';
           msgDiv.className = "text-xs font-bold text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 text-center";
           msgDiv.classList.remove('hidden');
