@@ -30,13 +30,11 @@ def enviar_correo_smtp(db: Session, destinatario: str, codigo: str):
         remitente = local_config.correo_envio
         password = local_config.password_app
     else:
-        # 2. Si no hay en locales, buscamos en usuarios propietario o comensales si alguno tiene configurado correo de envío
-        # (O puedes definir aquí tu correo por defecto de respaldo si lo deseas)
         remitente = "carboleda0707@gmail.com" 
-        password = "" # O tu contraseña de aplicación de respaldo si deseas dejarlo fijo
+        password = ""
 
     smtp_server = "smtp.gmail.com"
-    smtp_port = 465  # Puerto seguro con SSL
+    smtp_port = 587  # Cambiado a 587 con STARTTLS para evitar bloqueos en Railway
 
     print(f"CHIVATO SMTP (DB) -> Usuario: {remitente} | Password (longitud): {len(password) if password else 0}")
 
@@ -48,7 +46,6 @@ def enviar_correo_smtp(db: Session, destinatario: str, codigo: str):
     mensaje["From"] = remitente
     mensaje["To"] = destinatario
 
-    # Cuerpo del correo en HTML estilizado
     html = f"""
     <html>
       <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
@@ -69,7 +66,9 @@ def enviar_correo_smtp(db: Session, destinatario: str, codigo: str):
     mensaje.attach(MIMEText(html, "html"))
 
     try:
-        with smtplib.SMTP_SSL(smtp_server, smtp_port) as servidor:
+        # Usamos STARTTLS en el puerto 587 con timeout para evitar bloqueos en producción
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as servidor:
+            servidor.starttls()
             servidor.login(remitente, password)
             servidor.sendmail(remitente, destinatario, mensaje.as_string())
         print(f"--- CORREO SMTP ENVIADO EXITOSAMENTE A: {destinatario} ---")
