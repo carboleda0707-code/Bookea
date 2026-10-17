@@ -82,7 +82,7 @@
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Contraseña</label>
-              <button type="button" onclick="cambiarVista('recuperar')" class="text-xs font-bold text-rose-600 hover:text-rose-700">¿Olvidaste tu contraseña?</button>
+              <button type="button" onclick="cambiarVista('recuperar')" class="text-xs font-bold text-rose-600 hover:text-rose-700 cursor-pointer">¿Olvidaste tu contraseña?</button>
             </div>
             <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all">
           </div>
@@ -97,7 +97,7 @@
         <div class="text-center mt-6 pt-6 border-t border-slate-100">
           <p class="text-xs text-slate-500 font-medium">
             ¿No tienes una cuenta? 
-            <button onclick="cambiarVista('registro')" class="text-rose-600 font-extrabold hover:underline ml-1">Regístrate aquí</button>
+            <button onclick="cambiarVista('registro')" class="text-rose-600 font-extrabold hover:underline ml-1 cursor-pointer">Regístrate aquí</button>
           </p>
         </div>
       </div>
@@ -143,12 +143,12 @@
         <div class="text-center mt-6 pt-6 border-t border-slate-100">
           <p class="text-xs text-slate-500 font-medium">
             ¿Ya tienes una cuenta? 
-            <button onclick="cambiarVista('login')" class="text-rose-600 font-extrabold hover:underline ml-1">Inicia sesión</button>
+            <button onclick="cambiarVista('login')" class="text-rose-600 font-extrabold hover:underline ml-1 cursor-pointer">Inicia sesión</button>
           </p>
         </div>
       </div>
 
-      <!-- 3. FORMULARIO DE SOLICITAR CÓDIGO OTP -->
+      <!-- 3. FORMULARIO DE RECUPERAR CONTRASEÑA -->
       <div id="vistaRecuperar" class="card-auth p-8 hidden">
         <div class="text-center mb-6">
           <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl mx-auto flex items-center justify-center text-xl mb-3 shadow-inner">
@@ -172,7 +172,7 @@
         </form>
 
         <div class="text-center mt-6 pt-6 border-t border-slate-100">
-          <button onclick="cambiarVista('login')" class="text-xs font-bold text-slate-600 hover:text-rose-600 flex items-center justify-center gap-1 mx-auto">
+          <button onclick="cambiarVista('login')" class="text-xs font-bold text-slate-600 hover:text-rose-600 flex items-center justify-center gap-1 mx-auto cursor-pointer">
             <i class="fa-solid fa-arrow-left"></i> Volver al inicio de sesión
           </button>
         </div>
@@ -207,7 +207,7 @@
         </form>
 
         <div class="text-center mt-6 pt-6 border-t border-slate-100">
-          <button onclick="cambiarVista('recuperar')" class="text-xs font-bold text-slate-600 hover:text-rose-600 flex items-center justify-center gap-1 mx-auto">
+          <button onclick="cambiarVista('recuperar')" class="text-xs font-bold text-slate-600 hover:text-rose-600 flex items-center justify-center gap-1 mx-auto cursor-pointer">
             <i class="fa-solid fa-arrow-left"></i> Reenviar código / Volver
           </button>
         </div>
